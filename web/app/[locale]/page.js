@@ -78,7 +78,7 @@ export default async function Overview({ params, searchParams }) {
         <section className="card">
           <h2>{t.top_new}</h2>
           <p className="lead">{fmt(t.top_new_lead, { n: 7 })}</p>
-          {ov.top_new_characters_7d.length === 0 ? <p className="muted">{t.not_yet}</p> : (
+          {ov.top_new_characters_7d.length === 0 ? <p className="muted">{t.new_chars_wait}</p> : (
             <div className="tbl">
               <table>
                 <thead><tr><th>#</th><th>{t.world}</th><th className="n">{t.new_characters}</th></tr></thead>

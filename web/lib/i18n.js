@@ -120,6 +120,7 @@ const DICT = {
     top_new: "Mais personagens novos",
     top_new_lead: "Últimos 7 dias. Estimativa: personagens vistos online pela primeira vez já em level {n} ou menos.",
     new_characters: "personagens novos",
+    new_chars_wait: "Os números aparecem a partir do segundo dia de coleta (no primeiro, todo mundo é visto pela primeira vez).",
     new_chars_note: "Personagens novos é uma estimativa: quem aparece online pela primeira vez em level {n} ou menos, a partir do segundo dia de coleta.",
   },
   en: {
@@ -240,6 +241,7 @@ const DICT = {
     top_new: "Most new characters",
     top_new_lead: "Last 7 days. Estimate: characters first seen online at level {n} or lower.",
     new_characters: "new characters",
+    new_chars_wait: "Numbers show up from the second day of collection on (on day one, everyone is seen for the first time).",
     new_chars_note: "New characters is an estimate: characters first seen online at level {n} or lower, from the second day of collection on.",
   },
 };
