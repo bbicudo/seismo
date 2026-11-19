@@ -1,11 +1,24 @@
 import { redirect } from "next/navigation";
-import { IBM_Plex_Mono, IBM_Plex_Sans, Pixelify_Sans } from "next/font/google";
+import localFont from "next/font/local";
 import { LOCALES, dict } from "../../lib/i18n";
 import "../globals.css";
 
-const display = Pixelify_Sans({ subsets: ["latin"], weight: ["500", "700"], variable: "--f-display" });
-const body = IBM_Plex_Sans({ subsets: ["latin"], weight: ["400", "600"], variable: "--f-body" });
-const mono = IBM_Plex_Mono({ subsets: ["latin"], weight: ["400", "600"], variable: "--f-mono" });
+// Fontes dentro do projeto (licença SIL OFL): o build não depende de internet e
+// o navegador do visitante não chama o Google.
+const display = localFont({
+  src: "../fonts/pixelify-sans.woff2", weight: "400 700", variable: "--f-display", display: "swap",
+});
+const body = localFont({
+  src: "../fonts/ibm-plex-sans.woff2", weight: "100 700", variable: "--f-body", display: "swap",
+});
+const mono = localFont({
+  src: [
+    { path: "../fonts/ibm-plex-mono-400.woff2", weight: "400" },
+    { path: "../fonts/ibm-plex-mono-600.woff2", weight: "600" },
+  ],
+  variable: "--f-mono",
+  display: "swap",
+});
 
 export function generateStaticParams() {
   return LOCALES.map((locale) => ({ locale }));
