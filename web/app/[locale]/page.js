@@ -51,7 +51,7 @@ export default async function Overview({ params, searchParams }) {
         </section>
       </div>
 
-      <div className="grid2">
+      <div>
         <section className="card">
           <h2>{t.top_deaths}</h2>
           {ov.top_deaths.length === 0 ? <p className="muted">{t.not_yet}</p> : (
@@ -73,26 +73,6 @@ export default async function Overview({ params, searchParams }) {
                 </table>
               </div>
             </>
-          )}
-        </section>
-        <section className="card">
-          <h2>{t.top_new}</h2>
-          <p className="lead">{fmt(t.top_new_lead, { n: 7 })}</p>
-          {ov.top_new_characters_7d.length === 0 ? <p className="muted">{t.new_chars_wait}</p> : (
-            <div className="tbl">
-              <table>
-                <thead><tr><th>#</th><th>{t.world}</th><th className="n">{t.new_characters}</th></tr></thead>
-                <tbody>
-                  {ov.top_new_characters_7d.map((n, i) => (
-                    <tr key={n.name}>
-                      <td>{i + 1}</td>
-                      <td><a href={`/${locale}/world/${enc(n.name)}`}>{n.name}</a></td>
-                      <td className="n">{fmtNum(n.new_characters, locale)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
           )}
         </section>
       </div>

@@ -120,6 +120,10 @@ class TibiaData:
         data = await self.get(f"guilds/{quote(world)}")
         return data.get("guilds") or {}
 
+    async def character(self, name: str) -> dict[str, Any]:
+        data = await self.get(f"character/{quote(name)}")
+        return (data.get("character") or {}).get("character") or {}
+
     async def guild(self, name: str) -> dict[str, Any]:
         data = await self.get(f"guild/{quote(name)}")
         return data.get("guild") or {}

@@ -54,7 +54,14 @@ export default async function LocaleLayout({ children, params }) {
           </div>
         </header>
         <main className="wrap">{children}</main>
-        <footer className="wrap">{t.footer}</footer>
+        <footer className="wrap">
+          <nav aria-label="Seismo" style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 6 }}>
+            <a href={`/${locale}/about`}>{t.nav_about}</a>
+            <a href={`/${locale}/privacy`}>{t.nav_privacy}</a>
+            <a href={`/${locale}/opt-out`}>{t.nav_optout}</a>
+          </nav>
+          {t.footer}
+        </footer>
       </body>
     </html>
   );

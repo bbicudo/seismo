@@ -10,6 +10,7 @@ from redis.asyncio import Redis
 
 from . import store
 from .logic import cycle_slot, diff_snapshots, encode_player, split_minutes
+from .privacy import Optouts
 from .settings import Settings
 from .tibiadata import NotFound, TibiaData
 
@@ -22,10 +23,11 @@ STATS_TTL = 35 * 86400
 
 
 class Collector:
-    def __init__(self, settings: Settings, redis: Redis, pool: AsyncConnectionPool):
+    def __init__(self, settings: Settings, redis: Redis, pool: AsyncConnectionPool, optouts: Optouts):
         self.s = settings
         self.redis = redis
         self.pool = pool
+        self.optouts = optouts
         # aberto quando não há rodada de online em andamento (as coletas diárias esperam por ele)
         self.online_idle = asyncio.Event()
         self.online_idle.set()
@@ -84,6 +86,7 @@ class Collector:
 
     async def run_cycle(self, ts: datetime) -> None:
         t0 = time.monotonic()
+        await self.optouts.refresh()
         worlds = await self.td.worlds()
         ids = await store.upsert_worlds(self.pool, worlds, ts)
         targets = self.s.target_worlds([w["name"] for w in worlds])
@@ -129,10 +132,16 @@ class Collector:
                 if lw and lw != name and lw in ids:
                     transfers.append((n, ids[lw]))
 
-        changed = {n for n, _, _ in d.level_changes} | {n for n, _ in d.vocation_changes}
+        # opt-out: nada ligado ao nome vai para o banco (a foto no Redis e os contadores anônimos continuam)
+        out = self.optouts
+        sessions = {n: v for n, v in sessions.items() if n not in out}
+        transfers = [t for t in transfers if t[0] not in out]
+        d.level_changes = [c for c in d.level_changes if c[0] not in out]
+        changed = {n for n, _, _ in d.level_changes} | {n for n, _ in d.vocation_changes if n not in out}
         batch = store.WorldBatch(
             world_id=ids[name], ts=ts, curr=curr,
-            upsert_names=sorted(set(d.logins) | changed), diff=d, sessions=sessions, transfers=transfers,
+            upsert_names=sorted({n for n in d.logins if n not in out} | changed), diff=d,
+            sessions=sessions, transfers=transfers,
         )
         await store.write_world(self.pool, batch)
 

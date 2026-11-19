@@ -14,6 +14,7 @@ from psycopg_pool import AsyncConnectionPool
 from redis.asyncio import Redis
 
 from .logic import game_day
+from .privacy import Optouts, process_queue
 from .settings import Settings
 from .tibiadata import NotFound, TibiaData
 
@@ -39,12 +40,13 @@ def parse_day(value: str | None) -> date | None:
 
 class DailyJobs:
     def __init__(self, settings: Settings, redis: Redis, pool: AsyncConnectionPool, td: TibiaData,
-                 online_idle: asyncio.Event):
+                 online_idle: asyncio.Event, optouts: Optouts):
         self.s = settings
         self.redis = redis
         self.pool = pool
         self.td = td
         self.online_idle = online_idle
+        self.optouts = optouts
 
     # ---------- infraestrutura ----------
     async def call(self, coro_fn, *args):
@@ -92,9 +94,13 @@ class DailyJobs:
                 await asyncio.sleep(60)
 
     async def step(self) -> bool:
+        # pedidos de opt-out têm prioridade sobre qualquer coleta diária
+        if await process_queue(self.pool, self.redis, self.td, self.optouts, self.call):
+            return True
+        await self.optouts.refresh()
         day = self.effective_day()
         for job, fn in (("killstats", self.job_killstats), ("guild_lists", self.job_guild_lists),
-                        ("houses", self.job_houses)):
+                        ("houses", self.job_houses), ("retention", self.job_retention)):
             if await self.redis.get(f"seismo:job:{job}:day") != day.isoformat():
                 t0 = time.monotonic()
                 items = await fn(day)
@@ -105,6 +111,18 @@ class DailyJobs:
         if await self.house_details_batch(day):
             return True
         return False
+
+    # ---------- retenção (política de privacidade) ----------
+    async def job_retention(self, day: date) -> int:
+        """Minutos por dia ficam 400 dias; pedidos de opt-out vencidos e não confirmados, 30 dias."""
+        async with self.pool.connection() as conn:
+            cur = await conn.execute("DELETE FROM daily_online WHERE game_day < %s", (day - timedelta(days=400),))
+            removed = cur.rowcount
+            cur = await conn.execute(
+                "DELETE FROM optout_requests WHERE status <> 'verified' AND expires_at < now() - interval '30 days'"
+            )
+            removed += cur.rowcount
+        return removed
 
     # ---------- kill statistics ----------
     async def job_killstats(self, day: date) -> int:
@@ -211,7 +229,8 @@ class DailyJobs:
                         (parse_day(g.get("founded")), g.get("members_total"), g.get("in_war"),
                          g.get("open_applications"), len(halls), gid),
                     )
-                    members = {m["name"]: m for m in g.get("members") or [] if m.get("name")}
+                    members = {m["name"]: m for m in g.get("members") or []
+                               if m.get("name") and m["name"] not in self.optouts}
                     await cur.execute("SELECT name FROM guild_members WHERE guild_id = %s", (gid,))
                     before = {r[0] for r in await cur.fetchall()}
                     joins = sorted(members.keys() - before)
@@ -335,6 +354,8 @@ class DailyJobs:
     async def save_house_detail(self, wid: int, hid: int, d: dict, day: date) -> None:
         status = d.get("status") or {}
         owner = ((status.get("rental") or {}).get("owner") or "").strip() if status.get("is_rented") else ""
+        if owner and owner in self.optouts:
+            owner = ""  # quem fez opt-out não entra no histórico de donos
         async with self.pool.connection() as conn:
             async with conn.transaction():
                 async with conn.cursor() as cur:

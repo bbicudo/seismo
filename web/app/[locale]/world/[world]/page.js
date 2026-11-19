@@ -44,9 +44,7 @@ export default async function World({ params, searchParams }) {
           <div className="stat"><b>{fmtNum(health.new_characters, locale)}</b><span>{t.new_characters} ({days}d)</span></div>
           <div className="stat"><b>{fmtNum(health.deaths_by_day.at(-1)?.deaths, locale)}</b><span>{t.deaths} ({health.deaths_by_day.length ? fmtDate(health.deaths_by_day.at(-1).stats_day, locale) : "–"})</span></div>
         </div>
-        <p className="muted">
-          {fmt(t.collecting_since, { date: fmtDate(health.collecting_since, locale) })} · {fmt(t.new_chars_note, { n: health.new_level_max })}
-        </p>
+        <p className="muted">{fmt(t.collecting_since, { date: fmtDate(health.collecting_since, locale) })}</p>
       </section>
 
       <section className="card">
@@ -59,6 +57,30 @@ export default async function World({ params, searchParams }) {
         </p>
         <TimeChart points={points} locale={locale} label={fmt(t.health_lead, { days })} peakLabel={t.peak} />
         <div className="legend"><span><i />{t.avg}</span><span><i className="dash" />{t.peak}</span></div>
+      </section>
+
+      <section className="card" id="new-characters">
+        <h2>{t.created_title}</h2>
+        <p className="lead">{fmt(t.new_chars_note, { n: health.new_level_max })}</p>
+        {health.new_characters_by_day.length === 0 ? <p className="muted">{t.new_chars_wait}</p> : (
+          <div className="tbl">
+            <table>
+              <thead><tr><th>{t.day}</th><th className="n">{t.new_characters}</th><th className="n">{t.without_vocation}</th></tr></thead>
+              <tbody>
+                {health.new_characters_by_day.map((r) => (
+                  <tr key={r.day}>
+                    <td>{fmtDate(r.day, locale)}</td>
+                    <td className="n">{fmtNum(r.new_characters, locale)}</td>
+                    <td className="n">{fmtNum(r.without_vocation, locale)}</td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr><th>{t.total} ({days}d)</th><th className="n">{fmtNum(health.new_characters, locale)}</th><th /></tr>
+              </tfoot>
+            </table>
+          </div>
+        )}
       </section>
 
       <section className="card" id="heatmap">

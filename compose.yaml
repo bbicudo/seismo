@@ -111,6 +111,7 @@ services:
     build: { context: ./web }
     environment:
       API_INTERNAL_URL: http://api:8000
+      PUBLIC_CONTACT: ${SEISMO_PUBLIC_CONTACT:-}   # e-mail mostrado na página de privacidade (opcional)
     depends_on:
       api: { condition: service_healthy }
     mem_limit: 768m

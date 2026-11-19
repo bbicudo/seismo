@@ -1,10 +1,13 @@
-"""API de leitura do Seismo. No lab: status do coletor, mundos e agregados anônimos.
-Nenhuma rota devolve dados por personagem."""
+"""API do Seismo: status do coletor, mundos, agregados anônimos, dados públicos de guilds e casas
+e o fluxo de opt-out. Quem fez opt-out não aparece em nenhuma rota."""
 
+import re
+import secrets
 from contextlib import asynccontextmanager
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from fastapi import FastAPI, HTTPException, Response
+from pydantic import BaseModel
 from fastapi.responses import ORJSONResponse
 from psycopg.rows import dict_row
 from psycopg_pool import AsyncConnectionPool
@@ -217,9 +220,8 @@ async def overview(response: Response):
         GROUP BY w.name, k.stats_day ORDER BY deaths DESC, w.name LIMIT 10
         """
     )
-    top_new = await query(NEW_CHARS_SQL + " ORDER BY new_characters DESC, w.name LIMIT 10", 7, None, None)
     cache(response, 60)
-    return {"series_48h": series, "regions": regions, "top_deaths": top_deaths, "top_new_characters_7d": top_new}
+    return {"series_48h": series, "regions": regions, "top_deaths": top_deaths}
 
 
 # Personagens novos (estimativa): vistos online pela primeira vez já em level baixo (até 7), depois do
@@ -265,6 +267,18 @@ async def world_health(name: str, response: Response, days: int = 14):
     )
     since = await query("SELECT min(ts) AS since FROM world_online_5m WHERE world_id = %s", w["id"])
     new_chars = await query(NEW_CHARS_SQL, days, w["id"], w["id"])
+    new_by_day = await query(
+        f"""
+        WITH s AS (SELECT min(first_seen_day) AS start_day FROM characters WHERE world_id = %s)
+        SELECT c.first_seen_day AS day, count(*)::int AS new_characters,
+               count(*) FILTER (WHERE c.vocation = 'None')::int AS without_vocation
+        FROM characters c, s
+        WHERE c.world_id = %s AND c.first_level <= {NEW_LEVEL_MAX}
+          AND c.first_seen_day > s.start_day AND c.first_seen_day > current_date - %s
+        GROUP BY c.first_seen_day ORDER BY c.first_seen_day DESC
+        """,
+        w["id"], w["id"], days,
+    )
     deaths = await query(
         """
         SELECT stats_day, sum(players_killed)::int AS deaths FROM kill_stats_daily
@@ -276,7 +290,7 @@ async def world_health(name: str, response: Response, days: int = 14):
     return {"world": w["name"], "days": days, "hourly": hourly, "record": record[0] if record else None,
             "transfers": transfers[0], "collecting_since": since[0]["since"],
             "new_characters": new_chars[0]["new_characters"] if new_chars else 0,
-            "new_level_max": NEW_LEVEL_MAX, "deaths_by_day": deaths}
+            "new_level_max": NEW_LEVEL_MAX, "new_characters_by_day": new_by_day, "deaths_by_day": deaths}
 
 
 @app.get("/v1/worlds/{name}/heatmap")
@@ -331,6 +345,7 @@ async def world_town(name: str, town: str, response: Response):
         LEFT JOIN LATERAL (SELECT * FROM house_snapshots s WHERE s.world_id = h.world_id AND s.house_id = h.house_id
                            ORDER BY snap_day DESC LIMIT 1) s ON true
         LEFT JOIN house_owners o ON o.world_id = h.world_id AND o.house_id = h.house_id AND o.ended_day IS NULL
+             AND NOT EXISTS (SELECT 1 FROM privacy_optouts p WHERE lower(p.name) = lower(o.owner))
         WHERE h.world_id = %s AND lower(h.town) = lower(%s)
         ORDER BY h.kind, h.name
         """,
@@ -358,8 +373,10 @@ async def world_house(name: str, house_id: int, response: Response):
         w["id"], house_id,
     )
     owners = await query(
-        "SELECT owner, first_seen_day, last_seen_day, ended_day FROM house_owners "
-        "WHERE world_id = %s AND house_id = %s ORDER BY first_seen_day DESC",
+        "SELECT owner, first_seen_day, last_seen_day, ended_day FROM house_owners o "
+        "WHERE world_id = %s AND house_id = %s "
+        "AND NOT EXISTS (SELECT 1 FROM privacy_optouts p WHERE lower(p.name) = lower(o.owner)) "
+        "ORDER BY first_seen_day DESC",
         w["id"], house_id,
     )
     cache(response, 600)
@@ -380,12 +397,15 @@ async def world_guild(name: str, guild: str, response: Response):
     g = found[0]
     gid = g.pop("id")
     members = await query(
-        "SELECT name, rank, title, vocation, level, joined FROM guild_members WHERE guild_id = %s "
+        "SELECT name, rank, title, vocation, level, joined FROM guild_members m WHERE guild_id = %s "
+        "AND NOT EXISTS (SELECT 1 FROM privacy_optouts p WHERE lower(p.name) = lower(m.name)) "
         "ORDER BY level DESC NULLS LAST, name",
         gid,
     )
     events = await query(
-        "SELECT name, event, event_day FROM guild_events WHERE guild_id = %s ORDER BY event_day DESC, name LIMIT 100",
+        "SELECT name, event, event_day FROM guild_events e WHERE guild_id = %s "
+        "AND NOT EXISTS (SELECT 1 FROM privacy_optouts p WHERE lower(p.name) = lower(e.name)) "
+        "ORDER BY event_day DESC, name LIMIT 100",
         gid,
     )
     vocations: dict[str, int] = {}
@@ -394,3 +414,82 @@ async def world_guild(name: str, guild: str, response: Response):
         vocations[base] = vocations.get(base, 0) + 1
     cache(response, 600)
     return {"world": w["name"], **g, "members": members, "events": events, "vocations": vocations}
+
+
+# ---------------------------------------------------------------- opt-out
+# 1) o dono pede o opt-out e recebe um código; 2) cola o código no comentário do personagem no tibia.com;
+# 3) pede a verificação: a API põe o pedido numa fila e o coletor (que tem acesso à internet) confere o
+# comentário pela TibiaData. Confirmado, o personagem some do site e os dados ligados ao nome são apagados.
+
+NAME_RE = re.compile(r"^[A-Za-z][A-Za-z' -]{1,28}[A-Za-z]$")
+OPTOUT_TTL = timedelta(hours=48)
+VERIFY_COOLDOWN = timedelta(minutes=2)
+OPTOUT_QUEUE = "seismo:optout:queue"
+
+
+class OptoutIn(BaseModel):
+    name: str
+
+
+def clean_name(raw: str) -> str:
+    name = " ".join(raw.split())
+    if not NAME_RE.match(name):
+        raise HTTPException(422, "nome de personagem inválido")
+    return name
+
+
+async def optout_state(name: str) -> dict:
+    done = await query("SELECT name, created_at FROM privacy_optouts WHERE lower(name) = lower(%s)", name)
+    if done:
+        return {"name": done[0]["name"], "status": "verified", "since": done[0]["created_at"]}
+    req = await query(
+        "SELECT name, code, status, message, expires_at, checked_at FROM optout_requests "
+        "WHERE lower(name) = lower(%s) ORDER BY created_at DESC LIMIT 1",
+        name,
+    )
+    if not req:
+        return {"name": name, "status": "none"}
+    r = req[0]
+    if r["status"] in ("pending", "failed") and r["expires_at"] < datetime.now(timezone.utc):
+        return {"name": name, "status": "expired"}
+    return r
+
+
+@app.get("/v1/optout")
+async def optout_status(name: str, response: Response):
+    response.headers["Cache-Control"] = "no-store"
+    return await optout_state(clean_name(name))
+
+
+@app.post("/v1/optout/request")
+async def optout_request(body: OptoutIn, response: Response):
+    response.headers["Cache-Control"] = "no-store"
+    name = clean_name(body.name)
+    state = await optout_state(name)
+    if state["status"] in ("verified", "pending", "checking", "failed"):
+        return state  # já existe um código válido (ou o opt-out já foi feito)
+    code = f"seismo-{secrets.token_hex(3)}"
+    await query(
+        "INSERT INTO optout_requests (name, code, expires_at) VALUES (%s, %s, %s)",
+        name, code, datetime.now(timezone.utc) + OPTOUT_TTL,
+    )
+    return await optout_state(name)
+
+
+@app.post("/v1/optout/verify")
+async def optout_verify(body: OptoutIn, response: Response):
+    response.headers["Cache-Control"] = "no-store"
+    name = clean_name(body.name)
+    state = await optout_state(name)
+    if state["status"] not in ("pending", "failed"):
+        return state
+    checked = state.get("checked_at")
+    if checked and datetime.now(timezone.utc) - checked < VERIFY_COOLDOWN:
+        return {**state, "message": "aguarde 2 minutos entre verificações"}
+    await query(
+        "UPDATE optout_requests SET status = 'checking', message = NULL, checked_at = now() "
+        "WHERE id = (SELECT id FROM optout_requests WHERE lower(name) = lower(%s) ORDER BY created_at DESC LIMIT 1)",
+        name,
+    )
+    await app.state.redis.rpush(OPTOUT_QUEUE, name)
+    return await optout_state(name)
