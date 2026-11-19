@@ -53,4 +53,16 @@ infra/scripts/seismo.sh resume           # o coletor começa pausado
 infra/scripts/seismo.sh status
 ```
 
-Build multi-arch para um registry: `REGISTRY=ghcr.io/<usuario> TAG=<versão> docker buildx bake --push`.
+## Imagens
+
+O GitHub Actions ([`images.yml`](.github/workflows/images.yml)) roda os testes e publica as imagens
+multi-arch (`linux/amd64` + `linux/arm64`, cada uma buildada num runner nativo) no GitHub Container Registry
+a cada push no `main` e em tags `v*`:
+
+- `ghcr.io/bbicudo/seismo-collector`, `ghcr.io/bbicudo/seismo-api`, `ghcr.io/bbicudo/seismo-web`
+- tags: `main`, `sha-<commit>` e, em releases, `<versão>`
+
+Para usar as imagens prontas em vez de buildar: no `.env`, `REGISTRY=ghcr.io/bbicudo` e `SEISMO_TAG=main`
+(ou uma versão), depois `docker compose pull && docker compose up -d`.
+
+Build multi-arch local, sem o Actions: `REGISTRY=ghcr.io/<usuario> TAG=<versão> docker buildx bake --push`.

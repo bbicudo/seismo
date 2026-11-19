@@ -1,0 +1,130 @@
+# Testes e imagens multi-arch (linux/amd64 + linux/arm64) publicadas no GitHub Container Registry.
+# Cada arquitetura é buildada num runner nativo (sem emulação) e depois as duas viram um manifesto só.
+name: images
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: images-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Dependências do coletor
+        run: pip install -r collector/requirements.txt
+      - name: Testes do coletor
+        working-directory: collector/src
+        run: python -m seismo_collector.selftest
+      - name: Sintaxe de todo o Python
+        run: python -m compileall -q collector/src api/src api/migrations
+
+  build:
+    needs: test
+    strategy:
+      fail-fast: false
+      matrix:
+        service: [collector, api, web]
+        platform: [linux/amd64, linux/arm64]
+        include:
+          - platform: linux/amd64
+            runner: ubuntu-24.04
+          - platform: linux/arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Nome da imagem
+        run: |
+          echo "IMAGE=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/seismo-${{ matrix.service }}" >> "$GITHUB_ENV"
+          echo "ARCH=${{ matrix.platform }}" | sed 's|linux/||' >> "$GITHUB_ENV"
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        if: github.event_name != 'pull_request'
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build (e push por digest fora de PR)
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: ./${{ matrix.service }}
+          platforms: ${{ matrix.platform }}
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+          outputs: ${{ github.event_name == 'pull_request' && 'type=cacheonly' || format('type=image,name={0},push-by-digest=true,name-canonical=true,push=true', env.IMAGE) }}
+          cache-from: type=gha,scope=${{ matrix.service }}-${{ env.ARCH }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service }}-${{ env.ARCH }}
+      - name: Guardar o digest
+        if: github.event_name != 'pull_request'
+        run: |
+          mkdir -p /tmp/digests
+          touch "/tmp/digests/${DIGEST#sha256:}"
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+      - uses: actions/upload-artifact@v4
+        if: github.event_name != 'pull_request'
+        with:
+          name: digest-${{ matrix.service }}-${{ env.ARCH }}
+          path: /tmp/digests/*
+          retention-days: 1
+
+  merge:
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        service: [collector, api, web]
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Nome da imagem
+        run: echo "IMAGE=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/seismo-${{ matrix.service }}" >> "$GITHUB_ENV"
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: digest-${{ matrix.service }}-*
+          path: /tmp/digests
+          merge-multiple: true
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE }}
+          tags: |
+            type=raw,value=main,enable={{is_default_branch}}
+            type=sha,prefix=sha-
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+      - name: Juntar amd64 + arm64 num manifesto
+        working-directory: /tmp/digests
+        run: |
+          docker buildx imagetools create \
+            $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
+            $(printf "${IMAGE}@sha256:%s " *)
+      - name: Conferir as arquiteturas
+        run: docker buildx imagetools inspect "${IMAGE}:${{ steps.meta.outputs.version }}"
