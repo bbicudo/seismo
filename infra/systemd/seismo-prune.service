@@ -1,0 +1,9 @@
+[Unit]
+Description=Seismo: limpeza semanal de imagens e cache de build
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+User=ubuntu
+ExecStart=/opt/seismo/infra/scripts/seismo.sh prune

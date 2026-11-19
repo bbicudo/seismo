@@ -1,0 +1,23 @@
+# SITE_ADDRESS vem do .env (o domínio do site).
+# O Caddy emite e renova o certificado HTTPS sozinho (desafio pela porta 80).
+{$SITE_ADDRESS} {
+	encode zstd gzip
+
+	# lab: tudo atrás de basic auth. O arquivo auth.caddy fica só no servidor (fora do git).
+	import /etc/caddy/auth.caddy
+
+	header {
+		-Server
+		X-Robots-Tag "noindex, nofollow"
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+	}
+
+	handle_path /api/* {
+		reverse_proxy api:8000
+	}
+	handle {
+		reverse_proxy web:3000
+	}
+}

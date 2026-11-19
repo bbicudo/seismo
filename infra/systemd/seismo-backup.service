@@ -1,0 +1,9 @@
+[Unit]
+Description=Seismo: backup diário do Postgres
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+User=ubuntu
+ExecStart=/opt/seismo/infra/scripts/backup.sh

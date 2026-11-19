@@ -1,0 +1,107 @@
+// Gráficos desenhados no servidor em SVG. Uma série por gráfico (sem eixo duplo), escala única,
+// grade discreta e dica ao passar o mouse (<title>) em faixas maiores que a própria linha.
+
+const NUM = { pt: "pt-BR", en: "en-GB" };
+const ZONE = { pt: "America/Sao_Paulo", en: "Europe/Berlin" };
+
+function niceMax(v) {
+  if (v <= 0) return 10;
+  const p = 10 ** Math.floor(Math.log10(v));
+  const n = v / p;
+  return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10) * p;
+}
+
+/**
+ * points: [{ t: ISO, v: number, peak?: number }]
+ * Desenha a média como linha com área, e o pico (se houver) como linha tracejada fina.
+ */
+export function TimeChart({ points, locale = "pt", height = 220, label, peakLabel = "pico" }) {
+  if (!points || points.length < 2) return null;
+  const W = 900, H = height, L = 52, R = 12, T = 10, B = 26;
+  const ts = points.map((p) => new Date(p.t).getTime());
+  const t0 = ts[0], t1 = ts[ts.length - 1];
+  const vmax = niceMax(Math.max(...points.map((p) => p.peak ?? p.v)));
+  const x = (t) => L + ((t - t0) / (t1 - t0 || 1)) * (W - L - R);
+  const y = (v) => T + (1 - v / vmax) * (H - T - B);
+  const line = points.map((p, i) => `${i ? "L" : "M"}${x(ts[i]).toFixed(1)},${y(p.v).toFixed(1)}`).join("");
+  const area = `${line}L${x(t1).toFixed(1)},${y(0)}L${x(t0).toFixed(1)},${y(0)}Z`;
+  const peak = points[0].peak != null
+    ? points.map((p, i) => `${i ? "L" : "M"}${x(ts[i]).toFixed(1)},${y(p.peak).toFixed(1)}`).join("") : null;
+  const yTicks = [0, 0.25, 0.5, 0.75, 1].map((f) => f * vmax);
+  const spanH = (t1 - t0) / 3.6e6;
+  const fmtTick = new Intl.DateTimeFormat(NUM[locale], spanH > 72
+    ? { day: "2-digit", month: "2-digit", timeZone: ZONE[locale] }
+    : { weekday: "short", hour: "2-digit", minute: "2-digit", timeZone: ZONE[locale] });
+  const fmtTip = new Intl.DateTimeFormat(NUM[locale], { dateStyle: "short", timeStyle: "short", timeZone: ZONE[locale] });
+  const nf = new Intl.NumberFormat(NUM[locale]);
+  const xTicks = Array.from({ length: 6 }, (_, i) => t0 + ((t1 - t0) * i) / 5);
+  // faixas de hover: no máximo ~180, agrupando pontos vizinhos
+  const step = Math.max(1, Math.ceil(points.length / 180));
+  const bands = [];
+  for (let i = 0; i < points.length; i += step) {
+    const j = Math.min(points.length - 1, i + step - 1);
+    const xa = x(ts[i]) - (i ? (x(ts[i]) - x(ts[i - 1])) / 2 : 0);
+    const xb = x(ts[j]) + (j < points.length - 1 ? (x(ts[j + 1]) - x(ts[j])) / 2 : 0);
+    const p = points[i];
+    bands.push({ xa, w: Math.max(1, xb - xa), tip: `${fmtTip.format(new Date(p.t))}: ${nf.format(p.v)}${p.peak != null ? ` (${peakLabel} ${nf.format(p.peak)})` : ""}` });
+  }
+  return (
+    <div className="chart">
+      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={label}>
+        <g className="axis">
+          {yTicks.map((v) => (
+            <g key={v}>
+              <line className="gridline" x1={L} x2={W - R} y1={y(v)} y2={y(v)} />
+              <text x={L - 8} y={y(v) + 4} textAnchor="end">{nf.format(Math.round(v))}</text>
+            </g>
+          ))}
+          {xTicks.map((t, i) => (
+            <text key={t} x={x(t)} y={H - 6} textAnchor={i === 0 ? "start" : i === 5 ? "end" : "middle"}>{fmtTick.format(new Date(t))}</text>
+          ))}
+        </g>
+        <path className="area" d={area} />
+        {peak && <path className="peak" d={peak} />}
+        <path className="series" d={line} />
+        {bands.map((b) => (
+          <rect key={b.xa} className="hit" x={b.xa} y={T} width={b.w} height={H - T - B}><title>{b.tip}</title></rect>
+        ))}
+      </svg>
+    </div>
+  );
+}
+
+/** cells: [{dow 1..7, hod 0..23, avg|null}] -> grade 7 × 24, uma cor só (claro -> escuro). */
+export function Heatmap({ cells, weekdays, locale = "pt" }) {
+  const map = new Map(cells.map((c) => [`${c.dow}-${c.hod}`, c]));
+  const vals = cells.map((c) => c.avg).filter((v) => v != null);
+  const max = vals.length ? Math.max(...vals) : 1;
+  const min = vals.length ? Math.min(...vals) : 0;
+  const nf = new Intl.NumberFormat(NUM[locale], { maximumFractionDigits: 1 });
+  return (
+    <div className="tbl">
+      <div className="heat" role="table" aria-label="heatmap">
+        <div />
+        {Array.from({ length: 24 }, (_, h) => <div key={h} className="h">{h % 3 === 0 ? h : ""}</div>)}
+        {weekdays.map((wd, i) => {
+          const dow = i + 1;
+          return [
+            <div key={`l${dow}`}>{wd}</div>,
+            ...Array.from({ length: 24 }, (_, h) => {
+              const c = map.get(`${dow}-${h}`);
+              const v = c?.avg;
+              const p = v == null ? null : max === min ? 60 : Math.round(8 + ((v - min) / (max - min)) * 92);
+              return (
+                <div key={`${dow}-${h}`} className="c" data-v={v == null ? undefined : v}
+                     style={p == null ? undefined : { "--p": `${p}%` }}
+                     title={`${wd} ${String(h).padStart(2, "0")}h: ${v == null ? "–" : nf.format(v)}`} />
+              );
+            }),
+          ];
+        })}
+      </div>
+      {vals.length > 0 && (
+        <div className="scale"><span>{nf.format(min)}</span><span className="bar" /><span>{nf.format(max)}</span></div>
+      )}
+    </div>
+  );
+}

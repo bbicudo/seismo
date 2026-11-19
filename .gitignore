@@ -1,0 +1,12 @@
+.env
+secrets/
+infra/caddy/auth.caddy
+__pycache__/
+*.pyc
+.venv/
+node_modules/
+.next/
+*.dump
+
+# documentos internos do projeto (ficam só no PC)
+docs/

@@ -1,0 +1,10 @@
+[Unit]
+Description=Seismo: backup diário às 05:15 UTC
+
+[Timer]
+OnCalendar=*-*-* 05:15:00 UTC
+Persistent=true
+RandomizedDelaySec=300
+
+[Install]
+WantedBy=timers.target

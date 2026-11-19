@@ -1,0 +1,154 @@
+# Seismo: a mesma definição serve para máquinas arm64 e amd64.
+# Diferenças entre ambientes ficam só no .env e, se preciso, em compose.override.yaml.
+#
+# Regras de rede:
+#   - só o Caddy publica portas (80/443). Postgres, Redis, API e web ficam na rede interna.
+#   - "internal: true" na rede de dados: Postgres e Redis não têm rota para a internet.
+
+name: seismo
+
+x-app-defaults: &app
+  restart: unless-stopped
+  env_file: .env
+  logging:
+    driver: local            # rotação definida também no daemon.json
+    options: { max-size: "10m", max-file: "3" }
+
+services:
+  postgres:
+    <<: *app
+    image: postgres:16.10-bookworm
+    environment:
+      POSTGRES_DB: seismo
+      POSTGRES_USER: seismo
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+    secrets: [postgres_password]
+    command:
+      - postgres
+      - -c
+      - shared_buffers=${PG_SHARED_BUFFERS:-2GB}
+      - -c
+      - effective_cache_size=${PG_EFFECTIVE_CACHE_SIZE:-6GB}
+      - -c
+      - work_mem=16MB
+      - -c
+      - maintenance_work_mem=512MB
+      - -c
+      - max_connections=50
+      - -c
+      - wal_compression=on
+      - -c
+      - max_wal_size=2GB
+      - -c
+      - log_min_duration_statement=500ms
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    shm_size: 256mb
+    mem_limit: ${PG_MEM_LIMIT:-4g}
+    networks: [data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U seismo -d seismo"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    <<: *app
+    image: redis:7.4.5-bookworm
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "384mb", "--maxmemory-policy", "noeviction"]
+    volumes:
+      - redisdata:/data
+    mem_limit: 512m
+    networks: [data]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
+  # roda as migrações do banco e termina; api e collector só sobem depois dele
+  migrate:
+    <<: *app
+    image: ${REGISTRY:-local}/seismo-api:${SEISMO_TAG:-dev}
+    build: { context: ./api }
+    command: ["alembic", "upgrade", "head"]
+    restart: "no"
+    secrets: [postgres_password]
+    depends_on:
+      postgres: { condition: service_healthy }
+    networks: [data]
+
+  collector:
+    <<: *app
+    image: ${REGISTRY:-local}/seismo-collector:${SEISMO_TAG:-dev}
+    build: { context: ./collector }
+    secrets: [postgres_password]
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+      redis: { condition: service_healthy }
+    mem_limit: 512m
+    networks: [data, egress]   # egress: precisa falar com a TibiaData
+
+  api:
+    <<: *app
+    image: ${REGISTRY:-local}/seismo-api:${SEISMO_TAG:-dev}
+    build: { context: ./api }
+    secrets: [postgres_password]
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+      redis: { condition: service_healthy }
+    mem_limit: 512m
+    networks: [data, edge]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz', timeout=3)"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  web:
+    <<: *app
+    image: ${REGISTRY:-local}/seismo-web:${SEISMO_TAG:-dev}
+    build: { context: ./web }
+    environment:
+      API_INTERNAL_URL: http://api:8000
+    depends_on:
+      api: { condition: service_healthy }
+    mem_limit: 768m
+    networks: [edge]
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  caddy:
+    <<: *app
+    image: caddy:2.10.0-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"          # HTTP/3
+    volumes:
+      - ./infra/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./infra/caddy/auth.caddy:/etc/caddy/auth.caddy:ro   # basic auth do lab (fora do git)
+      - caddydata:/data
+      - caddyconfig:/config
+    depends_on:
+      web: { condition: service_healthy }
+    mem_limit: 256m
+    networks: [edge, egress]   # egress: emitir/renovar o certificado
+
+networks:
+  data:   { internal: true }   # postgres, redis, migrate, api, collector
+  edge:   { internal: true }   # caddy <-> web <-> api
+  egress: {}                   # saída para a internet (coletor e caddy)
+
+volumes:
+  pgdata: {}
+  redisdata: {}
+  caddydata: {}
+  caddyconfig: {}
+
+secrets:
+  postgres_password:
+    file: ./secrets/postgres_password   # gerado no servidor por infra/scripts/init-env.sh
