@@ -67,11 +67,12 @@ async def write_world(pool: AsyncConnectionPool, b: WorldBatch) -> None:
                     rows = []
                     for name in b.upsert_names:
                         level, vocation = decode_player(b.curr[name])
-                        rows.append((name, b.world_id, level, vocation, today, today))
+                        rows.append((name, b.world_id, level, vocation, today, today, level))
+                    # first_level só é gravado na primeira vez (o UPDATE abaixo não mexe nele)
                     await cur.executemany(
                         """
-                        INSERT INTO characters (name, world_id, level, vocation, first_seen_day, last_seen_day)
-                        VALUES (%s, %s, %s, %s, %s, %s)
+                        INSERT INTO characters (name, world_id, level, vocation, first_seen_day, last_seen_day, first_level)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s)
                         ON CONFLICT (name) DO UPDATE SET
                           world_id = EXCLUDED.world_id, level = EXCLUDED.level,
                           vocation = EXCLUDED.vocation, last_seen_day = EXCLUDED.last_seen_day

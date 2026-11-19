@@ -41,8 +41,12 @@ export default async function World({ params, searchParams }) {
           <div className="stat"><b>{fmtNum(health.record?.players_online, locale)}</b><span>{t.record}</span></div>
           <div className="stat"><b>{fmtNum(health.transfers.arrived, locale)}</b><span>{t.transfers_in} ({days}d)</span></div>
           <div className="stat"><b>{fmtNum(health.transfers.left, locale)}</b><span>{t.transfers_out} ({days}d)</span></div>
+          <div className="stat"><b>{fmtNum(health.new_characters, locale)}</b><span>{t.new_characters} ({days}d)</span></div>
+          <div className="stat"><b>{fmtNum(health.deaths_by_day.at(-1)?.deaths, locale)}</b><span>{t.deaths} ({health.deaths_by_day.length ? fmtDate(health.deaths_by_day.at(-1).stats_day, locale) : "–"})</span></div>
         </div>
-        <p className="muted">{fmt(t.collecting_since, { date: fmtDate(health.collecting_since, locale) })}</p>
+        <p className="muted">
+          {fmt(t.collecting_since, { date: fmtDate(health.collecting_since, locale) })} · {fmt(t.new_chars_note, { n: health.new_level_max })}
+        </p>
       </section>
 
       <section className="card">

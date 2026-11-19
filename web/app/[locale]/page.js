@@ -1,6 +1,6 @@
 import { TimeChart } from "../../components/charts";
-import { api, enc, fmtNum } from "../../lib/api";
-import { dict } from "../../lib/i18n";
+import { api, enc, fmtDate, fmtNum } from "../../lib/api";
+import { dict, fmt } from "../../lib/i18n";
 
 export const dynamic = "force-dynamic";
 
@@ -48,6 +48,52 @@ export default async function Overview({ params, searchParams }) {
               </tbody>
             </table>
           </div>
+        </section>
+      </div>
+
+      <div className="grid2">
+        <section className="card">
+          <h2>{t.top_deaths}</h2>
+          {ov.top_deaths.length === 0 ? <p className="muted">{t.not_yet}</p> : (
+            <>
+              <p className="lead">{fmt(t.top_deaths_lead, { date: fmtDate(ov.top_deaths[0].stats_day, locale) })}</p>
+              <div className="tbl">
+                <table>
+                  <thead><tr><th>#</th><th>{t.world}</th><th className="n">{t.deaths}</th><th className="n">{t.creatures_killed}</th></tr></thead>
+                  <tbody>
+                    {ov.top_deaths.map((d, i) => (
+                      <tr key={d.name}>
+                        <td>{i + 1}</td>
+                        <td><a href={`/${locale}/world/${enc(d.name)}`}>{d.name}</a></td>
+                        <td className="n">{fmtNum(d.deaths, locale)}</td>
+                        <td className="n">{fmtNum(d.creatures_killed, locale)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
+        </section>
+        <section className="card">
+          <h2>{t.top_new}</h2>
+          <p className="lead">{fmt(t.top_new_lead, { n: 7 })}</p>
+          {ov.top_new_characters_7d.length === 0 ? <p className="muted">{t.not_yet}</p> : (
+            <div className="tbl">
+              <table>
+                <thead><tr><th>#</th><th>{t.world}</th><th className="n">{t.new_characters}</th></tr></thead>
+                <tbody>
+                  {ov.top_new_characters_7d.map((n, i) => (
+                    <tr key={n.name}>
+                      <td>{i + 1}</td>
+                      <td><a href={`/${locale}/world/${enc(n.name)}`}>{n.name}</a></td>
+                      <td className="n">{fmtNum(n.new_characters, locale)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </section>
       </div>
 

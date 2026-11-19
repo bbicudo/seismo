@@ -208,8 +208,35 @@ async def overview(response: Response):
         "SELECT location, count(*)::int AS worlds, sum(players_online)::int AS players_online "
         "FROM worlds GROUP BY location ORDER BY players_online DESC"
     )
+    # mortes de jogadores para criaturas no último dia fechado (as kill statistics não contam PvP)
+    top_deaths = await query(
+        """
+        SELECT w.name, k.stats_day, sum(k.players_killed)::int AS deaths, sum(k.killed)::int AS creatures_killed
+        FROM kill_stats_daily k JOIN worlds w ON w.id = k.world_id
+        WHERE k.stats_day = (SELECT max(stats_day) FROM kill_stats_daily)
+        GROUP BY w.name, k.stats_day ORDER BY deaths DESC, w.name LIMIT 10
+        """
+    )
+    top_new = await query(NEW_CHARS_SQL + " ORDER BY new_characters DESC, w.name LIMIT 10", 7, None, None)
     cache(response, 60)
-    return {"series_48h": series, "regions": regions}
+    return {"series_48h": series, "regions": regions, "top_deaths": top_deaths, "top_new_characters_7d": top_new}
+
+
+# Personagens novos (estimativa): vistos online pela primeira vez já em level baixo (até 7), depois do
+# primeiro dia de coleta daquele mundo (no primeiro dia todo mundo é "visto pela primeira vez").
+NEW_LEVEL_MAX = 7
+NEW_CHARS_SQL = f"""
+    WITH starts AS (SELECT world_id, min(first_seen_day) AS start_day FROM characters GROUP BY world_id)
+    SELECT w.name, count(c.id)::int AS new_characters
+    FROM worlds w
+    JOIN starts s ON s.world_id = w.id
+    JOIN characters c ON c.world_id = w.id
+    WHERE c.first_level <= {NEW_LEVEL_MAX}
+      AND c.first_seen_day > s.start_day
+      AND c.first_seen_day > current_date - %s
+      AND (%s::int IS NULL OR w.id = %s::int)
+    GROUP BY w.name
+"""
 
 
 @app.get("/v1/worlds/{name}/health")
@@ -237,9 +264,19 @@ async def world_health(name: str, response: Response, days: int = 14):
         w["id"], w["id"], days,
     )
     since = await query("SELECT min(ts) AS since FROM world_online_5m WHERE world_id = %s", w["id"])
+    new_chars = await query(NEW_CHARS_SQL, days, w["id"], w["id"])
+    deaths = await query(
+        """
+        SELECT stats_day, sum(players_killed)::int AS deaths FROM kill_stats_daily
+        WHERE world_id = %s AND stats_day > current_date - %s GROUP BY stats_day ORDER BY stats_day
+        """,
+        w["id"], days,
+    )
     cache(response, 300)
     return {"world": w["name"], "days": days, "hourly": hourly, "record": record[0] if record else None,
-            "transfers": transfers[0], "collecting_since": since[0]["since"]}
+            "transfers": transfers[0], "collecting_since": since[0]["since"],
+            "new_characters": new_chars[0]["new_characters"] if new_chars else 0,
+            "new_level_max": NEW_LEVEL_MAX, "deaths_by_day": deaths}
 
 
 @app.get("/v1/worlds/{name}/heatmap")
