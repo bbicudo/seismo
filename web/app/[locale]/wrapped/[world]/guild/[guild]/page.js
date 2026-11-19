@@ -27,7 +27,7 @@ export default async function WrappedGuild({ params, searchParams }) {
       </p>
       {d.partial && <p className="notice">{t.partial}</p>}
       <div className="big">
-        <div><b>{nf(d.members_total)}</b><span>{t.guild}</span></div>
+        <div><b>{nf(d.members_total)}</b><span>{t.members}</span></div>
         <div><b>{nf(d.active_members)}</b><span>{t.active}</span></div>
         <div><b>{nf(hours(d.minutes))}</b><span>{t.member_hours}</span></div>
         <div><b>+{nf(d.levels_gained)}</b><span>{t.levels}</span></div>
