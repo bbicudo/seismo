@@ -67,8 +67,9 @@ class TibiaData:
     async def close(self) -> None:
         await self._client.aclose()
 
-    async def get(self, path: str) -> dict[str, Any]:
+    async def get(self, path: str, max_retries: int | None = None) -> dict[str, Any]:
         url = f"{self.base}/{path.lstrip('/')}"
+        retries = self.max_retries if max_retries is None else max_retries
         attempt = 0
         while True:
             async with self._sem:
@@ -87,11 +88,11 @@ class TibiaData:
             if status == 404:
                 raise NotFound(url)
             retryable = error is not None or status in RETRY_STATUS
-            if not retryable or attempt >= self.max_retries:
+            if not retryable or attempt >= retries:
                 raise RuntimeError(f"GET {url} falhou: status={status} erro={error!r}")
             delay = 2 ** (attempt + 1) + random.uniform(0, 1)
             if retry_after and retry_after.isdigit():
-                delay = max(delay, float(retry_after))
+                delay = max(delay, min(float(retry_after), 120.0))
             log.warning("GET %s -> %s; nova tentativa em %.1fs", url, status or error, delay)
             await asyncio.sleep(delay)
             attempt += 1
@@ -121,7 +122,8 @@ class TibiaData:
         return data.get("guilds") or {}
 
     async def character(self, name: str) -> dict[str, Any]:
-        data = await self.get(f"character/{quote(name)}")
+        # a TibiaData responde 502 para personagem inexistente: uma tentativa extra basta
+        data = await self.get(f"character/{quote(name)}", max_retries=1)
         return (data.get("character") or {}).get("character") or {}
 
     async def guild(self, name: str) -> dict[str, Any]:
