@@ -416,6 +416,195 @@ async def world_guild(name: str, guild: str, response: Response):
     return {"world": w["name"], **g, "members": members, "events": events, "vocations": vocations}
 
 
+# ---------------------------------------------------------------- wrapped (resumo do mês)
+# Só totais mensais e diários: nenhum horário. Quem fez opt-out não tem Wrapped.
+
+MONTH_RE = re.compile(r"^\d{4}-(0[1-9]|1[0-2])$")
+NOT_OPTED = "NOT EXISTS (SELECT 1 FROM privacy_optouts p WHERE lower(p.name) = lower({col}))"
+
+
+def month_range(month: str | None) -> tuple[datetime, datetime, bool]:
+    today = datetime.now(timezone.utc).date()
+    if month:
+        if not MONTH_RE.match(month):
+            raise HTTPException(422, "mês inválido (use AAAA-MM)")
+        y, m = map(int, month.split("-"))
+    else:
+        y, m = today.year, today.month
+    start = datetime(y, m, 1).date()
+    end = datetime(y + (m == 12), 1 if m == 12 else m + 1, 1).date()
+    return start, end, start <= today < end
+
+
+@app.get("/v1/wrapped/{name_world}/{name}")
+async def wrapped_character(name_world: str, name: str, response: Response, month: str | None = None):
+    w = await world_or_404(name_world)
+    start, end, partial = month_range(month)
+    found = await query(
+        f"SELECT id, name, level, vocation, first_seen_day FROM characters "
+        f"WHERE world_id = %s AND lower(name) = lower(%s) AND {NOT_OPTED.format(col='name')}",
+        w["id"], name,
+    )
+    if not found:
+        raise HTTPException(404, "personagem não encontrado neste mundo")
+    c = found[0]
+    totals = (await query(
+        """
+        SELECT coalesce(sum(minutes), 0)::int AS minutes, count(*)::int AS days,
+               max(minutes)::int AS best_day_minutes
+        FROM daily_online WHERE character_id = %s AND game_day >= %s AND game_day < %s
+        """,
+        c["id"], start, end,
+    ))[0]
+    weekday = await query(
+        """
+        SELECT extract(isodow FROM game_day)::int AS dow, sum(minutes)::int AS minutes
+        FROM daily_online WHERE character_id = %s AND game_day >= %s AND game_day < %s
+        GROUP BY 1 ORDER BY 2 DESC LIMIT 1
+        """,
+        c["id"], start, end,
+    )
+    rank = (await query(
+        """
+        WITH totals AS (
+          SELECT d.character_id, sum(d.minutes) AS m FROM daily_online d
+          JOIN characters x ON x.id = d.character_id
+          WHERE x.world_id = %s AND d.game_day >= %s AND d.game_day < %s GROUP BY d.character_id
+        )
+        SELECT count(*)::int AS players,
+               count(*) FILTER (WHERE m > (SELECT coalesce(max(m), 0) FROM totals WHERE character_id = %s))::int AS ahead
+        FROM totals
+        """,
+        w["id"], start, end, c["id"],
+    ))[0]
+    levels = await query(
+        "SELECT level_start, level_end FROM monthly_level WHERE character_id = %s AND month = %s", c["id"], start,
+    )
+    guild = await query(
+        "SELECT g.name, m.rank FROM guild_members m JOIN guilds g ON g.id = m.guild_id "
+        "WHERE lower(m.name) = lower(%s) AND g.disbanded_day IS NULL LIMIT 1",
+        c["name"],
+    )
+    top_percent = None
+    if totals["minutes"] and rank["players"]:
+        top_percent = max(1, round(100 * (rank["ahead"] + 1) / rank["players"]))
+    lv = levels[0] if levels else None
+    cache(response, 900)
+    return {
+        "world": w["name"], "name": c["name"], "vocation": c["vocation"], "level": c["level"],
+        "month": start.strftime("%Y-%m"), "partial": partial,
+        "minutes": totals["minutes"], "days_active": totals["days"], "best_day_minutes": totals["best_day_minutes"],
+        "favorite_weekday": weekday[0]["dow"] if weekday else None,
+        "levels_gained": (lv["level_end"] - lv["level_start"]) if lv else 0,
+        "level_start": lv["level_start"] if lv else None, "level_end": lv["level_end"] if lv else None,
+        "top_percent": top_percent, "world_players": rank["players"],
+        "guild": guild[0] if guild else None, "first_seen_day": c["first_seen_day"],
+    }
+
+
+@app.get("/v1/wrapped-world/{name}")
+async def wrapped_world(name: str, response: Response, month: str | None = None):
+    w = await world_or_404(name)
+    start, end, partial = month_range(month)
+    online = (await query(
+        """
+        SELECT round(avg(players_online))::int AS avg_online, max(players_online) AS peak,
+               (array_agg(ts ORDER BY players_online DESC))[1] AS peak_at
+        FROM world_online_5m WHERE world_id = %s AND ts >= %s AND ts < %s
+        """,
+        w["id"], start, end,
+    ))[0]
+    deaths = (await query(
+        "SELECT coalesce(sum(players_killed), 0)::int AS deaths, coalesce(sum(killed), 0)::bigint AS kills "
+        "FROM kill_stats_daily WHERE world_id = %s AND stats_day >= %s AND stats_day < %s",
+        w["id"], start, end,
+    ))[0]
+    creatures = await query(
+        """
+        SELECT race, sum(killed)::bigint AS killed FROM kill_stats_daily
+        WHERE world_id = %s AND stats_day >= %s AND stats_day < %s
+        GROUP BY race ORDER BY killed DESC LIMIT 5
+        """,
+        w["id"], start, end,
+    )
+    killers = await query(
+        """
+        SELECT race, sum(players_killed)::int AS players_killed FROM kill_stats_daily
+        WHERE world_id = %s AND stats_day >= %s AND stats_day < %s AND players_killed > 0
+        GROUP BY race ORDER BY players_killed DESC LIMIT 5
+        """,
+        w["id"], start, end,
+    )
+    new_chars = (await query(
+        f"""
+        WITH s AS (SELECT min(first_seen_day) AS start_day FROM characters WHERE world_id = %s)
+        SELECT count(*)::int AS n FROM characters c, s
+        WHERE c.world_id = %s AND c.first_level <= {NEW_LEVEL_MAX} AND c.first_seen_day > s.start_day
+          AND c.first_seen_day >= %s AND c.first_seen_day < %s
+        """,
+        w["id"], w["id"], start, end,
+    ))[0]["n"]
+    transfers = (await query(
+        "SELECT count(*) FILTER (WHERE to_world_id = %s)::int AS arrived, "
+        "count(*) FILTER (WHERE from_world_id = %s)::int AS left "
+        "FROM transfers WHERE detected_day >= %s AND detected_day < %s",
+        w["id"], w["id"], start, end,
+    ))[0]
+    levels = (await query(
+        "SELECT coalesce(sum(level_end - level_start), 0)::int AS levels FROM monthly_level ml "
+        "JOIN characters c ON c.id = ml.character_id WHERE c.world_id = %s AND ml.month = %s",
+        w["id"], start,
+    ))[0]["levels"]
+    cache(response, 900)
+    return {"world": w["name"], "month": start.strftime("%Y-%m"), "partial": partial, **online, **deaths,
+            "top_creatures": creatures, "top_killers": killers, "new_characters": new_chars,
+            "transfers": transfers, "levels_gained": levels}
+
+
+@app.get("/v1/wrapped-guild/{world_name}/{guild}")
+async def wrapped_guild(world_name: str, guild: str, response: Response, month: str | None = None):
+    w = await world_or_404(world_name)
+    start, end, partial = month_range(month)
+    found = await query("SELECT id, name, members_total FROM guilds WHERE world_id = %s AND lower(name) = lower(%s)",
+                        w["id"], guild)
+    if not found:
+        raise HTTPException(404, "guild não encontrada")
+    g = found[0]
+    events = (await query(
+        "SELECT count(*) FILTER (WHERE event = 'join')::int AS joins, count(*) FILTER (WHERE event = 'leave')::int AS leaves "
+        "FROM guild_events WHERE guild_id = %s AND event_day >= %s AND event_day < %s",
+        g["id"], start, end,
+    ))[0]
+    members = (await query(
+        f"""
+        WITH m AS (
+          SELECT c.id FROM guild_members gm JOIN characters c ON lower(c.name) = lower(gm.name)
+          WHERE gm.guild_id = %s AND {NOT_OPTED.format(col='gm.name')}
+        )
+        SELECT (SELECT coalesce(sum(minutes), 0)::bigint FROM daily_online d JOIN m ON m.id = d.character_id
+                 WHERE d.game_day >= %s AND d.game_day < %s) AS minutes,
+               (SELECT coalesce(sum(level_end - level_start), 0)::int FROM monthly_level ml JOIN m ON m.id = ml.character_id
+                 WHERE ml.month = %s) AS levels_gained,
+               (SELECT count(DISTINCT d.character_id)::int FROM daily_online d JOIN m ON m.id = d.character_id
+                 WHERE d.game_day >= %s AND d.game_day < %s) AS active_members
+        """,
+        g["id"], start, end, start, start, end,
+    ))[0]
+    top_levels = await query(
+        f"""
+        SELECT gm.name, ml.level_end - ml.level_start AS gained, ml.level_end
+        FROM guild_members gm JOIN characters c ON lower(c.name) = lower(gm.name)
+        JOIN monthly_level ml ON ml.character_id = c.id AND ml.month = %s
+        WHERE gm.guild_id = %s AND {NOT_OPTED.format(col='gm.name')} AND ml.level_end > ml.level_start
+        ORDER BY gained DESC, gm.name LIMIT 5
+        """,
+        start, g["id"],
+    )
+    cache(response, 900)
+    return {"world": w["name"], "guild": g["name"], "members_total": g["members_total"],
+            "month": start.strftime("%Y-%m"), "partial": partial, **events, **members, "top_levels": top_levels}
+
+
 # ---------------------------------------------------------------- opt-out
 # 1) o dono pede o opt-out e recebe um código; 2) cola o código no comentário do personagem no tibia.com;
 # 3) pede a verificação: a API põe o pedido numa fila e o coletor (que tem acesso à internet) confere o

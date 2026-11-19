@@ -48,6 +48,7 @@ export default async function LocaleLayout({ children, params }) {
             <span className="lab">{t.lab}</span>
             <nav className="main" aria-label="Seismo">
               <a href={`/${locale}`}>{t.nav_worlds}</a>
+              <a href={`/${locale}/wrapped`}>Wrapped</a>
               <a href={`/${locale}/status`}>{t.nav_status}</a>
               <a href={`/${other}`} hrefLang={other}>{t.other_locale}</a>
             </nav>

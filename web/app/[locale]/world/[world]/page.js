@@ -35,7 +35,7 @@ export default async function World({ params, searchParams }) {
       <section className="card">
         <p className="crumbs"><a href={`/${locale}`}>← {t.back_worlds}</a></p>
         <h1>{w.name}</h1>
-        <p className="lead">{w.location} · {w.pvp_type} · {fmtTime(w.updated_at, locale)}</p>
+        <p className="lead">{w.location} · {w.pvp_type} · {fmtTime(w.updated_at, locale)} · <a href={`/${locale}/wrapped/${enc(w.name)}`}>Wrapped →</a></p>
         <div className="stats">
           <div className="stat"><b>{fmtNum(w.players_online, locale)}</b><span>{t.online_now}</span></div>
           <div className="stat"><b>{fmtNum(health.record?.players_online, locale)}</b><span>{t.record}</span></div>
