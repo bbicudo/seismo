@@ -38,7 +38,7 @@ app = FastAPI(title="Seismo API", version=__version__, lifespan=lifespan,
 async def query(sql: str, *params) -> list[dict]:
     async with app.state.pool.connection() as conn:
         cur = await conn.execute(sql, params)
-        return await cur.fetchall()
+        return await cur.fetchall() if cur.description else []  # INSERT/UPDATE não devolvem linhas
 
 
 def cache(response: Response, seconds: int) -> None:
