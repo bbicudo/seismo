@@ -13,7 +13,7 @@ from datetime import date, datetime, timedelta, timezone
 from psycopg_pool import AsyncConnectionPool
 from redis.asyncio import Redis
 
-from . import events, hunts, raids
+from . import events, hunts, params, raids
 from .logic import game_day
 from .privacy import Optouts, process_queue
 from .settings import Settings
@@ -104,6 +104,7 @@ class DailyJobs:
                 await asyncio.sleep(60)
 
     async def step(self) -> bool:
+        await params.apply(self.pool, self.redis, self.s, self.td)
         # pedidos de opt-out têm prioridade sobre qualquer coleta diária
         if await process_queue(self.pool, self.redis, self.td, self.optouts, self.call):
             return True
@@ -149,7 +150,8 @@ class DailyJobs:
     async def job_retention(self, day: date) -> int:
         """Minutos por dia ficam 400 dias; pedidos de opt-out vencidos e não confirmados, 30 dias."""
         async with self.pool.connection() as conn:
-            cur = await conn.execute("DELETE FROM daily_online WHERE game_day < %s", (day - timedelta(days=400),))
+            cur = await conn.execute("DELETE FROM daily_online WHERE game_day < %s",
+                                     (day - timedelta(days=self.s.retention_days),))
             removed = cur.rowcount
             cur = await conn.execute(
                 "DELETE FROM optout_requests WHERE status <> 'verified' AND expires_at < now() - interval '30 days'"

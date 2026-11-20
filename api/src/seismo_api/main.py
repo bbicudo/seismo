@@ -15,10 +15,10 @@ from redis.asyncio import Redis
 
 from . import __version__
 from .flags import DEFAULTS, FLAGS
+from .params import BY_KEY, DEFAULTS as PARAM_DEFAULTS, PARAMS, validate
 from .settings import Settings
 
 settings = Settings()
-MIN_CELL = 5  # célula anônima com menos de 5 pessoas não é mostrada
 
 
 @asynccontextmanager
@@ -53,6 +53,28 @@ async def flags() -> dict[str, bool]:
         _flags_cache["values"] = {**DEFAULTS, **{r["key"]: r["enabled"] for r in rows if r["key"] in DEFAULTS}}
         _flags_cache["at"] = time.monotonic()
     return _flags_cache["values"]
+
+
+PARAM: dict = dict(PARAM_DEFAULTS)
+_params_cache: dict = {"at": 0.0}
+
+
+async def params() -> dict:
+    """Parâmetros ajustados no /admin (cache de 10 s). Atualiza o dicionário PARAM usado pelas rotas."""
+    import time
+    if time.monotonic() - _params_cache["at"] > 10:
+        rows = await query("SELECT key, value FROM app_settings")
+        fresh = dict(PARAM_DEFAULTS)
+        for r in rows:
+            if r["key"] in BY_KEY:
+                try:
+                    fresh[r["key"]] = validate(r["key"], r["value"])
+                except (ValueError, TypeError):
+                    pass
+        PARAM.clear()
+        PARAM.update(fresh)
+        _params_cache["at"] = time.monotonic()
+    return PARAM
 
 
 async def require(flag: str) -> None:
@@ -132,6 +154,7 @@ async def worlds(response: Response):
 
 @app.get("/v1/worlds/{name}")
 async def world(name: str, response: Response):
+    await params()
     found = await query("SELECT id, name, location, pvp_type, players_online, updated_at FROM worlds WHERE lower(name) = lower(%s)", name)
     if not found:
         raise HTTPException(404, "mundo não encontrado")
@@ -153,7 +176,7 @@ async def world(name: str, response: Response):
         comp.setdefault(voc or "None", {}).setdefault(band, 0)
         comp[voc or "None"][band] += 1
     composition = [
-        {"vocation": voc, "level_band": band, "players": n if n >= MIN_CELL else None}
+        {"vocation": voc, "level_band": band, "players": n if n >= PARAM["min_cell"] else None}
         for voc, bands in sorted(comp.items()) for band, n in sorted(bands.items())
     ]
     wid = w.pop("id")
@@ -197,7 +220,7 @@ async def world(name: str, response: Response):
         wid,
     )
     cache(response, 60)
-    return {**w, "series_48h": series, "online_now": len(online), "composition": composition, "min_cell": MIN_CELL,
+    return {**w, "series_48h": series, "online_now": len(online), "composition": composition, "min_cell": PARAM["min_cell"],
             "kills_last_day": kills, "houses_by_town": houses, "guilds": guilds, "guild_moves_7d": guild_moves[0]}
 
 
@@ -213,6 +236,7 @@ ALLOWED_TZ = {"America/Sao_Paulo", "Europe/Berlin", "UTC"}
 
 
 async def world_or_404(name: str) -> dict:
+    await params()
     found = await query("SELECT id, name, location, pvp_type, battleye_protected, transfer_type, players_online, "
                         "updated_at FROM worlds WHERE lower(name) = lower(%s)", name)
     if not found:
@@ -247,14 +271,13 @@ async def overview(response: Response):
 
 # Personagens novos (estimativa): vistos online pela primeira vez já em level baixo (até 7), depois do
 # primeiro dia de coleta daquele mundo (no primeiro dia todo mundo é "visto pela primeira vez").
-NEW_LEVEL_MAX = 7
 NEW_CHARS_SQL = f"""
     WITH starts AS (SELECT world_id, min(first_seen_day) AS start_day FROM characters GROUP BY world_id)
     SELECT w.name, count(c.id)::int AS new_characters
     FROM worlds w
     JOIN starts s ON s.world_id = w.id
     JOIN characters c ON c.world_id = w.id
-    WHERE c.first_level <= {NEW_LEVEL_MAX}
+    WHERE c.first_level <= %s
       AND c.first_seen_day > s.start_day
       AND c.first_seen_day > current_date - %s
       AND (%s::int IS NULL OR w.id = %s::int)
@@ -292,18 +315,18 @@ async def world_health(name: str, response: Response, days: int = 14):
         "WHERE kind IN ('double_xp', 'double_skill', 'rapid_respawn') AND day > current_date - %s GROUP BY day ORDER BY day",
         days,
     )
-    new_chars = await query(NEW_CHARS_SQL, days, w["id"], w["id"])
+    new_chars = await query(NEW_CHARS_SQL, PARAM["new_level_max"], days, w["id"], w["id"])
     new_by_day = await query(
         f"""
         WITH s AS (SELECT min(first_seen_day) AS start_day FROM characters WHERE world_id = %s)
         SELECT c.first_seen_day AS day, count(*)::int AS new_characters,
                count(*) FILTER (WHERE c.vocation = 'None')::int AS without_vocation
         FROM characters c, s
-        WHERE c.world_id = %s AND c.first_level <= {NEW_LEVEL_MAX}
+        WHERE c.world_id = %s AND c.first_level <= %s
           AND c.first_seen_day > s.start_day AND c.first_seen_day > current_date - %s
         GROUP BY c.first_seen_day ORDER BY c.first_seen_day DESC
         """,
-        w["id"], w["id"], days,
+        w["id"], w["id"], PARAM["new_level_max"], days,
     )
     deaths = await query(
         """
@@ -316,7 +339,7 @@ async def world_health(name: str, response: Response, days: int = 14):
     return {"world": w["name"], "days": days, "hourly": hourly, "record": record[0] if record else None,
             "transfers": transfers[0], "collecting_since": since[0]["since"],
             "new_characters": new_chars[0]["new_characters"] if new_chars else 0,
-            "new_level_max": NEW_LEVEL_MAX, "new_characters_by_day": new_by_day, "deaths_by_day": deaths,
+            "new_level_max": PARAM["new_level_max"], "new_characters_by_day": new_by_day, "deaths_by_day": deaths,
             "event_days": event_days}
 
 
@@ -361,10 +384,10 @@ async def world_heatmap(name: str, response: Response, vocation: str | None = No
         vocs, vocs, band, band, w["id"], weeks, events, events, tz, tz,
     )
     filtered = bool(vocation or band)
-    cells = [{**r, "avg": (None if filtered and r["avg"] < MIN_CELL else r["avg"])} for r in rows]
+    cells = [{**r, "avg": (None if filtered and r["avg"] < PARAM["min_cell"] else r["avg"])} for r in rows]
     cache(response, 600)
     return {"world": w["name"], "tz": tz, "weeks": weeks, "vocation": vocation, "band": band, "events": events,
-            "min_cell": MIN_CELL, "cells": cells}
+            "min_cell": PARAM["min_cell"], "cells": cells}
 
 
 @app.get("/v1/worlds/{name}/towns/{town}")
@@ -472,9 +495,6 @@ async def game_events(response: Response, past: int = 30, ahead: int = 30):
 
 # ---------------------------------------------------------------- raids e termômetro
 
-THERMO_MIN_DAYS = 7      # dias de histórico mínimos para comparar
-THERMO_MIN_AVG = 50      # criaturas com média menor que isso são ruído
-THERMO_Z = 2.0
 
 
 @app.get("/v1/worlds/{name}/raids")
@@ -543,16 +563,16 @@ async def world_thermometer(name: str, response: Response):
         FROM hist h LEFT JOIN today t ON t.race = h.race
         WHERE h.n >= %s AND h.mu >= %s AND h.sd > 0
         """,
-        w["id"], w["id"], w["id"], THERMO_MIN_DAYS, THERMO_MIN_AVG,
+        w["id"], w["id"], w["id"], PARAM["thermo_min_days"], PARAM["thermo_min_avg"],
     )
-    hot = sorted((r for r in rows if r["z"] is not None and r["z"] >= THERMO_Z), key=lambda r: -r["z"])[:12]
-    cold = sorted((r for r in rows if r["z"] is not None and r["z"] <= -THERMO_Z), key=lambda r: r["z"])[:12]
+    hot = sorted((r for r in rows if r["z"] is not None and r["z"] >= PARAM["thermo_z"]), key=lambda r: -r["z"])[:12]
+    cold = sorted((r for r in rows if r["z"] is not None and r["z"] <= -PARAM["thermo_z"]), key=lambda r: r["z"])[:12]
     history = (await query("SELECT count(DISTINCT stats_day)::int AS n FROM kill_stats_daily WHERE world_id = %s",
                            w["id"]))[0]["n"]
     day = rows[0]["day"] if rows else None
     day_events = await query("SELECT name, kind FROM game_events WHERE day = %s ORDER BY name", day) if day else []
     cache(response, 900)
-    return {"world": w["name"], "day": day, "history_days": history, "min_days": THERMO_MIN_DAYS + 1,
+    return {"world": w["name"], "day": day, "history_days": history, "min_days": PARAM["thermo_min_days"] + 1,
             "hot": hot, "cold": cold, "day_events": day_events}
 
 
@@ -733,10 +753,10 @@ async def wrapped_world(name: str, response: Response, month: str | None = None)
         f"""
         WITH s AS (SELECT min(first_seen_day) AS start_day FROM characters WHERE world_id = %s)
         SELECT count(*)::int AS n FROM characters c, s
-        WHERE c.world_id = %s AND c.first_level <= {NEW_LEVEL_MAX} AND c.first_seen_day > s.start_day
+        WHERE c.world_id = %s AND c.first_level <= %s AND c.first_seen_day > s.start_day
           AND c.first_seen_day >= %s AND c.first_seen_day < %s
         """,
-        w["id"], w["id"], start, end,
+        w["id"], w["id"], PARAM["new_level_max"], start, end,
     ))[0]["n"]
     transfers = (await query(
         "SELECT count(*) FILTER (WHERE to_world_id = %s)::int AS arrived, "
@@ -843,6 +863,59 @@ async def admin_set_flag(body: FlagIn, response: Response):
     )
     _flags_cache["at"] = 0.0
     return {"key": body.key, "enabled": body.enabled}
+
+
+class ParamIn(BaseModel):
+    key: str
+    value: str | int | float | None = None   # None = voltar ao padrão
+
+
+@app.get("/v1/params")
+async def public_params(response: Response):
+    """Só os parâmetros marcados como públicos (ex.: e-mail de contato)."""
+    p = await params()
+    response.headers["Cache-Control"] = "public, max-age=10"
+    return {k: p[k] for k, meta in BY_KEY.items() if meta.get("public")}
+
+
+@app.get("/v1/admin/params")
+async def admin_params(response: Response):
+    response.headers["Cache-Control"] = "no-store"
+    rows = {r["key"]: r for r in await query("SELECT key, value, updated_at FROM app_settings")}
+    effective_raw = await app.state.redis.get("seismo:params:effective")
+    import json as _json
+    effective = _json.loads(effective_raw) if effective_raw else {}
+    out = []
+    for meta in PARAMS:
+        stored = rows.get(meta["key"])
+        out.append({**meta, "value": stored["value"] if stored else meta["default"], "custom": bool(stored),
+                    "updated_at": stored["updated_at"] if stored else None,
+                    "collector_value": effective.get(meta["key"])})
+    return {"params": out}
+
+
+@app.post("/v1/admin/params")
+async def admin_set_param(body: ParamIn, response: Response):
+    response.headers["Cache-Control"] = "no-store"
+    if body.key not in BY_KEY:
+        raise HTTPException(422, "parâmetro desconhecido")
+    if body.value is None or body.value == "":
+        if BY_KEY[body.key]["type"] != "str" or body.value is None:
+            await query("DELETE FROM app_settings WHERE key = %s", body.key)
+            _params_cache["at"] = 0.0
+            return {"key": body.key, "value": BY_KEY[body.key]["default"], "custom": False}
+    try:
+        value = validate(body.key, body.value)
+    except (ValueError, TypeError) as exc:
+        raise HTTPException(422, str(exc))
+    from psycopg.types.json import Jsonb
+    await query(
+        "INSERT INTO app_settings (key, value, updated_at) VALUES (%s, %s, now()) "
+        "ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now()",
+        body.key, Jsonb(value),
+    )
+    _params_cache["at"] = 0.0
+    return {"key": body.key, "value": value, "custom": True}
 
 
 # ---------------------------------------------------------------- opt-out

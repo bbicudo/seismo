@@ -1,6 +1,15 @@
+export const dynamic = "force-dynamic";
 export const metadata = { title: "Privacidade · Privacy" };
 
-const CONTACT = process.env.PUBLIC_CONTACT || "";
+const API = process.env.API_INTERNAL_URL || "http://api:8000";
+
+async function contact() {
+  try {
+    const r = await fetch(`${API}/v1/params`, { cache: "no-store" });
+    if (r.ok) { const p = await r.json(); if (p.public_contact) return p.public_contact; }
+  } catch {}
+  return process.env.PUBLIC_CONTACT || "";
+}
 
 const CONTENT = {
   pt: {
@@ -70,6 +79,7 @@ const CONTENT = {
 export default async function Privacy({ params }) {
   const { locale } = await params;
   const c = CONTENT[locale] || CONTENT.pt;
+  const CONTACT = await contact();
   return (
     <section className="card" style={{ maxWidth: 820 }}>
       <h1>{c.title}</h1>

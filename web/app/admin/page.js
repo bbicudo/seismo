@@ -1,4 +1,5 @@
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { fmtTime } from "../../lib/api";
 
 export const dynamic = "force-dynamic";
@@ -6,11 +7,55 @@ export const dynamic = "force-dynamic";
 const API = process.env.API_INTERNAL_URL || "http://api:8000";
 
 async function load() {
-  const [f, s] = await Promise.all([
+  const [f, s, p] = await Promise.all([
     fetch(`${API}/v1/admin/flags`, { cache: "no-store" }).then((r) => r.json()),
     fetch(`${API}/v1/status`, { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)),
+    fetch(`${API}/v1/admin/params`, { cache: "no-store" }).then((r) => r.json()),
   ]);
-  return { ...f, status: s };
+  return { ...f, status: s, params: p.params };
+}
+
+async function setParam(formData) {
+  "use server";
+  const key = String(formData.get("key") || "");
+  const reset = formData.get("reset") === "1";
+  const value = reset ? null : String(formData.get("value") ?? "");
+  const r = await fetch(`${API}/v1/admin/params`, {
+    method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ key, value }), cache: "no-store",
+  });
+  revalidatePath("/admin");
+  if (!r.ok) {
+    const msg = (await r.json().catch(() => ({}))).detail || "valor recusado";
+    redirect(`/admin?erro=${encodeURIComponent(`${key}: ${msg}`)}#parametros`);
+  }
+  redirect(`/admin?ok=${encodeURIComponent(key)}#parametros`);
+}
+
+function Param({ p, ok }) {
+  const isNum = p.type === "int" || p.type === "float";
+  const differs = p.applies === "coletor" && p.collector_value != null && String(p.collector_value) !== String(p.value);
+  return (
+    <form action={setParam} className="param" id={`p-${p.key}`}>
+      <input type="hidden" name="key" value={p.key} />
+      <div>
+        <label htmlFor={`in-${p.key}`}><b>{p.label}</b></label>
+        {p.help && <p className="muted" style={{ margin: "2px 0 0", fontSize: 14 }}>{p.help}</p>}
+        <small className="muted">
+          padrão: {String(p.default) || "vazio"}{isNum ? ` · de ${p.min} a ${p.max}` : ""} · vale para: {p.applies}
+          {p.custom && p.updated_at ? ` · alterado` : ""}
+          {differs ? ` · coletor ainda com ${p.collector_value} (aplica em até 30 s)` : ""}
+          {ok === p.key ? " · salvo ✓" : ""}
+        </small>
+      </div>
+      <div className="param-input">
+        <input id={`in-${p.key}`} name="value" defaultValue={String(p.value)}
+               type={isNum ? "number" : "text"} step={p.type === "float" ? "0.01" : "1"}
+               min={isNum ? p.min : undefined} max={isNum ? p.max : undefined} />
+        <button type="submit">Salvar</button>
+        {p.custom && <button type="submit" name="reset" value="1" className="ghost">Padrão</button>}
+      </div>
+    </form>
+  );
 }
 
 async function toggle(formData) {
@@ -41,8 +86,10 @@ function Switch({ k, enabled, label, help, updated }) {
   );
 }
 
-export default async function Admin() {
+export default async function Admin({ searchParams }) {
+  const sp = await searchParams;
   const d = await load();
+  const groups = [...new Set(d.params.map((p) => p.group))];
   const site = d.flags.filter((f) => f.group === "site");
   const coleta = d.flags.filter((f) => f.group === "coleta");
   const c = d.status?.collector;
@@ -87,6 +134,21 @@ export default async function Admin() {
           </p>
         </section>
       </div>
+
+      <section className="card" id="parametros">
+        <h1 style={{ fontSize: 26 }}>Parâmetros</h1>
+        <p className="lead">
+          Valores que ajustam o comportamento do Seismo. O site aplica em até 10 segundos e o coletor em até 30, sem reiniciar.
+          Cada campo só aceita valores dentro do intervalo indicado; "Padrão" volta ao valor original.
+        </p>
+        {sp.erro && <p className="pill red" style={{ whiteSpace: "normal" }}>Não salvo: {sp.erro}</p>}
+        {groups.map((g) => (
+          <div key={g} style={{ marginTop: 18 }}>
+            <h2>{g}</h2>
+            <div className="flags">{d.params.filter((p) => p.group === g).map((p) => <Param key={p.key} p={p} ok={sp.ok} />)}</div>
+          </div>
+        ))}
+      </section>
     </>
   );
 }

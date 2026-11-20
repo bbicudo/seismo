@@ -26,6 +26,7 @@ class Settings(BaseSettings):
     # teto de requisições à TibiaData por dia (UTC). A foto de online e as coletas diárias nunca são cortadas;
     # a leitura de donos de casa e de membros de guild se ajusta para o total não passar disso.
     daily_request_cap: int = 34000
+    retention_days: int = 400  # minutos diários por personagem
 
     postgres_host: str = "postgres"
     postgres_db: str = "seismo"

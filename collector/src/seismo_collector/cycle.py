@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 from psycopg_pool import AsyncConnectionPool
 from redis.asyncio import Redis
 
-from . import store
+from . import params, store
 from .logic import cycle_slot, diff_snapshots, encode_player, split_minutes
 from .privacy import Optouts
 from .settings import Settings
@@ -86,6 +86,7 @@ class Collector:
 
     async def run_cycle(self, ts: datetime) -> None:
         t0 = time.monotonic()
+        await params.apply(self.pool, self.redis, self.s, self.td)
         await self.optouts.refresh()
         worlds = await self.td.worlds()
         ids = await store.upsert_worlds(self.pool, worlds, ts)
