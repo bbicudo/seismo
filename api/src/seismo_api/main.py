@@ -133,9 +133,13 @@ async def status_payload(response: Response):
                (SELECT count(*) FROM kill_stats_daily) AS kill_rows
         """
     ))[0]
+    errors_by = await r.hgetall(f"seismo:errors_by:{day}")
+    errors = sorted(({"kind": k.split("|")[0], "reason": k.split("|")[-1], "n": int(v)} for k, v in errors_by.items()),
+                    key=lambda e: -e["n"])
     cache(response, 15)
     return {
         "env": settings.seismo_env,
+        "errors_by": errors,
         "daily_jobs": jobs,
         "progress": progress,
         "collector": {
