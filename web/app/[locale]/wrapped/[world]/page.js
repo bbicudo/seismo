@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { api, enc, fmtNum } from "../../../../lib/api";
 import { hours, monthLabel, validMonth, wt } from "../../../../lib/wrapped";
+import ShareBar from "../../../../components/share-bar";
 
 export const dynamic = "force-dynamic";
 
@@ -48,7 +49,7 @@ export default async function WrappedWorld({ params, searchParams }) {
         <List title={t.top_creatures} rows={d.top_creatures} value={(r) => nf(r.killed)} />
         <List title={t.top_killers} rows={d.top_killers} value={(r) => nf(r.players_killed)} />
       </div>
-      <p className="muted" style={{ marginTop: 16 }}>{t.share}</p>
+      <ShareBar locale={locale} title={d.world} imagePath={`/${locale}/wrapped/${enc(d.world)}/opengraph-image`} />
     </section>
   );
 }

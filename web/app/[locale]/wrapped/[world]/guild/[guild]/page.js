@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { api, enc, fmtNum } from "../../../../../../lib/api";
 import { hours, monthLabel, validMonth, wt } from "../../../../../../lib/wrapped";
+import ShareBar from "../../../../../../components/share-bar";
 
 export const dynamic = "force-dynamic";
 
@@ -47,7 +48,7 @@ export default async function WrappedGuild({ params, searchParams }) {
           </tbody></table></div>
         </>
       )}
-      <p className="muted" style={{ marginTop: 16 }}>{t.share}</p>
+      <ShareBar locale={locale} title={d.guild} imagePath={`/${locale}/wrapped/${enc(d.world)}/guild/${enc(d.guild)}/opengraph-image`} />
     </section>
   );
 }

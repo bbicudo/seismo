@@ -28,6 +28,16 @@
 		reverse_proxy web:3000
 	}
 
+	# robôs de prévia de link (Discord, WhatsApp, Facebook, X, Telegram...) leem as páginas do Wrapped e as
+	# imagens de prévia sem login, para o link aparecer com imagem mesmo durante o lab. Só essas páginas.
+	@preview {
+		path /pt/wrapped/* /en/wrapped/*
+		header_regexp User-Agent (?i)(discordbot|whatsapp|facebookexternalhit|facebot|twitterbot|telegrambot|slackbot|linkedinbot|skypeuripreview)
+	}
+	handle @preview {
+		reverse_proxy web:3000
+	}
+
 	# o resto do site. No lab, atrás do login de teste (auth.caddy). Para abrir ao público,
 	# troque o conteúdo de auth.caddy por um comentário.
 	handle {

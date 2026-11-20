@@ -29,6 +29,8 @@ export async function generateMetadata({ params }) {
   const { locale } = await params;
   const t = dict(locale);
   return {
+    metadataBase: new URL(process.env.PUBLIC_URL || "http://localhost:3000"),
+    openGraph: { siteName: "Seismo", locale: locale === "pt" ? "pt_BR" : "en_GB", type: "website" },
     title: { default: `Seismo · ${t.tagline}`, template: "%s · Seismo" },
     description: t.overview_lead,
     robots: { index: false, follow: false },

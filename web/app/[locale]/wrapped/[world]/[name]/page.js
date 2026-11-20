@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { api, enc, fmtNum } from "../../../../../lib/api";
 import { fmt } from "../../../../../lib/i18n";
 import { hours, monthLabel, validMonth, wt } from "../../../../../lib/wrapped";
+import ShareBar from "../../../../../components/share-bar";
 
 export const dynamic = "force-dynamic";
 
@@ -40,7 +41,7 @@ export default async function WrappedCharacter({ params, searchParams }) {
           {d.favorite_weekday && <div><b style={{ fontSize: 26 }}>{t.weekdays[d.favorite_weekday]}</b><span>{t.fav_day}</span></div>}
         </div>
       )}
-      <p className="muted" style={{ marginTop: 16 }}>{t.share}</p>
+      <ShareBar locale={locale} title={d.name} imagePath={`/${locale}/wrapped/${enc(d.world)}/${enc(d.name)}/opengraph-image`} />
     </section>
   );
 }
