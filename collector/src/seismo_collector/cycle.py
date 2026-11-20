@@ -44,7 +44,7 @@ class Collector:
             on_request=self._count_request,
         )
 
-    async def _count_request(self, ok: bool) -> None:
+    async def _count_request(self, ok: bool, kind: str = "", reason: str | None = None) -> None:
         day = datetime.now(timezone.utc).date().isoformat()
         key = f"seismo:{'requests' if ok else 'errors'}:{day}"
         pipe = self.redis.pipeline(transaction=False)
@@ -53,6 +53,9 @@ class Collector:
         if not ok:  # pedido que falhou também conta como requisição feita
             pipe.incr(f"seismo:requests:{day}")
             pipe.expire(f"seismo:requests:{day}", STATS_TTL)
+            # detalhamento: quantos erros por tipo de consulta e motivo (ex.: "guild|404", "world|ReadTimeout")
+            pipe.hincrby(f"seismo:errors_by:{day}", f"{kind or '?'}|{reason or '?'}", 1)
+            pipe.expire(f"seismo:errors_by:{day}", STATS_TTL)
         await pipe.execute()
 
     async def paused(self) -> bool:
