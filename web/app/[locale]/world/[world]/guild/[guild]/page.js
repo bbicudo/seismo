@@ -1,6 +1,19 @@
 import { notFound } from "next/navigation";
 import { api, enc, fmtDate, fmtNum } from "../../../../../../lib/api";
-import { VOC_LABEL, dict } from "../../../../../../lib/i18n";
+import { TZ, TZ_LABEL, VOC_LABEL, dict, fmt } from "../../../../../../lib/i18n";
+import { Heatmap } from "../../../../../../components/charts";
+import { getFlags, on } from "../../../../../../lib/flags";
+
+const HT = {
+  pt: { title: "Quando a guild joga", lead: "Média de membros online por dia da semana e hora ({tz}). Só a contagem: ninguém é identificado.",
+        small: "Mapa de calor só para guilds com pelo menos {n} membros, para proteger grupos pequenos.",
+        hidden: "Células com média abaixo de {n} membros ficam vazias.", empty: "Ainda não há horas suficientes. O mapa se completa em uma semana de coleta.",
+        events: "Dias de evento", exclude: "sem eventos", only: "só eventos", include: "todos os dias", apply: "Filtrar" },
+  en: { title: "When the guild plays", lead: "Average members online by weekday and hour ({tz}). Counts only: nobody is identified.",
+        small: "Heatmaps are only shown for guilds with at least {n} members, to protect small groups.",
+        hidden: "Cells averaging under {n} members stay empty.", empty: "Not enough hours yet. The map fills in after one week of collection.",
+        events: "Event days", exclude: "without events", only: "events only", include: "all days", apply: "Filter" },
+};
 
 export const dynamic = "force-dynamic";
 
@@ -9,11 +22,19 @@ export async function generateMetadata({ params }) {
   return { title: decodeURIComponent(guild) };
 }
 
-export default async function Guild({ params }) {
+export default async function Guild({ params, searchParams }) {
   const { locale, world, guild } = await params;
+  const sp = await searchParams;
   const t = dict(locale);
+  const ht = HT[locale] || HT.pt;
+  const evmode = ["exclude", "only", "include"].includes(sp.events) ? sp.events : "exclude";
   const g = await api(`/v1/worlds/${enc(decodeURIComponent(world))}/guilds/${enc(decodeURIComponent(guild))}`);
   if (!g) notFound();
+  const [heat, f] = await Promise.all([
+    api(`/v1/worlds/${enc(g.world)}/guilds/${enc(g.name)}/heatmap?tz=${TZ[locale]}&events=${evmode}`),
+    getFlags(),
+  ]);
+  const heatHasData = !!heat && heat.eligible && heat.cells.some((c) => c.avg != null);
   const base = `/${locale}/world/${enc(g.world)}`;
   return (
     <>
@@ -37,6 +58,29 @@ export default async function Guild({ params }) {
           </div>
         )}
       </section>
+
+      {heat && on(f, "page_heatmap") && (
+        <section className="card" id="heatmap">
+          <h2>{ht.title}</h2>
+          {!heat.eligible ? <p className="muted">{fmt(ht.small, { n: heat.min_members })}</p> : (
+            <>
+              <p className="lead">{fmt(ht.lead, { tz: TZ_LABEL[locale] })}</p>
+              <form className="filters" method="get" action="#heatmap">
+                <label htmlFor="g-ev">{ht.events}
+                  <select id="g-ev" name="events" defaultValue={evmode}>
+                    <option value="exclude">{ht.exclude}</option>
+                    <option value="only">{ht.only}</option>
+                    <option value="include">{ht.include}</option>
+                  </select>
+                </label>
+                <button type="submit">{ht.apply}</button>
+              </form>
+              {heatHasData ? <Heatmap cells={heat.cells} weekdays={t.weekdays} locale={locale} /> : <p className="muted">{ht.empty}</p>}
+              <p className="muted">{fmt(ht.hidden, { n: heat.min_cell })}</p>
+            </>
+          )}
+        </section>
+      )}
 
       <div className="grid2">
         <section className="card">

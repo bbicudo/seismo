@@ -402,6 +402,53 @@ async def world_heatmap(name: str, response: Response, vocation: str | None = No
             "min_cell": PARAM["min_cell"], "cells": cells}
 
 
+@app.get("/v1/worlds/{name}/guilds/{guild}/heatmap")
+async def guild_heatmap(name: str, guild: str, response: Response, tz: str = "America/Sao_Paulo",
+                        weeks: int = 4, events: str = "exclude"):
+    """Quando os membros da guild jogam: média de membros online por dia da semana e hora. Só para guilds
+    grandes e só agregado; célula com média abaixo do tamanho mínimo de grupo fica vazia."""
+    await require("page_heatmap")
+    await require("page_guilds")
+    if tz not in ALLOWED_TZ:
+        raise HTTPException(422, "fuso não suportado")
+    if events not in ("exclude", "only", "include"):
+        raise HTTPException(422, "events deve ser exclude, only ou include")
+    weeks = max(1, min(weeks, 12))
+    w = await world_or_404(name)
+    found = await query("SELECT id, name, members_total FROM guilds WHERE world_id = %s AND lower(name) = lower(%s)",
+                        w["id"], guild)
+    if not found:
+        raise HTTPException(404, "guild não encontrada")
+    g = found[0]
+    min_members, min_cell = PARAM["guild_heatmap_min_members"], PARAM["min_cell"]
+    base = {"world": w["name"], "guild": g["name"], "tz": tz, "weeks": weeks, "events": events,
+            "min_members": min_members, "min_cell": min_cell}
+    if (g["members_total"] or 0) < min_members:
+        cache(response, 600)
+        return {**base, "eligible": False, "cells": []}
+    rows = await query(
+        """
+        WITH per_hour AS (
+          SELECT s.hour, s.snapshots, coalesce(b.samples, 0) AS samples
+          FROM world_hour_snapshots s
+          LEFT JOIN guild_activity_buckets b ON b.guild_id = %s AND b.hour = s.hour
+          WHERE s.world_id = %s AND s.hour > now() - make_interval(weeks => %s)
+            AND (%s = 'include' OR (EXISTS (
+                  SELECT 1 FROM game_events e WHERE e.kind IN ('double_xp', 'rapid_respawn')
+                  AND e.day = ((s.hour AT TIME ZONE 'Europe/Berlin') - interval '10 hours')::date)) = (%s = 'only'))
+        )
+        SELECT extract(isodow FROM hour AT TIME ZONE %s)::int AS dow,
+               extract(hour FROM hour AT TIME ZONE %s)::int AS hod,
+               round(avg(samples::numeric / snapshots), 1)::float AS avg
+        FROM per_hour GROUP BY 1, 2 ORDER BY 1, 2
+        """,
+        g["id"], w["id"], weeks, events, events, tz, tz,
+    )
+    cells = [{**r, "avg": None if r["avg"] < min_cell else r["avg"]} for r in rows]
+    cache(response, 600)
+    return {**base, "eligible": True, "cells": cells}
+
+
 @app.get("/v1/worlds/{name}/towns/{town}")
 async def world_town(name: str, town: str, response: Response):
     await require("page_houses")

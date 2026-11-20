@@ -28,6 +28,9 @@ class Collector:
         self.redis = redis
         self.pool = pool
         self.optouts = optouts
+        # nome (minúsculo) -> guild_id, recarregado a cada 10 min (para o mapa de calor por guild)
+        self._guild_of: dict[str, int] = {}
+        self._guild_loaded = 0.0
         # aberto quando não há rodada de online em andamento (as coletas diárias esperam por ele)
         self.online_idle = asyncio.Event()
         self.online_idle.set()
@@ -104,6 +107,37 @@ class Collector:
         await pipe.execute()
         log.info("rodada %s: %d/%d mundos em %.1fs", ts.isoformat(), len(targets) - len(failed), len(targets), seconds)
 
+    async def guild_map(self) -> dict[str, int]:
+        if time.monotonic() - self._guild_loaded > 600:
+            async with self.pool.connection() as conn:
+                cur = await conn.execute(
+                    "SELECT lower(m.name), m.guild_id FROM guild_members m JOIN guilds g ON g.id = m.guild_id "
+                    "WHERE g.disbanded_day IS NULL"
+                )
+                self._guild_of = {n: gid for n, gid in await cur.fetchall()}
+            self._guild_loaded = time.monotonic()
+        return self._guild_of
+
+    async def count_guilds(self, curr: dict[str, str], ts: datetime) -> None:
+        """Soma +1 por membro online em cada guild nesta hora. Só a contagem: nenhum nome é gravado."""
+        gmap = await self.guild_map()
+        counts: dict[int, int] = {}
+        for n in curr:
+            gid = gmap.get(n.lower())
+            if gid:
+                counts[gid] = counts.get(gid, 0) + 1
+        if not counts:
+            return
+        from .logic import hour_bucket
+        hour = hour_bucket(ts)
+        async with self.pool.connection() as conn:
+            async with conn.cursor() as cur:
+                await cur.executemany(
+                    "INSERT INTO guild_activity_buckets (guild_id, hour, samples) VALUES (%s, %s, %s) "
+                    "ON CONFLICT (guild_id, hour) DO UPDATE SET samples = guild_activity_buckets.samples + EXCLUDED.samples",
+                    [(gid, hour, n) for gid, n in counts.items()],
+                )
+
     async def collect_world(self, name: str, ids: dict[str, int], ts: datetime) -> None:
         players = await self.td.world_online(name)
         curr = {p["name"]: encode_player(int(p.get("level") or 0), p.get("vocation") or "None") for p in players}
@@ -145,6 +179,7 @@ class Collector:
             sessions=sessions, transfers=transfers,
         )
         await store.write_world(self.pool, batch)
+        await self.count_guilds(curr, ts)
 
         # só depois do banco gravado, atualiza o estado no Redis
         pipe = self.redis.pipeline(transaction=True)
