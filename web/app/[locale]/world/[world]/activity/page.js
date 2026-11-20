@@ -20,12 +20,15 @@ export async function generateMetadata({ params }) {
 
 export const dynamic = "force-dynamic";
 
-function Speed({ c, locale, x }) {
+// Tempo médio para subir um level, sempre na mesma unidade (relógio), para dar para comparar as células.
+function Speed({ c, x }) {
   if (!c || c.levels_per_hour == null) return <span className="muted">–</span>;
   const v = c.levels_per_hour;
-  const nf = (n, d) => new Intl.NumberFormat(locale === "en" ? "en-GB" : "pt-BR", { maximumFractionDigits: d }).format(n);
-  if (v <= 0) return <span className="muted">0</span>;
-  return <span title={`${fmtNum(c.players, locale)}`}>{v >= 1 ? fmt(x.lvl_h, { v: nf(v, 1) }) : fmt(x.h_lvl, { v: nf(1 / v, 1) })}</span>;
+  if (v <= 0) return <span className="muted">–</span>;
+  const min = Math.round(60 / v);
+  const text = min < 60 ? fmt(x.t_min, { m: min }) : min % 60 === 0 || min >= 600
+    ? fmt(x.t_h, { h: Math.round(min / 60) }) : fmt(x.t_hmin, { h: Math.floor(min / 60), m: String(min % 60).padStart(2, "0") });
+  return <span title={fmt(x.lvl_players, { n: c.players })}>{text}</span>;
 }
 
 export default async function Activity({ params, searchParams }) {
@@ -116,7 +119,7 @@ export default async function Activity({ params, searchParams }) {
       {lvl && (
         <section className="card">
           <h2>{x.leveling}</h2>
-          <p className="lead">{fmt(x.leveling_lead, { d: fmtDate(lvl.since, locale), h: lvl.min_hours })} {x.leveling_hint}</p>
+          <p className="lead">{fmt(x.leveling_lead, { d: fmtDate(lvl.since, locale), h: lvl.min_hours })} </p>
           {lvl.vocations.length === 0 ? <p className="muted">{t.not_yet}</p> : (
             <div className="tbl"><table>
               <thead><tr><th>{t.vocation}</th>{lvl.bands.map((b) => <th key={b} className="n">{b}</th>)}</tr></thead>
@@ -124,7 +127,7 @@ export default async function Activity({ params, searchParams }) {
                 {lvl.vocations.filter((v) => v.vocation !== "none").map((v) => (
                   <tr key={v.vocation}>
                     <td>{VOC_LABEL[locale][v.vocation] || v.vocation}</td>
-                    {lvl.bands.map((b) => <td key={b} className="n"><Speed c={v.bands[b]} locale={locale} x={x} /></td>)}
+                    {lvl.bands.map((b) => <td key={b} className="n"><Speed c={v.bands[b]} x={x} /></td>)}
                   </tr>
                 ))}
               </tbody>
