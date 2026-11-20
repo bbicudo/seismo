@@ -44,7 +44,10 @@ export default async function LocaleLayout({ children, params }) {
       <body>
         <header className="top">
           <div className="wrap">
-            <a href={`/${locale}`} className="brand"><b>Seismo</b><small>{t.tagline}</small></a>
+            <a href={`/${locale}`} className="brand">
+              <img src="/seismograph.gif" alt="" width="44" height="44" className="logo" />
+              <b>Seismo</b><small>{t.tagline}</small>
+            </a>
             <span className="lab">{t.lab}</span>
             <nav className="main" aria-label="Seismo">
               <a href={`/${locale}`}>{t.nav_worlds}</a>

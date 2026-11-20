@@ -25,7 +25,10 @@ a:focus-visible, button:focus-visible, select:focus-visible { outline: 3px solid
 .wrap { max-width: 1160px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
 header.top { border-bottom: 1px solid var(--line); background: var(--panel); }
 header.top .wrap { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding-block: 12px; }
-.brand { display: flex; align-items: baseline; gap: 10px; text-decoration: none; color: var(--ink); }
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); }
+.brand .logo { width: 44px; height: 44px; image-rendering: pixelated; border-radius: 6px; border: 1px solid var(--line); flex: none; }
+@media (prefers-reduced-motion: reduce) { .brand .logo { content: url("/seismograph-still.png"); } }
+@media (max-width: 520px) { .brand small { display: none; } }
 .brand b { font-family: var(--f-display), "Courier New", monospace; font-size: 26px; font-weight: 700; letter-spacing: .02em; }
 .brand small { font: 12px var(--f-mono), monospace; color: var(--muted); }
 .lab { font: 11px var(--f-mono), monospace; text-transform: uppercase; letter-spacing: .1em; color: var(--red); border: 1px solid var(--red); border-radius: 3px; padding: 0 6px; }
