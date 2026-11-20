@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { Heatmap, TimeChart } from "../../../../components/charts";
 import { api, enc, fmtDate, fmtNum, fmtTime } from "../../../../lib/api";
+import { getFlags, on } from "../../../../lib/flags";
 import { BANDS, TZ, TZ_LABEL, VOCATIONS, VOC_LABEL, dict, fmt } from "../../../../lib/i18n";
 
 export const dynamic = "force-dynamic";
@@ -22,21 +23,22 @@ export default async function World({ params, searchParams }) {
   const hq = new URLSearchParams({ tz: TZ[locale], events: evmode });
   if (vocation) hq.set("vocation", vocation);
   if (band) hq.set("band", band);
-  const [w, health, heat] = await Promise.all([
+  const [w, health, heat, f] = await Promise.all([
     api(`/v1/worlds/${enc(name)}`),
     api(`/v1/worlds/${enc(name)}/health?days=${days}`),
     api(`/v1/worlds/${enc(name)}/heatmap?${hq}`),
+    getFlags(),
   ]);
   if (!w) notFound();
   const points = health.hourly.map((h) => ({ t: h.hour, v: h.avg, peak: h.max }));
-  const heatHasData = heat.cells.some((c) => c.avg != null);
+  const heatHasData = !!heat && heat.cells.some((c) => c.avg != null);
   const base = `/${locale}/world/${enc(w.name)}`;
   return (
     <>
       <section className="card">
         <p className="crumbs"><a href={`/${locale}`}>← {t.back_worlds}</a></p>
         <h1>{w.name}</h1>
-        <p className="lead">{w.location} · {w.pvp_type} · {fmtTime(w.updated_at, locale)} · <a href={`/${locale}/world/${enc(w.name)}/raids`}>Raids →</a> · <a href={`/${locale}/wrapped/${enc(w.name)}`}>Wrapped →</a></p>
+        <p className="lead">{w.location} · {w.pvp_type} · {fmtTime(w.updated_at, locale)}{on(f, "page_raids") && <> · <a href={`/${locale}/world/${enc(w.name)}/raids`}>Raids →</a></>}{on(f, "page_wrapped") && <> · <a href={`/${locale}/wrapped/${enc(w.name)}`}>Wrapped →</a></>}</p>
         <div className="stats">
           <div className="stat"><b>{fmtNum(w.players_online, locale)}</b><span>{t.online_now}</span></div>
           <div className="stat"><b>{fmtNum(health.record?.players_online, locale)}</b><span>{t.record}</span></div>
@@ -48,6 +50,7 @@ export default async function World({ params, searchParams }) {
         <p className="muted">{fmt(t.collecting_since, { date: fmtDate(health.collecting_since, locale) })}</p>
       </section>
 
+      {on(f, "page_health") && (
       <section className="card">
         <h2>{t.health}</h2>
         <p className="lead">
@@ -59,7 +62,9 @@ export default async function World({ params, searchParams }) {
         <TimeChart points={points} locale={locale} label={fmt(t.health_lead, { days })} peakLabel={t.peak} shade={health.event_days} />
         <div className="legend"><span><i />{t.avg}</span><span><i className="dash" />{t.peak}</span>{health.event_days.length > 0 && <span><i className="box" />{t.event_days_legend}</span>}</div>
       </section>
+      )}
 
+      {on(f, "page_new_characters") && (
       <section className="card" id="new-characters">
         <h2>{t.created_title}</h2>
         <p className="lead">{fmt(t.new_chars_note, { n: health.new_level_max })}</p>
@@ -83,7 +88,9 @@ export default async function World({ params, searchParams }) {
           </div>
         )}
       </section>
+      )}
 
+      {on(f, "page_heatmap") && (
       <section className="card" id="heatmap">
         <h2>{t.heatmap}</h2>
         <p className="lead">{fmt(t.heatmap_lead, { tz: TZ_LABEL[locale] })}</p>
@@ -113,8 +120,10 @@ export default async function World({ params, searchParams }) {
         {heatHasData ? <Heatmap cells={heat.cells} weekdays={t.weekdays} locale={locale} /> : <p className="muted">{t.heatmap_empty}</p>}
         {(vocation || band) && <p className="muted">{fmt(t.heatmap_hidden, { n: heat.min_cell })}</p>}
       </section>
+      )}
 
       <div className="grid2">
+        {on(f, "page_kills") && (
         <section className="card">
           <h2>{t.kills}</h2>
           {w.kills_last_day.length === 0 ? <p className="muted">{t.not_yet}</p> : (
@@ -133,6 +142,8 @@ export default async function World({ params, searchParams }) {
             </>
           )}
         </section>
+        )}
+        {on(f, "page_composition") && (
         <section className="card">
           <h2>{t.composition}</h2>
           <p className="lead">{fmt(t.composition_lead, { n: w.min_cell })}</p>
@@ -150,9 +161,11 @@ export default async function World({ params, searchParams }) {
             </table>
           </div>
         </section>
+        )}
       </div>
 
       <div className="grid2">
+        {on(f, "page_guilds") && (
         <section className="card">
           <h2>{t.guilds}</h2>
           <p className="lead">{fmt(t.guild_moves, { joins: fmtNum(w.guild_moves_7d.joins, locale), leaves: fmtNum(w.guild_moves_7d.leaves, locale) })}</p>
@@ -174,6 +187,8 @@ export default async function World({ params, searchParams }) {
             </div>
           )}
         </section>
+        )}
+        {on(f, "page_houses") && (
         <section className="card">
           <h2>{t.houses_by_town}</h2>
           {w.houses_by_town.length === 0 ? <p className="muted">{t.not_yet}</p> : (
@@ -192,6 +207,7 @@ export default async function World({ params, searchParams }) {
             </div>
           )}
         </section>
+        )}
       </div>
     </>
   );

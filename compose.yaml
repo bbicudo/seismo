@@ -132,6 +132,7 @@ services:
     volumes:
       - ./infra/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
       - ./infra/caddy/auth.caddy:/etc/caddy/auth.caddy:ro   # basic auth do lab (fora do git)
+      - ./infra/caddy/admin.caddy:/etc/caddy/admin.caddy:ro # login da área administrativa (fora do git)
       - caddydata:/data
       - caddyconfig:/config
     depends_on:

@@ -3,9 +3,6 @@
 {$SITE_ADDRESS} {
 	encode zstd gzip
 
-	# lab: tudo atrás de basic auth. O arquivo auth.caddy fica só no servidor (fora do git).
-	import /etc/caddy/auth.caddy
-
 	header {
 		-Server
 		X-Robots-Tag "noindex, nofollow"
@@ -14,10 +11,30 @@
 		Referrer-Policy strict-origin-when-cross-origin
 	}
 
-	handle_path /api/* {
-		reverse_proxy api:8000
+	# rotas administrativas da API nunca saem para a internet (só o site, pela rede interna)
+	handle /api/v1/admin* {
+		respond 404
 	}
+
+	# área administrativa: login próprio (admin.caddy, criado com seismo.sh admin-user)
+	handle /admin* {
+		import /etc/caddy/admin.caddy
+		reverse_proxy web:3000
+	}
+
+	# arquivos estáticos do Next.js e o logo: sem login, para a página do admin carregar
+	@static path /_next/* /seismograph.gif /seismograph-still.png
+	handle @static {
+		reverse_proxy web:3000
+	}
+
+	# o resto do site. No lab, atrás do login de teste (auth.caddy). Para abrir ao público,
+	# troque o conteúdo de auth.caddy por um comentário.
 	handle {
+		import /etc/caddy/auth.caddy
+		handle_path /api/* {
+			reverse_proxy api:8000
+		}
 		reverse_proxy web:3000
 	}
 }

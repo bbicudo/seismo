@@ -1,4 +1,5 @@
-import { redirect } from "next/navigation";
+import { getFlags, on } from "../../../lib/flags";
+import { notFound, redirect } from "next/navigation";
 import { api, enc } from "../../../lib/api";
 import { wt } from "../../../lib/wrapped";
 
@@ -8,6 +9,7 @@ export const metadata = { title: "Wrapped" };
 export default async function WrappedHome({ params }) {
   const { locale } = await params;
   const t = wt(locale);
+  if (!on(await getFlags(), "page_wrapped")) notFound();
   const worlds = (await api("/v1/worlds")).map((w) => w.name).sort();
 
   async function go(formData) {

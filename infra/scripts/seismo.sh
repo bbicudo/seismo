@@ -4,6 +4,7 @@
 #   seismo.sh status                containers, coletor, requisições, disco, memória, limite de saída
 #   seismo.sh logs [serviço]        últimos logs
 #   seismo.sh lab-user <nome>       cria/troca o usuário do basic auth (pede a senha sem mostrar)
+#   seismo.sh admin-user <nome>     cria/troca o login da área /admin (pede a senha sem mostrar)
 #   seismo.sh prune                 limpa imagens e cache de build com mais de 7 dias
 set -euo pipefail
 cd "$(dirname "$0")/../.."
@@ -27,7 +28,8 @@ case "${1:-status}" in
     if [ -n "${IFACE:-}" ]; then echo; echo "== fila de saída ($IFACE)"; tc qdisc show dev "$IFACE"; fi;;
   logs)
     $DC logs --tail 100 "${2:-collector}";;
-  lab-user)
+  lab-user|admin-user)
+    FILE=infra/caddy/$([ "$1" = admin-user ] && echo admin || echo auth).caddy
     NAME=${2:?informe o nome do usuário}
     read -r -s -p "Senha para $NAME: " PW; echo
     read -r -s -p "Repita a senha: " PW2; echo
@@ -36,9 +38,9 @@ case "${1:-status}" in
     HASH=$(printf '%s\n' "$PW" | docker run --rm -i caddy:2.10.0-alpine caddy hash-password)
     unset PW PW2
     case "$HASH" in \$2*) ;; *) echo "Falha ao gerar o hash. Nada foi gravado."; exit 1;; esac
-    printf 'basic_auth {\n\t%s %s\n}\n' "$NAME" "$HASH" > infra/caddy/auth.caddy
-    chmod 0644 infra/caddy/auth.caddy
-    echo "auth.caddy gravado (só o hash)."
+    printf 'basic_auth {\n\t%s %s\n}\n' "$NAME" "$HASH" > "$FILE"
+    chmod 0644 "$FILE"
+    echo "$FILE gravado (só o hash)."
     if $DC ps --status running caddy | grep -q caddy; then $DC exec -T caddy caddy reload --config /etc/caddy/Caddyfile && echo "Caddy recarregado."; fi;;
   prune)
     docker image prune -af --filter "until=168h"

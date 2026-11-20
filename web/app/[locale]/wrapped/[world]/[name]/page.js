@@ -1,3 +1,5 @@
+import { getFlags, on } from "../../../../../lib/flags";
+import { notFound } from "next/navigation";
 import { api, enc, fmtNum } from "../../../../../lib/api";
 import { fmt } from "../../../../../lib/i18n";
 import { hours, monthLabel, validMonth, wt } from "../../../../../lib/wrapped";
@@ -13,6 +15,7 @@ export default async function WrappedCharacter({ params, searchParams }) {
   const { locale, world, name } = await params;
   const sp = await searchParams;
   const t = wt(locale);
+  if (!on(await getFlags(), "page_wrapped")) notFound();
   const month = validMonth(sp.month);
   const d = await api(`/v1/wrapped/${enc(decodeURIComponent(world))}/${enc(decodeURIComponent(name))}${month ? `?month=${month}` : ""}`);
   if (!d) {

@@ -1,6 +1,7 @@
 import { TimeChart } from "../../components/charts";
 import { api, enc, fmtDate, fmtNum } from "../../lib/api";
 import { dict, fmt } from "../../lib/i18n";
+import { getFlags, on } from "../../lib/flags";
 
 export const dynamic = "force-dynamic";
 
@@ -8,7 +9,7 @@ export default async function Overview({ params, searchParams }) {
   const { locale } = await params;
   const sp = await searchParams;
   const t = dict(locale);
-  const [ov, all, ev] = await Promise.all([api("/v1/overview"), api("/v1/worlds"), api("/v1/events?past=0&ahead=7")]);
+  const [ov, all, ev, f] = await Promise.all([api("/v1/overview"), api("/v1/worlds"), api("/v1/events?past=0&ahead=7"), getFlags()]);
   const region = sp.region || "";
   const pvp = sp.pvp || "";
   const worlds = all.filter((w) => (!region || w.location === region) && (!pvp || w.pvp_type === pvp));
@@ -28,7 +29,7 @@ export default async function Overview({ params, searchParams }) {
         </div>
       </section>
 
-      <section className="card">
+      {ev && on(f, "page_events") && <section className="card">
         <h2>{t.today_title}</h2>
         <div className="stats">
           <div className="stat"><b style={{ fontSize: 20 }}>{ev.boosted?.creature || "–"}</b><span>{t.boosted_creature}</span></div>
@@ -36,7 +37,7 @@ export default async function Overview({ params, searchParams }) {
           <div className="stat"><b style={{ fontSize: 20 }}>{ev.active.length ? ev.active.map((e) => e.name).join(", ") : t.no_events_today}</b><span>{t.active_events}</span></div>
         </div>
         <p className="muted" style={{ marginTop: 10 }}><a href={`/${locale}/events`}>{t.all_events} →</a></p>
-      </section>
+      </section>}
 
       <div className="grid2">
         <section className="card">
@@ -61,7 +62,7 @@ export default async function Overview({ params, searchParams }) {
         </section>
       </div>
 
-      <div>
+      {on(f, "page_kills") && <div>
         <section className="card">
           <h2>{t.top_deaths}</h2>
           {ov.top_deaths.length === 0 ? <p className="muted">{t.not_yet}</p> : (
@@ -85,7 +86,7 @@ export default async function Overview({ params, searchParams }) {
             </>
           )}
         </section>
-      </div>
+      </div>}
 
       <section className="card">
         <h2>{t.nav_worlds}</h2>

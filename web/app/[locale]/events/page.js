@@ -1,3 +1,5 @@
+import { getFlags, on } from "../../../lib/flags";
+import { notFound } from "next/navigation";
 import { api, fmtDate } from "../../../lib/api";
 import { dict } from "../../../lib/i18n";
 
@@ -34,6 +36,7 @@ function Days({ rows, locale, t }) {
 export default async function Events({ params }) {
   const { locale } = await params;
   const t = dict(locale);
+  if (!on(await getFlags(), "page_events")) notFound();
   const d = await api("/v1/events?past=30&ahead=30");
   const upcoming = d.events.filter((e) => e.day > d.today);
   const past = d.events.filter((e) => e.day < d.today).reverse();

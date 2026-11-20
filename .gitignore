@@ -1,6 +1,7 @@
 .env
 secrets/
 infra/caddy/auth.caddy
+infra/caddy/admin.caddy
 __pycache__/
 *.pyc
 .venv/

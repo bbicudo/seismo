@@ -16,6 +16,9 @@ if [ ! -s secrets/postgres_password ]; then
 fi
 
 [ -f infra/caddy/auth.caddy ] || echo "AVISO: falta infra/caddy/auth.caddy. Crie com: infra/scripts/seismo.sh lab-user <nome>"
+# sem login definido, a área /admin fica bloqueada (o Caddy precisa que o arquivo exista)
+[ -f infra/caddy/admin.caddy ] || printf 'respond "Defina o login com: infra/scripts/seismo.sh admin-user <nome>" 403
+' > infra/caddy/admin.caddy
 
 BACKUP_DIR=$(grep -E '^BACKUP_DIR=' .env | cut -d= -f2 | cut -d' ' -f1)
 sudo install -d -m 0750 -o "$(id -u)" -g "$(id -g)" "${BACKUP_DIR:-/var/backups/seismo}"

@@ -27,6 +27,14 @@ TOWNS = [
     "Thais", "Venore", "Yalahar",
 ]
 SAVE_MARGIN = timedelta(minutes=15)
+# coleta diária -> feature flag que a controla (área administrativa)
+JOB_FLAGS = {
+    "events": "collect_events",
+    "killstats": "collect_killstats",
+    "raids": "collect_killstats",
+    "guild_lists": "collect_guilds",
+    "houses": "collect_houses",
+}
 STATS_TTL = 35 * 86400
 
 
@@ -99,20 +107,29 @@ class DailyJobs:
         if await process_queue(self.pool, self.redis, self.td, self.optouts, self.call):
             return True
         await self.optouts.refresh()
+        flags = await self.flags()
         day = self.effective_day()
         for job, fn in (("events", self.job_events), ("killstats", self.job_killstats), ("raids", self.job_raids),
                         ("guild_lists", self.job_guild_lists), ("houses", self.job_houses),
                         ("retention", self.job_retention)):
+            flag = JOB_FLAGS.get(job)
+            if flag and not flags.get(flag, True):
+                continue  # desligada na área administrativa: volta a rodar quando for religada
             if await self.redis.get(f"seismo:job:{job}:day") != day.isoformat():
                 t0 = time.monotonic()
                 items = await fn(day)
                 await self.record(job, day, items, time.monotonic() - t0)
                 return True
-        if await self.guild_details_batch(day):
+        if flags.get("collect_guilds", True) and await self.guild_details_batch(day):
             return True
-        if await self.house_details_batch(day):
+        if flags.get("collect_houses", True) and await self.house_details_batch(day):
             return True
         return False
+
+    async def flags(self) -> dict[str, bool]:
+        async with self.pool.connection() as conn:
+            cur = await conn.execute("SELECT key, enabled FROM feature_flags")
+            return {k: v for k, v in await cur.fetchall()}
 
     # ---------- eventos e destaques do dia (poucas requisições) ----------
     async def job_events(self, day: date) -> int:

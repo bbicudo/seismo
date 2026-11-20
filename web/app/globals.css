@@ -94,3 +94,9 @@ footer { color: var(--muted); font-size: 12px; padding-block: 8px 32px; }
 .big span { font-size: 13px; color: var(--muted); }
 .big small { display: block; font: 11px var(--f-mono), monospace; color: var(--muted); margin-top: 2px; }
 .notice { font: 12px var(--f-mono), monospace; color: var(--brass); }
+.flags { display: grid; gap: 4px; }
+.flag { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.flag:last-child { border-bottom: 0; }
+.switch { font: 600 12px var(--f-mono), monospace; border-radius: 999px; padding: 6px 14px; min-width: 96px; cursor: pointer; border: 1px solid; }
+.switch.on { background: var(--ok); border-color: var(--ok); color: #fff; }
+.switch.off { background: transparent; border-color: var(--line); color: var(--muted); }

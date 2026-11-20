@@ -14,6 +14,7 @@ from psycopg_pool import AsyncConnectionPool
 from redis.asyncio import Redis
 
 from . import __version__
+from .flags import DEFAULTS, FLAGS
 from .settings import Settings
 
 settings = Settings()
@@ -39,6 +40,24 @@ async def query(sql: str, *params) -> list[dict]:
     async with app.state.pool.connection() as conn:
         cur = await conn.execute(sql, params)
         return await cur.fetchall() if cur.description else []  # INSERT/UPDATE não devolvem linhas
+
+
+_flags_cache: dict = {"at": 0.0, "values": dict(DEFAULTS)}
+
+
+async def flags() -> dict[str, bool]:
+    """Estado das feature flags (cache de 10 s). Sem linha na tabela, vale o padrão (ligado)."""
+    import time
+    if time.monotonic() - _flags_cache["at"] > 10:
+        rows = await query("SELECT key, enabled FROM feature_flags")
+        _flags_cache["values"] = {**DEFAULTS, **{r["key"]: r["enabled"] for r in rows if r["key"] in DEFAULTS}}
+        _flags_cache["at"] = time.monotonic()
+    return _flags_cache["values"]
+
+
+async def require(flag: str) -> None:
+    if not (await flags()).get(flag, True):
+        raise HTTPException(404, "recurso desligado")
 
 
 def cache(response: Response, seconds: int) -> None:
@@ -307,6 +326,7 @@ async def world_heatmap(name: str, response: Response, vocation: str | None = No
     events: exclude (padrão, ignora dias de double/rapid respawn) | only | include."""
     if events not in ("exclude", "only", "include"):
         raise HTTPException(422, "events deve ser exclude, only ou include")
+    await require("page_heatmap")
     if tz not in ALLOWED_TZ:
         raise HTTPException(422, "fuso não suportado")
     if vocation and vocation not in VOCATION_GROUPS:
@@ -347,6 +367,7 @@ async def world_heatmap(name: str, response: Response, vocation: str | None = No
 
 @app.get("/v1/worlds/{name}/towns/{town}")
 async def world_town(name: str, town: str, response: Response):
+    await require("page_houses")
     w = await world_or_404(name)
     rows = await query(
         """
@@ -371,6 +392,7 @@ async def world_town(name: str, town: str, response: Response):
 
 @app.get("/v1/worlds/{name}/houses/{house_id}")
 async def world_house(name: str, house_id: int, response: Response):
+    await require("page_houses")
     w = await world_or_404(name)
     found = await query(
         "SELECT house_id, town, name, kind, size, rent, beds, details_fetched_at FROM houses "
@@ -398,6 +420,7 @@ async def world_house(name: str, house_id: int, response: Response):
 @app.get("/v1/worlds/{name}/guilds/{guild}")
 async def world_guild(name: str, guild: str, response: Response):
     """Dados públicos da guild (os mesmos do tibia.com). Sem status online/offline dos membros."""
+    await require("page_guilds")
     w = await world_or_404(name)
     found = await query(
         "SELECT id, name, in_formation, logo_url, founded, members_total, in_war, open_applications, guildhalls, "
@@ -432,6 +455,7 @@ async def world_guild(name: str, guild: str, response: Response):
 
 @app.get("/v1/events")
 async def game_events(response: Response, past: int = 30, ahead: int = 30):
+    await require("page_events")
     past, ahead = max(0, min(past, 365)), max(0, min(ahead, 60))
     today = (await query("SELECT ((now() AT TIME ZONE 'Europe/Berlin') - interval '10 hours')::date AS d"))[0]["d"]
     rows = await query(
@@ -453,6 +477,7 @@ THERMO_Z = 2.0
 
 @app.get("/v1/worlds/{name}/raids")
 async def world_raids(name: str, response: Response, days: int = 90):
+    await require("page_raids")
     days = max(7, min(days, 365))
     w = await world_or_404(name)
     rows = await query(
@@ -494,6 +519,7 @@ async def world_raids(name: str, response: Response, days: int = 90):
 async def world_thermometer(name: str, response: Response):
     """Criaturas com mortes muito acima (em alta) ou abaixo (em queda, spot provavelmente livre) do normal,
     comparando o último dia com a média dos 28 dias anteriores do mesmo mundo (z-score)."""
+    await require("page_raids")
     w = await world_or_404(name)
     rows = await query(
         """
@@ -550,6 +576,7 @@ def month_range(month: str | None) -> tuple[datetime, datetime, bool]:
 
 @app.get("/v1/wrapped/{name_world}/{name}")
 async def wrapped_character(name_world: str, name: str, response: Response, month: str | None = None):
+    await require("page_wrapped")
     w = await world_or_404(name_world)
     start, end, partial = month_range(month)
     found = await query(
@@ -616,6 +643,7 @@ async def wrapped_character(name_world: str, name: str, response: Response, mont
 
 @app.get("/v1/wrapped-world/{name}")
 async def wrapped_world(name: str, response: Response, month: str | None = None):
+    await require("page_wrapped")
     w = await world_or_404(name)
     start, end, partial = month_range(month)
     online = (await query(
@@ -675,6 +703,7 @@ async def wrapped_world(name: str, response: Response, month: str | None = None)
 
 @app.get("/v1/wrapped-guild/{world_name}/{guild}")
 async def wrapped_guild(world_name: str, guild: str, response: Response, month: str | None = None):
+    await require("page_wrapped")
     w = await world_or_404(world_name)
     start, end, partial = month_range(month)
     found = await query("SELECT id, name, members_total FROM guilds WHERE world_id = %s AND lower(name) = lower(%s)",
@@ -715,6 +744,51 @@ async def wrapped_guild(world_name: str, guild: str, response: Response, month: 
     cache(response, 900)
     return {"world": w["name"], "guild": g["name"], "members_total": g["members_total"],
             "month": start.strftime("%Y-%m"), "partial": partial, **events, **members, "top_levels": top_levels}
+
+
+# ---------------------------------------------------------------- feature flags
+# /v1/flags é público (o site usa para esconder o que está desligado).
+# /v1/admin/* não passa pelo Caddy: só o container do site, na rede interna, consegue chamar.
+
+
+class FlagIn(BaseModel):
+    key: str
+    enabled: bool
+
+
+@app.get("/v1/flags")
+async def public_flags(response: Response):
+    response.headers["Cache-Control"] = "public, max-age=10"
+    return await flags()
+
+
+@app.get("/v1/admin/flags")
+async def admin_flags(response: Response):
+    response.headers["Cache-Control"] = "no-store"
+    rows = {r["key"]: r for r in await query("SELECT key, enabled, updated_at FROM feature_flags")}
+    paused = (await app.state.redis.get("seismo:paused")) == "1"
+    return {
+        "collector_paused": paused,
+        "flags": [{**f, "enabled": rows[f["key"]]["enabled"] if f["key"] in rows else True,
+                   "updated_at": rows[f["key"]]["updated_at"] if f["key"] in rows else None} for f in FLAGS],
+    }
+
+
+@app.post("/v1/admin/flags")
+async def admin_set_flag(body: FlagIn, response: Response):
+    response.headers["Cache-Control"] = "no-store"
+    if body.key == "collector_online":
+        await app.state.redis.set("seismo:paused", "0" if body.enabled else "1")
+        return {"key": body.key, "enabled": body.enabled}
+    if body.key not in DEFAULTS:
+        raise HTTPException(422, "flag desconhecida")
+    await query(
+        "INSERT INTO feature_flags (key, enabled, updated_at) VALUES (%s, %s, now()) "
+        "ON CONFLICT (key) DO UPDATE SET enabled = EXCLUDED.enabled, updated_at = now()",
+        body.key, body.enabled,
+    )
+    _flags_cache["at"] = 0.0
+    return {"key": body.key, "enabled": body.enabled}
 
 
 # ---------------------------------------------------------------- opt-out

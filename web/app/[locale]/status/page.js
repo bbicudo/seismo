@@ -1,3 +1,5 @@
+import { getFlags, on } from "../../../lib/flags";
+import { notFound } from "next/navigation";
 import { api, fmtNum, fmtTime } from "../../../lib/api";
 import { dict } from "../../../lib/i18n";
 
@@ -7,6 +9,7 @@ export const metadata = { title: "Status" };
 export default async function Status({ params }) {
   const { locale } = await params;
   const t = dict(locale);
+  if (!on(await getFlags(), "page_status")) notFound();
   const s = await api("/v1/status");
   const c = s.collector;
   return (

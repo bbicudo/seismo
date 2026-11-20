@@ -1,0 +1,37 @@
+"""Catálogo das feature flags. A tabela feature_flags guarda só o que foi mudado: sem linha, vale o padrão."""
+
+FLAGS: list[dict] = [
+    # parte do site
+    {"key": "page_health", "group": "site", "label": "Saúde do mundo",
+     "help": "Gráfico de online, recorde, transfers e mortes do dia na página de cada mundo."},
+    {"key": "page_heatmap", "group": "site", "label": "Mapa de calor",
+     "help": "Quando cada mundo joga, por dia da semana e hora, com filtros."},
+    {"key": "page_new_characters", "group": "site", "label": "Personagens criados",
+     "help": "Contagem diária de personagens novos em cada mundo."},
+    {"key": "page_composition", "group": "site", "label": "Quem está online agora",
+     "help": "Contagem anônima por vocação e faixa de level."},
+    {"key": "page_kills", "group": "site", "label": "Mortes e criaturas",
+     "help": "Top mortes na página inicial e criaturas mais mortas em cada mundo."},
+    {"key": "page_guilds", "group": "site", "label": "Guilds",
+     "help": "Lista de guilds por mundo e página de cada guild."},
+    {"key": "page_houses", "group": "site", "label": "Casas",
+     "help": "Casas por cidade, leilões, donos e histórico."},
+    {"key": "page_raids", "group": "site", "label": "Raids e termômetro",
+     "help": "Página de raids de cada mundo, com janela provável e termômetro de respawn."},
+    {"key": "page_events", "group": "site", "label": "Eventos",
+     "help": "Calendário de eventos e o card Hoje no Tibia."},
+    {"key": "page_wrapped", "group": "site", "label": "Wrapped",
+     "help": "Resumo do mês de personagem, guild e mundo, com imagem para compartilhar."},
+    {"key": "page_status", "group": "site", "label": "Página de status",
+     "help": "Status público do coletor e das coletas."},
+    # coletas (desligar economiza requisições à TibiaData)
+    {"key": "collect_killstats", "group": "coleta", "label": "Kill statistics",
+     "help": "Coleta diária das kill statistics. Raids e termômetro dependem dela."},
+    {"key": "collect_guilds", "group": "coleta", "label": "Guilds",
+     "help": "Lista diária de guilds e leitura dos membros a cada 3 dias."},
+    {"key": "collect_houses", "group": "coleta", "label": "Casas",
+     "help": "Coleta diária de casas e leilões e leitura dos donos."},
+    {"key": "collect_events", "group": "coleta", "label": "Eventos e destaques",
+     "help": "Notícias de evento, calendário comunitário e criatura/chefe do dia."},
+]
+DEFAULTS = {f["key"]: True for f in FLAGS}

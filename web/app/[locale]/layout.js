@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import localFont from "next/font/local";
 import { LOCALES, dict } from "../../lib/i18n";
+import { getFlags, on } from "../../lib/flags";
 import "../globals.css";
 
 // Fontes dentro do projeto (licença SIL OFL): o build não depende de internet e
@@ -38,6 +39,7 @@ export default async function LocaleLayout({ children, params }) {
   const { locale } = await params;
   if (!LOCALES.includes(locale)) redirect("/pt");
   const t = dict(locale);
+  const f = await getFlags();
   const other = locale === "pt" ? "en" : "pt";
   return (
     <html lang={locale === "pt" ? "pt-BR" : "en"} className={`${display.variable} ${body.variable} ${mono.variable}`}>
@@ -51,9 +53,9 @@ export default async function LocaleLayout({ children, params }) {
             <span className="lab">{t.lab}</span>
             <nav className="main" aria-label="Seismo">
               <a href={`/${locale}`}>{t.nav_worlds}</a>
-              <a href={`/${locale}/events`}>{t.nav_events}</a>
-              <a href={`/${locale}/wrapped`}>Wrapped</a>
-              <a href={`/${locale}/status`}>{t.nav_status}</a>
+              {on(f, "page_events") && <a href={`/${locale}/events`}>{t.nav_events}</a>}
+              {on(f, "page_wrapped") && <a href={`/${locale}/wrapped`}>Wrapped</a>}
+              {on(f, "page_status") && <a href={`/${locale}/status`}>{t.nav_status}</a>}
               <a href={`/${other}`} hrefLang={other}>{t.other_locale}</a>
             </nav>
           </div>
