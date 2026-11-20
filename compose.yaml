@@ -54,7 +54,7 @@ services:
 
   redis:
     <<: *app
-    image: redis:7.4.5-bookworm
+    image: redis:8.4.0-bookworm
     command: ["redis-server", "--appendonly", "yes", "--maxmemory", "384mb", "--maxmemory-policy", "noeviction"]
     volumes:
       - redisdata:/data
