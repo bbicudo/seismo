@@ -28,7 +28,8 @@ export default async function Overview({ params, searchParams }) {
   const region = sp.region || "";
   const pvp = sp.pvp || "";
   const health = new Map((hl?.worlds || []).map((w) => [w.name, w]));
-  const sort = ["online", "health", "trend"].includes(sp.sort) ? sp.sort : "online";
+  const showH = !!hl?.ready; // colunas só depois que o índice existe (antes disso seriam só traços)
+  const sort = ["online", "health", "trend"].includes(sp.sort) && hl?.ready ? sp.sort : "online";
   const key = { online: (w) => w.players_online ?? -1, health: (w) => health.get(w.name)?.score ?? -1, trend: (w) => health.get(w.name)?.trend_pct ?? -1e9 }[sort];
   const worlds = all.filter((w) => (!region || w.location === region) && (!pvp || w.pvp_type === pvp))
     .sort((a, b) => key(b) - key(a) || a.name.localeCompare(b.name));
@@ -114,7 +115,7 @@ export default async function Overview({ params, searchParams }) {
           <input type="hidden" name="sort" value={sort} />
           <button type="submit">{t.filter_apply}</button>
         </form>
-        {hl && (
+        {showH && (
           <p className="seg">
             <span className="muted">{x.sort_by}</span>
             {["online", "health", "trend"].map((k) => <a key={k} href={qs({ sort: k })} aria-current={k === sort ? "true" : undefined}>{x[`sort_${k}`]}</a>)}
@@ -125,7 +126,7 @@ export default async function Overview({ params, searchParams }) {
           <table>
             <thead><tr>
               <th>{t.world}</th><th className="n">{t.online_now}</th>
-              {hl && <><th className="n">{x.health_col}</th><th className="n">{x.trend_col} {hl.window}d</th></>}
+              {showH && <><th className="n">{x.health_col}</th><th className="n">{x.trend_col} {hl.window}d</th></>}
               <th>{t.location}</th><th>{t.pvp}</th>
             </tr></thead>
             <tbody>
@@ -135,7 +136,7 @@ export default async function Overview({ params, searchParams }) {
                   <tr key={w.name}>
                     <td><a href={`/${locale}/world/${enc(w.name)}`}>{w.name}</a></td>
                     <td className="n">{fmtNum(w.players_online, locale)}</td>
-                    {hl && <>
+                    {showH && <>
                       <td className="n">{h?.score == null ? <span className="muted">–</span> : <span className="score" style={{ "--p": `${h.score}%` }}>{h.score}</span>}</td>
                       <td className={`n ${trendClass(h?.trend_pct)}`}>{signed(h?.trend_pct, locale, 1)}</td>
                     </>}

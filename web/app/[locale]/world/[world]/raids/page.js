@@ -110,13 +110,8 @@ export default async function Raids({ params }) {
   return (
     <>
       <section className="card">
-        <h2>{t.title}</h2>
-        <p className="lead">{t.lead} {fmt(t.detectable, { d: r.detectable, t: r.total })}</p>
-      </section>
-
-      <section className="card">
         <h2>{t.summary}</h2>
-        <p className="lead">{t.summary_lead}</p>
+        <p className="lead">{t.lead} {t.summary_lead}</p>
         {r.raids.length === 0 ? <p className="muted">{fmt(t.none, { n: r.history_days })}</p> : (
           <div className="tbl"><table>
             <thead><tr><th>{t.raid}</th><th>{t.region}</th><th className="n">{t.count}</th><th>{t.last}</th><th className="n">{t.gap}</th><th>{t.next}</th></tr></thead>
@@ -135,34 +130,19 @@ export default async function Raids({ params }) {
         )}
       </section>
 
-      <div className="grid2">
-        <section className="card">
-          <h2>{t.recent}</h2>
-          {r.recent.length === 0 ? <p className="muted">{fmt(t.none, { n: r.history_days })}</p> : (
-            <div className="tbl"><table>
-              <thead><tr><th>{t.day}</th><th>{t.raid}</th><th>{t.region}</th><th className="n">{t.kills}</th></tr></thead>
-              <tbody>
-                {r.recent.map((o) => (
-                  <tr key={o.slug + o.day}><td>{fmtDate(o.day, locale)}</td><td>{o.name}</td><td>{o.region}</td><td className="n">{fmtNum(o.kills, locale)}</td></tr>
-                ))}
-              </tbody>
-            </table></div>
-          )}
-        </section>
-        <section className="card">
-          <h2>{t.thermo}</h2>
-          {r.history_days < th.min_days ? <p className="muted">{fmt(t.thermo_wait, { n: th.min_days, h: th.history_days })}</p> : (
-            <>
-              <p className="lead">{fmt(t.thermo_lead, { day: fmtDate(th.day, locale) })}</p>
-              {th.day_events.length > 0 && <p className="notice">{fmt(DICT[locale === "en" ? "en" : "pt"].day_was_event, { names: th.day_events.map((e) => e.name).join(", ") })}</p>}
-              <Thermo title={t.hot} rows={th.hot} t={t} locale={locale} boostedTag={DICT[locale === "en" ? "en" : "pt"].boosted_tag} />
-              <Thermo title={t.cold} rows={th.cold} t={t} locale={locale} boostedTag={DICT[locale === "en" ? "en" : "pt"].boosted_tag} />
-            </>
-          )}
-        </section>
-      </div>
+      <section className="card">
+        <h2>{t.thermo}</h2>
+        {r.history_days < th.min_days ? <p className="muted">{fmt(t.thermo_wait, { n: th.min_days, h: th.history_days })}</p> : (
+          <>
+            <p className="lead">{fmt(t.thermo_lead, { day: fmtDate(th.day, locale) })}</p>
+            {th.day_events.length > 0 && <p className="notice">{fmt(DICT[locale === "en" ? "en" : "pt"].day_was_event, { names: th.day_events.map((e) => e.name).join(", ") })}</p>}
+            <Thermo title={t.hot} rows={th.hot} t={t} locale={locale} boostedTag={DICT[locale === "en" ? "en" : "pt"].boosted_tag} />
+            <Thermo title={t.cold} rows={th.cold} t={t} locale={locale} boostedTag={DICT[locale === "en" ? "en" : "pt"].boosted_tag} />
+          </>
+        )}
+      </section>
 
-      <p className="muted">{t.credit}</p>
+      <p className="muted">{fmt(t.detectable, { d: r.detectable, t: r.total })} {t.credit}</p>
     </>
   );
 }

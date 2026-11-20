@@ -215,3 +215,11 @@ td.wrap-cell { white-space: normal; min-width: 180px; }
   .bars li { grid-template-columns: minmax(70px, 38%) minmax(0, 1fr) auto; gap: 8px; font-size: 13px; }
   td.wrap-cell { min-width: 140px; }
 }
+@media (max-width: 600px) {
+  /* o cabeçalho do mundo se repete em todas as abas: no celular, os três números numa linha só */
+  .world-head .stats { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .world-head .stat { padding-left: 7px; }
+  .world-head .stat b { font-size: 18px; }
+  .world-head .stat b.soft { font-size: 13px; padding: 3px 0 2px; }
+  .world-head .stat span { font-size: 10px; letter-spacing: .02em; }
+}

@@ -363,6 +363,9 @@ async def world_leveling(name: str, response: Response):
     out = [{"vocation": v, "bands": {b: grid[v].get(b) for b in BAND_ORDER}} for v in VOC_ORDER if v in grid]
     m.cache(response, 1800)
     since = (date.today() - timedelta(days=30)).replace(day=1)
+    first = (await m.query("SELECT min(first_seen_day) AS d FROM characters WHERE world_id = %s", w["id"]))[0]["d"]
+    if first and first > since:
+        since = first  # a conta só tem dados desde o início da coleta
     return {"world": w["name"], "since": since, "min_hours": min_hours,
             "min_cell": min_cell, "bands": BAND_ORDER, "vocations": out}
 
