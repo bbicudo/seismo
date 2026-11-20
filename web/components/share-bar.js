@@ -1,6 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { ICONS } from "./icons";
+
+function Icon({ name }) {
+  return <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d={ICONS[name]} fill="currentColor" /></svg>;
+}
 
 const TXT = {
   pt: {
@@ -61,20 +66,20 @@ export default function ShareBar({ locale = "pt", title, imagePath }) {
   const enc = encodeURIComponent;
   const text = `${title} · Seismo Wrapped`;
   const links = [
-    ["WhatsApp", `https://wa.me/?text=${enc(`${text} ${url}`)}`],
-    ["Facebook", `https://www.facebook.com/sharer/sharer.php?u=${enc(url)}`],
-    ["X", `https://twitter.com/intent/tweet?text=${enc(text)}&url=${enc(url)}`],
+    ["whatsapp", "WhatsApp", `https://wa.me/?text=${enc(`${text} ${url}`)}`],
+    ["facebook", "Facebook", `https://www.facebook.com/sharer/sharer.php?u=${enc(url)}`],
+    ["x", "X (Twitter)", `https://twitter.com/intent/tweet?text=${enc(text)}&url=${enc(url)}`],
   ];
   return (
     <div className="share" aria-label={t.share}>
       <span className="share-label">{t.share}</span>
-      <button type="button" onClick={() => copy()}>{t.copy}</button>
-      {links.map(([name, href]) => (
-        <a key={name} href={url ? href : "#"} target="_blank" rel="noopener noreferrer">{name}</a>
+      <button type="button" className="ico" onClick={() => copy()} title={t.copy} aria-label={t.copy}><Icon name="link" /></button>
+      {links.map(([icon, name, href]) => (
+        <a key={name} className={`ico ${icon}`} href={url ? href : "#"} target="_blank" rel="noopener noreferrer" title={name} aria-label={name}><Icon name={icon} /></a>
       ))}
-      <button type="button" onClick={() => copy(t.discord_tip)}>{t.discord}</button>
-      <button type="button" onClick={instagram}>{t.instagram}</button>
-      {canNative && <button type="button" onClick={() => navigator.share({ title: text, url }).catch(() => {})}>{t.native}</button>}
+      <button type="button" className="ico discord" onClick={() => copy(t.discord_tip)} title={t.discord} aria-label={t.discord}><Icon name="discord" /></button>
+      <button type="button" className="ico instagram" onClick={instagram} title={t.instagram} aria-label={t.instagram}><Icon name="instagram" /></button>
+      {canNative && <button type="button" className="ico" onClick={() => navigator.share({ title: text, url }).catch(() => {})} title={t.native} aria-label={t.native}><Icon name="share" /></button>}
       {msg && <p className="share-msg" role="status">{msg}</p>}
     </div>
   );
