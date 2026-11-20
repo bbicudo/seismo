@@ -1,5 +1,5 @@
 # Imagem da API. Também roda as migrações (serviço "migrate" do compose).
-FROM python:3.12.11-slim-bookworm
+FROM python:3.12.16-slim-bookworm
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
