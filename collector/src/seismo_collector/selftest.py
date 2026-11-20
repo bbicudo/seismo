@@ -2,6 +2,7 @@
 
 from datetime import date, datetime, timezone
 
+from .raids import load_seed, race_keys
 from .logic import (
     activity_counts, cycle_slot, decode_player, diff_snapshots, encode_player, game_day, level_band, split_minutes,
 )
@@ -38,6 +39,15 @@ def main() -> None:
         ("Elder Druid", "100-299"): 1, ("Royal Paladin", "300-599"): 1, ("Exalted Monk", "100-299"): 1,
     }
     assert cycle_slot(utc(2026, 11, 18, 10, 7, 31), 300) == utc(2026, 11, 18, 10, 5)
+
+    # nomes de criaturas como aparecem nas kill statistics
+    assert "draptors" in race_keys("Draptor")
+    assert "ghazbaran" in race_keys("Ghazbaran")
+    assert "wolves" in race_keys("Wolf") and "dwarves" in race_keys("Dwarf")
+    assert "midnight panthers" in race_keys("Midnight Panther")
+    assert "fairies" in race_keys("Fairy")
+    seed = load_seed()
+    assert len(seed) > 50 and all(r["creatures"] for r in seed)
     print("selftest ok")
 
 

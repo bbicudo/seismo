@@ -1,0 +1,1096 @@
+{
+ "source": "TibiaWiki (tibia.fandom.com), CC BY-SA 3.0",
+ "raids": [
+  {
+   "slug": "ab-dendriel-wasp-and-bear-raid-near-ab-dendriel",
+   "name": "Wasp and Bear Raid near Ab'Dendriel",
+   "region": "Ab'Dendriel",
+   "creatures": [
+    "Bear",
+    "Wasp"
+   ]
+  },
+  {
+   "slug": "ab-dendriel-war-wolf-raid-on-ab-dendriel",
+   "name": "War Wolf Raid on Ab'Dendriel",
+   "region": "Ab'Dendriel",
+   "creatures": [
+    "Wolf",
+    "War Wolf"
+   ]
+  },
+  {
+   "slug": "ab-dendriel-dragon-raid-on-draconia",
+   "name": "Dragon raid on Draconia",
+   "region": "Ab'Dendriel",
+   "creatures": [
+    "Dragon",
+    "Dragon Lord",
+    "Dragon Hatchling"
+   ]
+  },
+  {
+   "slug": "ab-dendriel-badger-raid-in-ab-dendriel",
+   "name": "Badger Raid in Ab'dendriel",
+   "region": "Ab'Dendriel",
+   "creatures": [
+    "Badger"
+   ]
+  },
+  {
+   "slug": "carlin-troll-raid-north-west-of-carlin",
+   "name": "Troll Raid North-West of Carlin",
+   "region": "Carlin",
+   "creatures": [
+    "Troll",
+    "Troll Guard",
+    "Troll Champion"
+   ]
+  },
+  {
+   "slug": "carlin-wasp-raid-north-of-carlin",
+   "name": "Wasp Raid North of Carlin",
+   "region": "Carlin",
+   "creatures": [
+    "Wasp",
+    "Willi Wasp"
+   ]
+  },
+  {
+   "slug": "carlin-lesser-undead-raid-on-ghostlands",
+   "name": "Lesser Undead Raid on Ghostlands",
+   "region": "Carlin",
+   "creatures": [
+    "Skeleton",
+    "Ghoul",
+    "Ghost",
+    "Demon Skeleton"
+   ]
+  },
+  {
+   "slug": "carlin-undead-raid-on-ghostlands",
+   "name": "Undead Raid on Ghostlands",
+   "region": "Carlin",
+   "creatures": [
+    "Ghoul",
+    "Stalker",
+    "Ghost",
+    "Mummy",
+    "Demon Skeleton",
+    "Lich",
+    "Banshee"
+   ]
+  },
+  {
+   "slug": "carlin-orc-raid-in-the-woods",
+   "name": "Orc Raid in the Woods",
+   "region": "Carlin",
+   "creatures": [
+    "Orc",
+    "Orc Shaman",
+    "Orc Berserker",
+    "Orc Leader"
+   ]
+  },
+  {
+   "slug": "carlin-amazon-raid-north-of-carlin",
+   "name": "Amazon Raid North of Carlin",
+   "region": "Carlin",
+   "creatures": [
+    "Amazon"
+   ]
+  },
+  {
+   "slug": "carlin-orc-raid-on-femor-hills",
+   "name": "Orc Raid on Femor Hills",
+   "region": "Carlin",
+   "creatures": [
+    "Orc",
+    "Orc Warrior",
+    "War Wolf",
+    "Orc Rider",
+    "Orc Berserker",
+    "Orc Shaman",
+    "Orc Warlord"
+   ]
+  },
+  {
+   "slug": "carlin-hunter-and-wild-warrior-raid-near-femor-hills",
+   "name": "Hunter and Wild Warrior Raid near Femor Hills",
+   "region": "Carlin",
+   "creatures": [
+    "Hunter",
+    "Wild Warrior"
+   ]
+  },
+  {
+   "slug": "edron-orshabaal-raid-near-edron",
+   "name": "Orshabaal Raid near Edron",
+   "region": "Edron",
+   "creatures": [
+    "Orshabaal",
+    "Demon"
+   ]
+  },
+  {
+   "slug": "edron-morshabaal-raid-near-edron",
+   "name": "Morshabaal Raid near Edron",
+   "region": "Edron",
+   "creatures": [
+    "Morshabaal"
+   ]
+  },
+  {
+   "slug": "edron-rotrender-raid-in-azzilon",
+   "name": "Rotrender Raid in Azzilon",
+   "region": "Edron",
+   "creatures": [
+    "Rotrender"
+   ]
+  },
+  {
+   "slug": "edron-sir-leopold-raid-in-book-world",
+   "name": "Sir Leopold Raid in Book World",
+   "region": "Edron",
+   "creatures": [
+    "Sir Leopold"
+   ]
+  },
+  {
+   "slug": "edron-monks-and-warlocks-raid",
+   "name": "Monks and Warlocks Raid",
+   "region": "Edron",
+   "creatures": [
+    "Monk",
+    "Necromancer",
+    "Priestess",
+    "Warlock"
+   ]
+  },
+  {
+   "slug": "edron-goblin-raid",
+   "name": "Goblin Raid",
+   "region": "Edron",
+   "creatures": [
+    "Goblin",
+    "Goblin Assassin"
+   ]
+  },
+  {
+   "slug": "edron-hunter-raid",
+   "name": "Hunter Raid",
+   "region": "Edron",
+   "creatures": [
+    "Hunter",
+    "Wild Warrior"
+   ]
+  },
+  {
+   "slug": "edron-wyvern-raid",
+   "name": "Wyvern Raid",
+   "region": "Edron",
+   "creatures": [
+    "Wyvern"
+   ]
+  },
+  {
+   "slug": "edron-orc-berserker-raid-in-edron-orc-cave",
+   "name": "Orc Berserker Raid in Edron Orc cave",
+   "region": "Edron",
+   "creatures": [
+    "Orc Berserker"
+   ]
+  },
+  {
+   "slug": "edron-skunk-raid-in-edron",
+   "name": "Skunk Raid in Edron",
+   "region": "Edron",
+   "creatures": [
+    "Skunk"
+   ]
+  },
+  {
+   "slug": "edron-skunk-raid-in-stonehome",
+   "name": "Skunk Raid in Stonehome",
+   "region": "Edron",
+   "creatures": [
+    "Skunk"
+   ]
+  },
+  {
+   "slug": "edron-dwarf-soldier-raid-in-cormaya",
+   "name": "Dwarf Soldier Raid in Cormaya",
+   "region": "Edron",
+   "creatures": [
+    "Dwarf Soldier"
+   ]
+  },
+  {
+   "slug": "edron-ghoul-raid-in-stonehome",
+   "name": "Ghoul Raid in Stonehome",
+   "region": "Edron",
+   "creatures": [
+    "Ghoul"
+   ]
+  },
+  {
+   "slug": "hrodmir-ghazbaran-raid-in-the-formorgar-mines",
+   "name": "Ghazbaran Raid in the Formorgar Mines",
+   "region": "Hrodmir",
+   "creatures": [
+    "Ghazbaran",
+    "Demon",
+    "Fury",
+    "Juggernaut",
+    "Deathslicer"
+   ]
+  },
+  {
+   "slug": "hrodmir-barbarian-raid-near-bittermor",
+   "name": "Barbarian Raid near Bittermor",
+   "region": "Hrodmir",
+   "creatures": [
+    "Barbarian Brutetamer",
+    "Barbarian Bloodwalker",
+    "Barbarian Skullhunter"
+   ]
+  },
+  {
+   "slug": "hrodmir-barbarian-raid-in-on-svargrond",
+   "name": "Barbarian Raid in On Svargrond",
+   "region": "Hrodmir",
+   "creatures": [
+    "Barbarian Bloodwalker",
+    "Barbarian Skullhunter",
+    "Barbarian Headsplitter",
+    "Barbarian Brutetamer",
+    "Ice Witch"
+   ]
+  },
+  {
+   "slug": "hrodmir-winter-wolf-raid-near-krimhorn",
+   "name": "Winter Wolf Raid near Krimhorn",
+   "region": "Hrodmir",
+   "creatures": [
+    "Winter Wolf"
+   ]
+  },
+  {
+   "slug": "hrodmir-ice-golem-raid-in-the-formorgar-mines",
+   "name": "Ice Golem Raid in the Formorgar Mines",
+   "region": "Hrodmir",
+   "creatures": [
+    "Ice Golem"
+   ]
+  },
+  {
+   "slug": "kazordoon-bat-raid-in-kazordoon",
+   "name": "Bat Raid in Kazordoon",
+   "region": "Kazordoon",
+   "creatures": [
+    "Bat"
+   ]
+  },
+  {
+   "slug": "kazordoon-goblin-raid-from-femor-hills",
+   "name": "Goblin Raid from Femor Hills",
+   "region": "Kazordoon",
+   "creatures": [
+    "Goblin",
+    "Goblin Leader",
+    "Goblin Assassin"
+   ]
+  },
+  {
+   "slug": "kazordoon-wyvern-raid-in-gnomebase-alpha",
+   "name": "Wyvern Raid in Gnomebase Alpha",
+   "region": "Kazordoon",
+   "creatures": [
+    "Wyvern"
+   ]
+  },
+  {
+   "slug": "kazordoon-hunters-raid-north-of-green-claw-swamp",
+   "name": "Hunters Raid north of Green Claw Swamp",
+   "region": "Kazordoon",
+   "creatures": [
+    "Bear",
+    "Hunter"
+   ]
+  },
+  {
+   "slug": "kazordoon-the-halloween-hare",
+   "name": "The Halloween Hare",
+   "region": "Kazordoon",
+   "creatures": [
+    "The Halloween Hare"
+   ]
+  },
+  {
+   "slug": "kazordoon-spider-raid-in-kazordoon",
+   "name": "Spider Raid in Kazordoon",
+   "region": "Kazordoon",
+   "creatures": [
+    "Spider"
+   ]
+  },
+  {
+   "slug": "krailos-crystal-crusher-and-drillworm-raid-in-the-mines",
+   "name": "Crystal Crusher and Drillworm Raid in the Mines",
+   "region": "Krailos",
+   "creatures": [
+    "Crystal Crusher",
+    "Drillworm"
+   ]
+  },
+  {
+   "slug": "northern-darama-lions-west-of-darashia",
+   "name": "Lions west of Darashia",
+   "region": "Northern Darama",
+   "creatures": [
+    "Lion",
+    "Zomba"
+   ]
+  },
+  {
+   "slug": "northern-darama-necromancers-and-liches-in-deeper-catacombs",
+   "name": "Necromancers and Liches in Deeper Catacombs",
+   "region": "Northern Darama",
+   "creatures": [
+    "Necromancer",
+    "Lich"
+   ]
+  },
+  {
+   "slug": "northern-darama-pirates-in-darashia",
+   "name": "Pirates in Darashia",
+   "region": "Northern Darama",
+   "creatures": [
+    "Pirate Marauder",
+    "Pirate Cutthroat",
+    "Pirate Buccaneer"
+   ]
+  },
+  {
+   "slug": "northern-darama-undead-horde-west-of-darashia",
+   "name": "Undead Horde West of Darashia",
+   "region": "Northern Darama",
+   "creatures": [
+    "Skeleton",
+    "Ghoul",
+    "Crypt Shambler",
+    "Demon Skeleton",
+    "Mummy",
+    "Bonelord",
+    "Vampire",
+    "Bonebeast",
+    "Necromancer",
+    "Lich"
+   ]
+  },
+  {
+   "slug": "northern-darama-minotaurs-raid",
+   "name": "Minotaurs Raid",
+   "region": "Northern Darama",
+   "creatures": [
+    "Minotaur",
+    "Minotaur Archer",
+    "Minotaur Guard"
+   ]
+  },
+  {
+   "slug": "northern-darama-the-pale-count",
+   "name": "The Pale Count",
+   "region": "Northern Darama",
+   "creatures": [
+    "The Pale Count",
+    "Nightfiend",
+    "Vicious Manbat"
+   ]
+  },
+  {
+   "slug": "northern-darama-liches-in-drefia",
+   "name": "Liches in Drefia",
+   "region": "Northern Darama",
+   "creatures": [
+    "Lich"
+   ]
+  },
+  {
+   "slug": "northern-darama-priestess-in-drefia",
+   "name": "Priestess in Drefia",
+   "region": "Northern Darama",
+   "creatures": [
+    "Priestess"
+   ]
+  },
+  {
+   "slug": "northern-darama-zombies-in-star-room",
+   "name": "Zombies in Star Room",
+   "region": "Northern Darama",
+   "creatures": [
+    "Ghoul",
+    "Zombie"
+   ]
+  },
+  {
+   "slug": "northern-darama-undead-raid-on-drefia",
+   "name": "Undead Raid on Drefia",
+   "region": "Northern Darama",
+   "creatures": [
+    "Ghost",
+    "Tarnished Spirit",
+    "Demon Skeleton"
+   ]
+  },
+  {
+   "slug": "northern-darama-the-mutated-pumpkin",
+   "name": "The Mutated Pumpkin",
+   "region": "Northern Darama",
+   "creatures": [
+    "The Mutated Pumpkin"
+   ]
+  },
+  {
+   "slug": "northern-darama-wasps-in-darashia",
+   "name": "Wasps in Darashia",
+   "region": "Northern Darama",
+   "creatures": [
+    "Wasp"
+   ]
+  },
+  {
+   "slug": "northern-darama-demonic-creatures-on-darashia-deprecated",
+   "name": "Demonic Creatures on Darashia (Deprecated)",
+   "region": "Northern Darama",
+   "creatures": [
+    "Undead Minion",
+    "Bones",
+    "Fluffy",
+    "Minishabaal"
+   ]
+  },
+  {
+   "slug": "rookgaard-rat-plague-in-rookgaard",
+   "name": "Rat Plague in Rookgaard",
+   "region": "Rookgaard",
+   "creatures": [
+    "Rat"
+   ]
+  },
+  {
+   "slug": "rookgaard-apprentice-sheng-in-minotaur-hell",
+   "name": "Apprentice Sheng in Minotaur Hell",
+   "region": "Rookgaard",
+   "creatures": [
+    "Apprentice Sheng"
+   ]
+  },
+  {
+   "slug": "rookgaard-munster-in-rookgaard-sewer",
+   "name": "Munster in Rookgaard Sewer",
+   "region": "Rookgaard",
+   "creatures": [
+    "Munster",
+    "Cave Rat"
+   ]
+  },
+  {
+   "slug": "rookgaard-rottie-in-the-katana-quest-room",
+   "name": "Rottie in the Katana Quest Room",
+   "region": "Rookgaard",
+   "creatures": [
+    "Rottie the Rotworm"
+   ]
+  },
+  {
+   "slug": "rookgaard-rottie-in-poison-spider-cave",
+   "name": "Rottie in Poison Spider Cave",
+   "region": "Rookgaard",
+   "creatures": [
+    "Rottie the Rotworm"
+   ]
+  },
+  {
+   "slug": "rookgaard-teleskor-in-premium-account-area",
+   "name": "Teleskor in Premium Account Area",
+   "region": "Rookgaard",
+   "creatures": [
+    "Teleskor"
+   ]
+  },
+  {
+   "slug": "roshamuul-gaz-haragoth",
+   "name": "Gaz'haragoth",
+   "region": "Roshamuul",
+   "creatures": [
+    "Minion of Gaz'haragoth",
+    "Gaz'haragoth"
+   ]
+  },
+  {
+   "slug": "roshamuul-silencers",
+   "name": "Silencers",
+   "region": "Roshamuul",
+   "creatures": [
+    "Silencer"
+   ]
+  },
+  {
+   "slug": "roshamuul-terrorsleep",
+   "name": "Terrorsleep",
+   "region": "Roshamuul",
+   "creatures": [
+    "Terrorsleep",
+    "Feversleep"
+   ]
+  },
+  {
+   "slug": "southern-darama-skeleton-raid-near-ankrahmun",
+   "name": "Skeleton Raid near Ankrahmun",
+   "region": "Southern Darama",
+   "creatures": [
+    "Ghoul",
+    "Ghost",
+    "Goblin",
+    "Skeleton"
+   ]
+  },
+  {
+   "slug": "southern-darama-terramite-raid-near-ankrahmun",
+   "name": "Terramite Raid near Ankrahmun",
+   "region": "Southern Darama",
+   "creatures": [
+    "Terramite"
+   ]
+  },
+  {
+   "slug": "southern-darama-scarab-raid-near-ankrahmun",
+   "name": "Scarab Raid near Ankrahmun",
+   "region": "Southern Darama",
+   "creatures": [
+    "Larva",
+    "Scarab",
+    "Ancient Scarab"
+   ]
+  },
+  {
+   "slug": "southern-darama-nomad-raid-near-ankrahmun",
+   "name": "Nomad Raid near Ankrahmun",
+   "region": "Southern Darama",
+   "creatures": [
+    "Nomad (Basic)"
+   ]
+  },
+  {
+   "slug": "southern-darama-ancient-scarab-raid",
+   "name": "Ancient Scarab Raid",
+   "region": "Southern Darama",
+   "creatures": [
+    "Ancient Scarab"
+   ]
+  },
+  {
+   "slug": "southern-darama-gargoyle-raid-in-oasis-tomb",
+   "name": "Gargoyle Raid in [[Oasis Tomb]]",
+   "region": "Southern Darama",
+   "creatures": [
+    "Gargoyle"
+   ]
+  },
+  {
+   "slug": "southern-darama-slime-raid-in-shadow-tomb",
+   "name": "Slime Raid in [[Shadow Tomb]]",
+   "region": "Southern Darama",
+   "creatures": [
+    "Slime"
+   ]
+  },
+  {
+   "slug": "southern-darama-4th-floor-map",
+   "name": "= 4th floor map =",
+   "region": "Southern Darama",
+   "creatures": [
+    "Vampire"
+   ]
+  },
+  {
+   "slug": "southern-darama-bonebeast-raid-in-mountain-tomb",
+   "name": "Bonebeast Raid in [[Mountain Tomb]]",
+   "region": "Southern Darama",
+   "creatures": [
+    "Bonebeast"
+   ]
+  },
+  {
+   "slug": "southern-darama-necromancer-raid-in-peninsula-tomb",
+   "name": "Necromancer Raid in [[Peninsula Tomb]]",
+   "region": "Southern Darama",
+   "creatures": [
+    "Necromancer"
+   ]
+  },
+  {
+   "slug": "southern-darama-cobra-raid-in-mountain-tomb",
+   "name": "Cobra Raid in [[Mountain Tomb]]",
+   "region": "Southern Darama",
+   "creatures": [
+    "Cobra"
+   ]
+  },
+  {
+   "slug": "southern-darama-vampire-raid-in-tarpit-tomb",
+   "name": "Vampire Raid in [[Tarpit Tomb]]",
+   "region": "Southern Darama",
+   "creatures": [
+    "Vampire"
+   ]
+  },
+  {
+   "slug": "southern-darama-dragon-raid-in-dragon-lair",
+   "name": "Dragon Raid in Dragon Lair",
+   "region": "Southern Darama",
+   "creatures": [
+    "Dragon Hatchling",
+    "Dragon",
+    "Dragon Lord"
+   ]
+  },
+  {
+   "slug": "thais-rat-plague-in-thais",
+   "name": "Rat Plague in Thais",
+   "region": "Thais",
+   "creatures": [
+    "Rat",
+    "Cave Rat"
+   ]
+  },
+  {
+   "slug": "thais-orc-raid-north-of-thais",
+   "name": "Orc Raid North of Thais",
+   "region": "Thais",
+   "creatures": [
+    "Orc",
+    "Orc Spearman"
+   ]
+  },
+  {
+   "slug": "thais-wasp-raid-in-thais",
+   "name": "Wasp Raid in Thais",
+   "region": "Thais",
+   "creatures": [
+    "Wasp"
+   ]
+  },
+  {
+   "slug": "thais-orc-raid-on-thais",
+   "name": "Orc Raid on Thais",
+   "region": "Thais",
+   "creatures": [
+    "Orc",
+    "Orc Spearman",
+    "Orc Warrior",
+    "War Wolf",
+    "Orc Rider",
+    "Orc Berserker",
+    "Orc Shaman",
+    "Orc Leader",
+    "Orc Warlord"
+   ]
+  },
+  {
+   "slug": "thais-cyclops-raid-east-of-thais",
+   "name": "Cyclops Raid east of Thais",
+   "region": "Thais",
+   "creatures": [
+    "Cyclops",
+    "Cyclops Smith",
+    "Cyclops Drone"
+   ]
+  },
+  {
+   "slug": "thais-insectoid-scout-on-greenshore-farms",
+   "name": "Insectoid Scout on Greenshore Farms",
+   "region": "Thais",
+   "creatures": [
+    "Insectoid Scout"
+   ]
+  },
+  {
+   "slug": "thais-orc-attack-on-thais-lighthouse",
+   "name": "Orc Attack on Thais Lighthouse",
+   "region": "Thais",
+   "creatures": [
+    "Orc",
+    "Orc Shaman",
+    "Orc Berserker",
+    "Orc Leader",
+    "Orc Warlord"
+   ]
+  },
+  {
+   "slug": "thais-historic-primitive-raid",
+   "name": "Historic: Primitive Raid",
+   "region": "Thais",
+   "creatures": [
+    "Primitive",
+    "Hacker",
+    "Tibia Bug"
+   ]
+  },
+  {
+   "slug": "thais-historic-community-manager-and-troll-raid",
+   "name": "Historic: Community Manager and Troll Raid",
+   "region": "Thais",
+   "creatures": [
+    "Troll",
+    "Mirade",
+    "Rejana",
+    "Tjured"
+   ]
+  },
+  {
+   "slug": "tiquanda-kongra-raid-south-of-banuta",
+   "name": "Kongra Raid South of Banuta",
+   "region": "Tiquanda",
+   "creatures": [
+    "Kongra"
+   ]
+  },
+  {
+   "slug": "tiquanda-serpent-spawn-raid-in-deeper-banuta",
+   "name": "Serpent Spawn Raid in Deeper Banuta",
+   "region": "Tiquanda",
+   "creatures": [
+    "Serpent Spawn"
+   ]
+  },
+  {
+   "slug": "tiquanda-lizard-raid-on-port-hope",
+   "name": "Lizard Raid on Port Hope",
+   "region": "Tiquanda",
+   "creatures": [
+    "Lizard Sentinel",
+    "Lizard Templar",
+    "Lizard Snakecharmer"
+   ]
+  },
+  {
+   "slug": "tiquanda-lizard-army-raid-on-port-hope",
+   "name": "Lizard Army Raid on Port Hope",
+   "region": "Tiquanda",
+   "creatures": [
+    "Lizard Sentinel",
+    "Lizard Templar",
+    "Lizard Snakecharmer",
+    "Serpent Spawn",
+    "Hydra"
+   ]
+  },
+  {
+   "slug": "tiquanda-terror-bird-raid-in-trapwood",
+   "name": "Terror Bird Raid in Trapwood",
+   "region": "Tiquanda",
+   "creatures": [
+    "Terror Bird"
+   ]
+  },
+  {
+   "slug": "tiquanda-midnight-panther-in-tiquanda",
+   "name": "Midnight Panther in Tiquanda",
+   "region": "Tiquanda",
+   "creatures": [
+    "Midnight Panther"
+   ]
+  },
+  {
+   "slug": "tiquanda-ape-raid-on-port-hope",
+   "name": "Ape Raid on Port Hope",
+   "region": "Tiquanda",
+   "creatures": [
+    "Sibang",
+    "Merlkin"
+   ]
+  },
+  {
+   "slug": "vandura-ferumbras-raid",
+   "name": "Ferumbras Raid",
+   "region": "Vandura",
+   "creatures": [
+    "Ferumbras",
+    "Demon"
+   ]
+  },
+  {
+   "slug": "vandura-morgaroth-raid-on-goroma",
+   "name": "Morgaroth Raid on Goroma",
+   "region": "Vandura",
+   "creatures": [
+    "Morgaroth",
+    "Demon"
+   ]
+  },
+  {
+   "slug": "vandura-pirate-bosses-raid",
+   "name": "Pirate Bosses Raid",
+   "region": "Vandura",
+   "creatures": [
+    "Ron the Ripper",
+    "Lethal Lissy",
+    "Brutus Bloodbeard",
+    "Deadeye Devious",
+    "Pirate Corsair",
+    "Pirate Buccaneer",
+    "Pirate Cutthroat",
+    "Pirate Marauder",
+    "Smuggler"
+   ]
+  },
+  {
+   "slug": "vandura-pirate-raid-on-liberty-bay",
+   "name": "Pirate Raid on Liberty Bay",
+   "region": "Vandura",
+   "creatures": [
+    "Pirate Corsair",
+    "Pirate Buccaneer",
+    "Pirate Cutthroat",
+    "Pirate Marauder",
+    "Smuggler"
+   ]
+  },
+  {
+   "slug": "vandura-pirate-raid-on-the-plantations-of-liberty-bay",
+   "name": "Pirate Raid on the Plantations of Liberty Bay",
+   "region": "Vandura",
+   "creatures": [
+    "Pirate Corsair",
+    "Pirate Buccaneer",
+    "Pirate Cutthroat",
+    "Pirate Marauder",
+    "Smuggler"
+   ]
+  },
+  {
+   "slug": "vandura-quara-scout-raid-on-liberty-bay",
+   "name": "Quara Scout Raid on Liberty Bay",
+   "region": "Vandura",
+   "creatures": [
+    "Quara Constrictor Scout",
+    "Quara Mantassin Scout",
+    "Quara Hydromancer Scout",
+    "Quara Pincher Scout",
+    "Quara Predator Scout"
+   ]
+  },
+  {
+   "slug": "vandura-quara-scout-raid-on-liberty-bay-plantations",
+   "name": "Quara Scout Raid on Liberty Bay Plantations",
+   "region": "Vandura",
+   "creatures": [
+    "Quara Constrictor Scout",
+    "Quara Mantassin Scout",
+    "Quara Hydromancer Scout",
+    "Quara Pincher Scout",
+    "Quara Predator Scout"
+   ]
+  },
+  {
+   "slug": "vandura-flamingo-raid-on-the-laguna-islands",
+   "name": "Flamingo Raid on the Laguna Islands",
+   "region": "Vandura",
+   "creatures": [
+    "Flamingo"
+   ]
+  },
+  {
+   "slug": "vandura-tiger-raid",
+   "name": "Tiger Raid",
+   "region": "Vandura",
+   "creatures": [
+    "Tiger"
+   ]
+  },
+  {
+   "slug": "vandura-tortoise-raid",
+   "name": "Tortoise Raid",
+   "region": "Vandura",
+   "creatures": [
+    "Tortoise",
+    "Thornback Tortoise"
+   ]
+  },
+  {
+   "slug": "vandura-crustacea-gigantica-in-calassa-or-treasure-island",
+   "name": "Crustacea Gigantica in Calassa or Treasure Island",
+   "region": "Vandura",
+   "creatures": [
+    "Crustacea Gigantica"
+   ]
+  },
+  {
+   "slug": "vandura-thul-in-calassa",
+   "name": "Thul in Calassa",
+   "region": "Vandura",
+   "creatures": [
+    "Thul"
+   ]
+  },
+  {
+   "slug": "vandura-grandfather-tridian-in-the-cults-cave",
+   "name": "Grandfather Tridian in the Cults Cave",
+   "region": "Vandura",
+   "creatures": [
+    "Grandfather Tridian"
+   ]
+  },
+  {
+   "slug": "vandura-diblis-on-nargor",
+   "name": "Diblis on Nargor",
+   "region": "Vandura",
+   "creatures": [
+    "Banshee",
+    "Diblis the Fair"
+   ]
+  },
+  {
+   "slug": "vandura-undead-cavebear-in-lich-hell",
+   "name": "Undead Cavebear in Lich Hell",
+   "region": "Vandura",
+   "creatures": [
+    "Undead Cavebear"
+   ]
+  },
+  {
+   "slug": "venore-elf-raid-at-venore",
+   "name": "Elf Raid at Venore",
+   "region": "Venore",
+   "creatures": [
+    "Elf",
+    "Elf Scout",
+    "Elf Arcanist"
+   ]
+  },
+  {
+   "slug": "venore-witches-raid-at-green-claw-swamp",
+   "name": "Witches Raid at [[Green Claw Swamp]]",
+   "region": "Venore",
+   "creatures": [
+    "Witch"
+   ]
+  },
+  {
+   "slug": "venore-undead-army-in-plains-of-havoc",
+   "name": "Undead Army in Plains of Havoc",
+   "region": "Venore",
+   "creatures": [
+    "Skeleton",
+    "Ghoul",
+    "Mummy",
+    "Demon Skeleton",
+    "Vampire",
+    "Banshee"
+   ]
+  },
+  {
+   "slug": "venore-giant-spider-raid-on-plains-of-havoc",
+   "name": "Giant Spider Raid on Plains of Havoc",
+   "region": "Venore",
+   "creatures": [
+    "Giant Spider"
+   ]
+  },
+  {
+   "slug": "venore-elves-on-ancient-road-to-shadowthorn",
+   "name": "Elves on Ancient Road to Shadowthorn",
+   "region": "Venore",
+   "creatures": [
+    "Elf",
+    "Elf Scout",
+    "Elf Arcanist"
+   ]
+  },
+  {
+   "slug": "venore-passed-april-fools-raid-in-plains-of-havoc",
+   "name": "Passed: April Fools Raid in Plains of Havoc",
+   "region": "Venore",
+   "creatures": [
+    "The Ruthless Herald"
+   ]
+  },
+  {
+   "slug": "yalahar-vampire-raid-in-yalahar",
+   "name": "Vampire Raid in Yalahar",
+   "region": "Yalahar",
+   "creatures": [
+    "Bat",
+    "Vampire"
+   ]
+  },
+  {
+   "slug": "zao-lancer-beetle-raid-on-the-steppes",
+   "name": "Lancer Beetle Raid on the Steppes",
+   "region": "Zao",
+   "creatures": [
+    "Lancer Beetle"
+   ]
+  },
+  {
+   "slug": "zao-orcs-raid-on-zzaion",
+   "name": "[[Orcs]] raid on [[Zzaion]]",
+   "region": "Zao",
+   "creatures": [
+    "Orc",
+    "Orc Spearman",
+    "Orc Warrior",
+    "Orc Shaman",
+    "Orc Berserker",
+    "Orc Marauder",
+    "Orc Leader",
+    "Orc Warlord",
+    "Cublarc the Plunderer",
+    "Zulazza the Corruptor",
+    "Chizzoron the Distorter"
+   ]
+  },
+  {
+   "slug": "zao-orcs-raid-on-zao-steppe",
+   "name": "[[Orcs]] raid on Zao Steppe",
+   "region": "Zao",
+   "creatures": [
+    "Orc Spearman",
+    "Orc Warrior",
+    "Orc Shaman",
+    "Orc Rider",
+    "Orc Marauder",
+    "Cublarc the Plunderer"
+   ]
+  },
+  {
+   "slug": "zao-gnarlhound-s-raid-on-zao-steppes",
+   "name": "[[Gnarlhound]]s raid on Zao Steppes",
+   "region": "Zao",
+   "creatures": [
+    "Gnarlhound"
+   ]
+  },
+  {
+   "slug": "zao-lancer-beetle-s-raid-on-muggy-plains",
+   "name": "[[Lancer Beetle]]s raid on [[Muggy Plains]]",
+   "region": "Zao",
+   "creatures": [
+    "Lancer Beetle",
+    "The Blightfather"
+   ]
+  },
+  {
+   "slug": "zao-dragon-s-raid-on-muggy-plains",
+   "name": "[[Dragon]]s raid on [[Muggy Plains]]",
+   "region": "Zao",
+   "creatures": [
+    "Dragon",
+    "Draptor",
+    "Grand Mother Foulscale"
+   ]
+  }
+ ]
+}

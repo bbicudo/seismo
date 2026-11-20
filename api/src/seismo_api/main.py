@@ -416,6 +416,84 @@ async def world_guild(name: str, guild: str, response: Response):
     return {"world": w["name"], **g, "members": members, "events": events, "vocations": vocations}
 
 
+# ---------------------------------------------------------------- raids e termômetro
+
+THERMO_MIN_DAYS = 7      # dias de histórico mínimos para comparar
+THERMO_MIN_AVG = 50      # criaturas com média menor que isso são ruído
+THERMO_Z = 2.0
+
+
+@app.get("/v1/worlds/{name}/raids")
+async def world_raids(name: str, response: Response, days: int = 90):
+    days = max(7, min(days, 365))
+    w = await world_or_404(name)
+    rows = await query(
+        """
+        SELECT r.slug, r.name, r.region, o.day, o.kills
+        FROM raid_occurrences o JOIN raids r ON r.id = o.raid_id
+        WHERE o.world_id = %s AND o.day > current_date - %s
+        ORDER BY o.day DESC, r.name
+        """,
+        w["id"], days,
+    )
+    by_raid: dict[str, dict] = {}
+    for r in rows:
+        b = by_raid.setdefault(r["slug"], {"slug": r["slug"], "name": r["name"], "region": r["region"], "days": []})
+        b["days"].append(r["day"])
+    summary = []
+    for b in by_raid.values():
+        ds = sorted(set(b["days"]))
+        gaps = sorted((ds[i] - ds[i - 1]).days for i in range(1, len(ds)))
+        item = {"slug": b["slug"], "name": b["name"], "region": b["region"], "count": len(ds), "last": ds[-1],
+                "median_gap_days": None, "next_from": None, "next_to": None}
+        if len(gaps) >= 2:  # 3 ocorrências ou mais: dá para estimar uma janela (nunca uma data certa)
+            med = gaps[len(gaps) // 2]
+            q1, q3 = gaps[len(gaps) // 4], gaps[(3 * len(gaps)) // 4]
+            item.update(median_gap_days=med, next_from=ds[-1] + timedelta(days=max(1, q1)),
+                        next_to=ds[-1] + timedelta(days=max(q1 + 1, q3)))
+        summary.append(item)
+    summary.sort(key=lambda s: s["last"], reverse=True)
+    meta = (await query(
+        "SELECT count(*) FILTER (WHERE cardinality(signature) > 0)::int AS detectable, count(*)::int AS total, "
+        "(SELECT count(DISTINCT stats_day)::int FROM kill_stats_daily WHERE world_id = %s) AS history_days FROM raids",
+        w["id"],
+    ))[0]
+    cache(response, 900)
+    return {"world": w["name"], "days": days, "recent": rows[:50], "raids": summary, **meta}
+
+
+@app.get("/v1/worlds/{name}/thermometer")
+async def world_thermometer(name: str, response: Response):
+    """Criaturas com mortes muito acima (em alta) ou abaixo (em queda, spot provavelmente livre) do normal,
+    comparando o último dia com a média dos 28 dias anteriores do mesmo mundo (z-score)."""
+    w = await world_or_404(name)
+    rows = await query(
+        """
+        WITH last AS (SELECT max(stats_day) AS d FROM kill_stats_daily WHERE world_id = %s),
+        hist AS (
+          SELECT k.race, avg(k.killed) AS mu, stddev_samp(k.killed) AS sd, count(*) AS n
+          FROM kill_stats_daily k, last
+          WHERE k.world_id = %s AND k.stats_day < last.d AND k.stats_day >= last.d - 28
+          GROUP BY k.race
+        ),
+        today AS (SELECT k.race, k.killed FROM kill_stats_daily k, last WHERE k.world_id = %s AND k.stats_day = last.d)
+        SELECT h.race, coalesce(t.killed, 0) AS killed, round(h.mu)::int AS average, h.n::int AS days,
+               round(((coalesce(t.killed, 0) - h.mu) / nullif(h.sd, 0))::numeric, 1)::float AS z,
+               (SELECT d FROM last) AS day
+        FROM hist h LEFT JOIN today t ON t.race = h.race
+        WHERE h.n >= %s AND h.mu >= %s AND h.sd > 0
+        """,
+        w["id"], w["id"], w["id"], THERMO_MIN_DAYS, THERMO_MIN_AVG,
+    )
+    hot = sorted((r for r in rows if r["z"] is not None and r["z"] >= THERMO_Z), key=lambda r: -r["z"])[:12]
+    cold = sorted((r for r in rows if r["z"] is not None and r["z"] <= -THERMO_Z), key=lambda r: r["z"])[:12]
+    history = (await query("SELECT count(DISTINCT stats_day)::int AS n FROM kill_stats_daily WHERE world_id = %s",
+                           w["id"]))[0]["n"]
+    cache(response, 900)
+    return {"world": w["name"], "day": rows[0]["day"] if rows else None, "history_days": history,
+            "min_days": THERMO_MIN_DAYS + 1, "hot": hot, "cold": cold}
+
+
 # ---------------------------------------------------------------- wrapped (resumo do mês)
 # Só totais mensais e diários: nenhum horário. Quem fez opt-out não tem Wrapped.
 
