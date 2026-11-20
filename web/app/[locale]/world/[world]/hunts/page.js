@@ -15,13 +15,13 @@ export const dynamic = "force-dynamic";
 
 const T = {
   pt: {
-    day: "Dia", rank: "Ranking do dia", hunt: "Área de caça", city: "Cidade", kills: "Mortes (estimativa)",
+    day: "Dia", rank: "Ranking do dia", hunt: "Área de caça", city: "Cidade", kills: "Criaturas mortas (estimativa)",
     top: "Principais criaturas", underground: "subsolo", empty: "Ainda não há kill statistics para este mundo.",
     note: "Círculos maiores = mais mortes. Áreas subterrâneas aparecem na posição da entrada, sobre o mapa da superfície.",
     credit: "Áreas de caça: TibiaWiki (CC BY-SA). Mapa: TibiaMaps (tibiamaps.io), mapa do jogo © CipSoft GmbH.",
   },
   en: {
-    day: "Day", rank: "Daily ranking", hunt: "Hunting area", city: "City", kills: "Kills (estimate)",
+    day: "Day", rank: "Daily ranking", hunt: "Hunting area", city: "City", kills: "Creatures killed (estimate)",
     top: "Main creatures", underground: "underground", empty: "No kill statistics for this world yet.",
     note: "Bigger circles = more kills. Underground areas are drawn at their entrance, on the surface map.",
     credit: "Hunting areas: TibiaWiki (CC BY-SA). Map: TibiaMaps (tibiamaps.io), game map © CipSoft GmbH.",
