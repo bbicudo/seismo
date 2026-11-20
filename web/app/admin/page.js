@@ -67,6 +67,16 @@ function Param({ p, ok }) {
   );
 }
 
+// Explicação curta de cada motivo de erro da TibiaData (o coletor já repete sozinho os temporários).
+function explainError({ kind, reason }) {
+  if (reason === "404") return "Não encontrado: guild que acabou, casa ou personagem que não existe mais. Esperado.";
+  if (reason === "502" && kind === "character") return "A TibiaData responde 502 para personagem inexistente (nome errado no opt-out). Esperado.";
+  if (reason === "429") return "Limite de ritmo da TibiaData: o coletor esperou e tentou de novo.";
+  if (["500", "502", "503", "504"].includes(reason)) return "Falha temporária da TibiaData ou do tibia.com: o coletor tentou de novo.";
+  if (/Timeout|Connect|Transport|Protocol|Read|Network/.test(reason)) return "Sem resposta a tempo ou conexão caiu: o coletor tentou de novo.";
+  return "Resposta inesperada; se repetir muito, vale olhar o log do coletor.";
+}
+
 async function toggle(formData) {
   "use server";
   const key = String(formData.get("key") || "");
@@ -139,6 +149,24 @@ export default async function Admin({ searchParams }) {
               ))}
             </tbody>
           </table></div>
+          {d.status.collector.errors_today_utc > 0 && (
+            <>
+              <h3 style={{ marginTop: 16 }}>Erros de hoje (UTC)</h3>
+              {(d.status.errors_by || []).length === 0 ? (
+                <p className="muted">O detalhamento começou a ser registrado agora; os erros anteriores a esta versão aparecem só no total.</p>
+              ) : (
+                <div className="tbl"><table>
+                  <thead><tr><th>Consulta</th><th>Motivo</th><th className="n">Vezes</th><th>O que significa</th></tr></thead>
+                  <tbody>
+                    {d.status.errors_by.map((e) => (
+                      <tr key={e.kind + e.reason}><td>{e.kind}</td><td>{e.reason}</td><td className="n">{fmtNum(e.n)}</td>
+                        <td className="muted" style={{ whiteSpace: "normal" }}>{explainError(e)}</td></tr>
+                    ))}
+                  </tbody>
+                </table></div>
+              )}
+            </>
+          )}
           <p className="muted">
             Detalhes de guild lidos: {fmtNum(d.status.progress.guilds_read)} de {fmtNum(d.status.progress.guilds)} ·
             {" "}donos de casa lidos: {fmtNum(d.status.progress.houses_read)} de {fmtNum(d.status.progress.houses)} ·
