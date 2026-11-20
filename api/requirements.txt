@@ -1,6 +1,6 @@
 # versões fixas; todas publicam wheels manylinux para aarch64 e x86_64
 fastapi==0.163.2
-uvicorn[standard]==0.35.0
+uvicorn[standard]==0.54.0
 psycopg[binary,pool]==3.3.9
 sqlalchemy==2.1.9
 alembic==1.16.4
