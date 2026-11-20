@@ -34,10 +34,13 @@ export default async function World({ params, searchParams }) {
   const nf = (n, d = 0) => (n == null ? "–" : new Intl.NumberFormat(locale === "en" ? "en-GB" : "pt-BR", { maximumFractionDigits: d }).format(n));
   const need = fmt(x.v_need, { n: h?.days_needed });
   const vitals = h && on(f, "page_health_index") ? [
-    { v: h.trend_pct, show: signed(h.trend_pct, locale, 1), label: x.v_trend, cls: trendClass(h.trend_pct) },
-    { v: h.retention_pct, show: h.retention_pct == null ? null : `${nf(h.retention_pct, 1)}%`, label: x.v_retention },
-    { v: h.new_per_1k, show: nf(h.new_per_1k, 1), label: x.v_new },
-    { v: h.net_transfers_per_1k, show: signed(h.net_transfers_per_1k, locale, 1, ""), label: x.v_transfers, cls: trendClass(h.net_transfers_per_1k) },
+    { v: h.trend_pct, show: signed(h.trend_pct, locale, 1), label: fmt(x.v_trend, { w: h.window }), cls: trendClass(h.trend_pct) },
+    { v: h.retention_pct, show: h.retention_pct == null ? null : `${nf(h.retention_pct, 1)}%`, label: fmt(x.v_retention, { w: h.window }) },
+    // número direto para quem lê; o "por mil online" (usado no índice para comparar mundos de tamanhos diferentes) vai como nota
+    { v: h.new_characters, show: nf(h.new_characters), label: fmt(x.v_new, { w: h.window }),
+      note: h.new_per_1k != null ? fmt(x.v_per_1k, { n: nf(h.new_per_1k, 1) }) : null },
+    { v: h.net_transfers, show: signed(h.net_transfers, locale, 0, ""), label: fmt(x.v_transfers, { w: h.window }), cls: trendClass(h.net_transfers),
+      note: h.net_transfers_per_1k != null ? fmt(x.v_per_1k, { n: signed(h.net_transfers_per_1k, locale, 1, "") }) : null },
   ] : null;
   const points = health ? health.hourly.map((p) => ({ t: p.hour, v: p.avg, peak: p.max })) : [];
   return (
@@ -53,6 +56,7 @@ export default async function World({ params, searchParams }) {
               <div className="stat" key={v.label}>
                 {v.v == null ? <b className="soft">{need}</b> : <b className={v.cls}>{v.show}</b>}
                 <span>{v.label}</span>
+                {v.v != null && v.note && <small className="stat-note">{v.note}</small>}
               </div>
             ))}
           </div>

@@ -223,3 +223,4 @@ td.wrap-cell { white-space: normal; min-width: 180px; }
   .world-head .stat b.soft { font-size: 13px; padding: 3px 0 2px; }
   .world-head .stat span { font-size: 10px; letter-spacing: .02em; }
 }
+.stat small.stat-note { display: block; font: 11px var(--f-mono), monospace; color: var(--muted); margin-top: 2px; }
