@@ -57,7 +57,7 @@ export default async function House({ params }) {
                 <tbody>
                   {h.owners.map((o) => (
                     <tr key={o.owner + o.first_seen_day}>
-                      <td>{o.owner}</td><td>{fmtDate(o.first_seen_day, locale)}</td>
+                      <td><a href={`/${locale}/character/${enc(o.owner)}`}>{o.owner}</a></td><td>{fmtDate(o.first_seen_day, locale)}</td>
                       <td>{o.ended_day ? fmtDate(o.ended_day, locale) : <span className="pill on">{t.current}</span>}</td>
                     </tr>
                   ))}

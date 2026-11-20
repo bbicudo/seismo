@@ -47,7 +47,7 @@ export default async function Guild({ params }) {
               <tbody>
                 {g.members.map((m) => (
                   <tr key={m.name}>
-                    <td>{m.name}</td><td>{m.rank}</td><td>{m.vocation}</td>
+                    <td><a href={`/${locale}/character/${enc(m.name)}`}>{m.name}</a></td><td>{m.rank}</td><td>{m.vocation}</td>
                     <td className="n">{fmtNum(m.level, locale)}</td><td>{m.joined ? fmtDate(m.joined, locale) : "–"}</td>
                   </tr>
                 ))}

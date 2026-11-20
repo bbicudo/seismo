@@ -28,7 +28,7 @@ export default async function WrappedCharacter({ params, searchParams }) {
       <div className="kicker">Seismo Wrapped · {monthLabel(d.month, locale)}</div>
       <h1>{d.name}</h1>
       <p className="lead">
-        {d.vocation} · level {fmtNum(d.level, locale)} · <a href={base}>{d.world}</a> ·{" "}
+        <a href={`/${locale}/character/${enc(d.name)}`}>{d.vocation} · level {fmtNum(d.level, locale)}</a> · <a href={base}>{d.world}</a> ·{" "}
         {d.guild ? fmt(t.in_guild, { rank: d.guild.rank, guild: d.guild.name }) : t.no_guild}
       </p>
       {d.partial && <p className="notice">{t.partial}</p>}

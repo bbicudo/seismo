@@ -2,6 +2,7 @@ import { TimeChart } from "../../components/charts";
 import { api, enc, fmtDate, fmtNum } from "../../lib/api";
 import { dict, fmt } from "../../lib/i18n";
 import { getFlags, on } from "../../lib/flags";
+import CharacterSearch from "../../components/character-search";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +23,7 @@ export default async function Overview({ params, searchParams }) {
       <section className="card hero">
         <h1>{t.overview_title}</h1>
         <p className="lead">{t.overview_lead}</p>
+        {on(f, "page_characters") && <CharacterSearch locale={locale} />}
         <div className="stats">
           <div className="stat"><b>{fmtNum(total, locale)}</b><span>{t.players_online}</span></div>
           <div className="stat"><b>{fmtNum(all.length, locale)}</b><span>{t.worlds}</span></div>

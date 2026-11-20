@@ -45,7 +45,7 @@ export default async function Town({ params }) {
                 <tr key={h.house_id}>
                   <td><a href={`${base}/house/${h.house_id}`}>{h.name}</a>{h.kind === "guildhall" && <span className="muted"> · {t.kind_guildhall}</span>}</td>
                   <td>{houseStatus(h, t)}</td>
-                  <td>{h.owner || (h.rented ? <span className="muted">{t.owner_unknown}</span> : "–")}</td>
+                  <td>{h.owner ? <a href={`/${locale}/character/${enc(h.owner)}`}>{h.owner}</a> : (h.rented ? <span className="muted">{t.owner_unknown}</span> : "–")}</td>
                   <td className="n">{fmtNum(h.size, locale)}</td>
                   <td className="n">{fmtNum(h.rent, locale)}</td>
                   <td className="n">{h.auctioned ? fmtNum(h.current_bid || 0, locale) : "–"}</td>

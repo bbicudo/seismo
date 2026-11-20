@@ -112,3 +112,50 @@ export function Heatmap({ cells, weekdays, locale = "pt" }) {
     </div>
   );
 }
+
+/** Barras por dia (uma série). points: [{ day: "AAAA-MM-DD", v: número }]; dias sem valor ficam vazios. */
+export function DayBars({ points, from, to, locale = "pt", label, unit = "h", height = 160 }) {
+  const days = [];
+  for (let d = new Date(`${from}T12:00:00Z`); d <= new Date(`${to}T12:00:00Z`); d = new Date(d.getTime() + 864e5)) {
+    days.push(d.toISOString().slice(0, 10));
+  }
+  if (!days.length) return null;
+  const map = new Map(points.map((p) => [p.day, p.v]));
+  const W = 900, H = height, L = 40, R = 8, T = 8, B = 24;
+  const vmax = niceMax(Math.max(1, ...points.map((p) => p.v)));
+  const bw = (W - L - R) / days.length;
+  const y = (v) => T + (1 - v / vmax) * (H - T - B);
+  const nf = new Intl.NumberFormat(NUM[locale], { maximumFractionDigits: 1 });
+  const df = new Intl.DateTimeFormat(NUM[locale], { day: "2-digit", month: "2-digit", timeZone: "UTC" });
+  const every = Math.ceil(days.length / 8);
+  return (
+    <div className="chart">
+      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={label}>
+        <g className="axis">
+          {[0, 0.5, 1].map((f) => (
+            <g key={f}>
+              <line className="gridline" x1={L} x2={W - R} y1={y(f * vmax)} y2={y(f * vmax)} />
+              <text x={L - 6} y={y(f * vmax) + 4} textAnchor="end">{nf.format(f * vmax)}</text>
+            </g>
+          ))}
+          {days.map((d, i) => (i % every === 0 ? (
+            <text key={d} className={`xt${(i / every) % 2 ? " odd" : ""}`} x={L + i * bw + bw / 2} y={H - 6} textAnchor="middle">
+              {df.format(new Date(`${d}T12:00:00Z`))}
+            </text>
+          ) : null))}
+        </g>
+        {days.map((d, i) => {
+          const v = map.get(d);
+          return (
+            <g key={d}>
+              {v > 0 && <rect className="bar" x={L + i * bw + 1} y={y(v)} width={Math.max(1, bw - 2)} height={y(0) - y(v)} rx="2" />}
+              <rect className="hit" x={L + i * bw} y={T} width={bw} height={H - T - B}>
+                <title>{`${df.format(new Date(`${d}T12:00:00Z`))}: ${v ? `${nf.format(v)} ${unit}` : "–"}`}</title>
+              </rect>
+            </g>
+          );
+        })}
+      </svg>
+    </div>
+  );
+}

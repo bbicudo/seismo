@@ -12,6 +12,8 @@ FLAGS: list[dict] = [
      "help": "Contagem anônima por vocação e faixa de level."},
     {"key": "page_kills", "group": "site", "label": "Mortes e criaturas",
      "help": "Top mortes na página inicial e criaturas mais mortas em cada mundo."},
+    {"key": "page_characters", "group": "site", "label": "Página de personagem",
+     "help": "Perfil de cada personagem: level, minutos online por dia, levels por mês, guild, casas e transfers."},
     {"key": "page_guilds", "group": "site", "label": "Guilds",
      "help": "Lista de guilds por mundo e página de cada guild."},
     {"key": "page_houses", "group": "site", "label": "Casas",

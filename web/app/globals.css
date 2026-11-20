@@ -165,3 +165,7 @@ footer { color: var(--muted); font-size: 12px; padding-block: 8px 32px; }
   .chart .axis .xt.odd { display: none; }
   .chart .series { stroke-width: 3; }
 }
+.chart .bar { fill: var(--red); opacity: .85; }
+.charsearch { margin-top: 12px; }
+.charsearch input { font: 14px var(--f-body), sans-serif; background: var(--paper); color: var(--ink); border: 1px solid var(--line); border-radius: 4px; padding: 7px 10px; min-width: 240px; }
+@media (max-width: 600px) { .charsearch input { min-width: 0; } }

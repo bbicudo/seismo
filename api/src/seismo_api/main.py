@@ -588,6 +588,94 @@ async def world_thermometer(name: str, response: Response):
             "hot": hot, "cold": cold, "day_events": day_events}
 
 
+# ---------------------------------------------------------------- personagem
+# Mostra só o que a política de privacidade prevê: totais de minutos por dia de jogo (nunca horários),
+# level por mês, guild, casas e transfers. Quem fez opt-out não tem página.
+
+
+@app.get("/v1/characters/{name}")
+async def character(name: str, response: Response, days: int = 60):
+    await require("page_characters")
+    await params()
+    days = max(7, min(days, 400))
+    found = await query(
+        f"""
+        SELECT c.id, c.name, c.level, c.vocation, c.first_seen_day, c.last_seen_day, w.name AS world, w.location, w.pvp_type
+        FROM characters c JOIN worlds w ON w.id = c.world_id
+        WHERE lower(c.name) = lower(%s) AND {NOT_OPTED.format(col='c.name')}
+        """,
+        name,
+    )
+    if not found:
+        # membro de guild que o Seismo ainda não viu online: perfil mínimo com os dados públicos da guild
+        found = await query(
+            f"""
+            SELECT NULL::bigint AS id, m.name, m.level, m.vocation, NULL::date AS first_seen_day, NULL::date AS last_seen_day,
+                   w.name AS world, w.location, w.pvp_type
+            FROM guild_members m JOIN guilds g ON g.id = m.guild_id JOIN worlds w ON w.id = g.world_id
+            WHERE lower(m.name) = lower(%s) AND {NOT_OPTED.format(col='m.name')} LIMIT 1
+            """,
+            name,
+        )
+        if not found:
+            raise HTTPException(404, "personagem não encontrado")
+    c = found[0]
+    cid = c.pop("id") or 0
+    daily = await query(
+        "SELECT game_day AS day, minutes FROM daily_online WHERE character_id = %s AND game_day > current_date - %s "
+        "ORDER BY game_day",
+        cid, days,
+    )
+    months = await query(
+        "SELECT month, level_start, level_end FROM monthly_level WHERE character_id = %s ORDER BY month DESC LIMIT 24",
+        cid,
+    )
+    guild = await query(
+        "SELECT g.name, m.rank, m.title, m.joined, w.name AS world FROM guild_members m "
+        "JOIN guilds g ON g.id = m.guild_id JOIN worlds w ON w.id = g.world_id "
+        "WHERE lower(m.name) = lower(%s) AND g.disbanded_day IS NULL LIMIT 1",
+        c["name"],
+    )
+    houses = await query(
+        "SELECT h.house_id, h.name, h.town, h.kind, w.name AS world, o.first_seen_day "
+        "FROM house_owners o JOIN houses h ON h.world_id = o.world_id AND h.house_id = o.house_id "
+        "JOIN worlds w ON w.id = o.world_id WHERE lower(o.owner) = lower(%s) AND o.ended_day IS NULL ORDER BY h.name",
+        c["name"],
+    )
+    transfers = await query(
+        "SELECT t.detected_day AS day, wf.name AS from_world, wt.name AS to_world FROM transfers t "
+        "JOIN worlds wf ON wf.id = t.from_world_id JOIN worlds wt ON wt.id = t.to_world_id "
+        "WHERE t.character_id = %s ORDER BY t.detected_day DESC LIMIT 20",
+        cid,
+    )
+    last30 = [d for d in daily if (datetime.now(timezone.utc).date() - d["day"]).days < 30]
+    cache(response, 300)
+    return {
+        **c, "seen_online": cid != 0, "days": days, "daily": daily, "months": months,
+        "guild": guild[0] if guild else None, "houses": houses, "transfers": transfers,
+        "minutes_30d": sum(d["minutes"] for d in last30), "active_days_30d": len(last30),
+    }
+
+
+@app.get("/v1/characters")
+async def character_search(q: str, response: Response):
+    """Busca por começo do nome (mínimo 3 letras), para a caixa de busca do site."""
+    await require("page_characters")
+    term = " ".join(q.split())
+    if len(term) < 3:
+        return []
+    rows = await query(
+        f"""
+        SELECT c.name, c.level, c.vocation, w.name AS world FROM characters c JOIN worlds w ON w.id = c.world_id
+        WHERE lower(c.name) LIKE lower(%s) || '%%' AND {NOT_OPTED.format(col='c.name')}
+        ORDER BY (lower(c.name) = lower(%s)) DESC, c.level DESC LIMIT 10
+        """,
+        term, term,
+    )
+    cache(response, 60)
+    return rows
+
+
 # ---------------------------------------------------------------- mapa de hunts
 # As kill statistics dizem quantas criaturas de cada tipo morreram no mundo, não onde. Cada hunt da TibiaWiki
 # lista as criaturas que vivem lá: as mortes de uma criatura são divididas igualmente entre as hunts onde ela
