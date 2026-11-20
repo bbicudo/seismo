@@ -120,6 +120,15 @@ in `.env`, then run `docker compose pull && docker compose up -d`.
 - Social icons: [Simple Icons](https://simpleicons.org/), CC0.
 - Fonts: Pixelify Sans, IBM Plex Sans and IBM Plex Mono, SIL Open Font License.
 
+## License
+
+Seismo is free software, licensed under the [GNU Affero General Public License v3.0](LICENSE) (AGPL-3.0).
+You can use, study, modify and share it. If you run a modified version as a public website or service, you must
+make your modified source code available to its users under the same license.
+
+Third-party data and assets keep their own terms (see Credits): TibiaWiki content is CC BY-SA 3.0 and the game map
+is © CipSoft GmbH.
+
 ## AI disclaimer
 
 This whole project, including code, infrastructure and documentation, is developed with the support of AI.
