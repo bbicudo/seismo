@@ -125,7 +125,7 @@ services:
 
   caddy:
     <<: *app
-    image: caddy:2.10.0-alpine
+    image: caddy:2.11.9-alpine
     ports:
       - "80:80"
       - "443:443"
