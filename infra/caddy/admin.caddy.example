@@ -1,5 +1,5 @@
 # Modelo. O arquivo real (infra/caddy/admin.caddy) é criado no servidor:
 #   infra/scripts/seismo.sh admin-user <nome>
-basic_auth {
+basic_auth bcrypt "Seismo admin" {
 	admin $2a$14$SUBSTITUIDO_PELO_HASH_GERADO_NO_SERVIDOR
 }

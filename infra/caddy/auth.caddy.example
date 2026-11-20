@@ -1,6 +1,6 @@
 # Modelo. O arquivo real (infra/caddy/auth.caddy) é criado por você no servidor:
 #   infra/scripts/seismo.sh lab-user <nome>
 # O script pede a senha sem mostrar na tela e grava só o hash bcrypt aqui.
-basic_auth {
+basic_auth bcrypt "Seismo lab" {
 	tester $2a$14$SUBSTITUIDO_PELO_HASH_GERADO_NO_SERVIDOR
 }

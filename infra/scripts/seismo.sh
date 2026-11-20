@@ -30,6 +30,8 @@ case "${1:-status}" in
     $DC logs --tail 100 "${2:-collector}";;
   lab-user|admin-user)
     FILE=infra/caddy/$([ "$1" = admin-user ] && echo admin || echo auth).caddy
+    # nomes de área diferentes: o navegador guarda uma senha para cada área e não mistura as duas
+    REALM=$([ "$1" = admin-user ] && echo "Seismo admin" || echo "Seismo lab")
     NAME=${2:?informe o nome do usuário}
     read -r -s -p "Senha para $NAME: " PW; echo
     read -r -s -p "Repita a senha: " PW2; echo
@@ -38,7 +40,7 @@ case "${1:-status}" in
     HASH=$(printf '%s\n' "$PW" | docker run --rm -i caddy:2.10.0-alpine caddy hash-password)
     unset PW PW2
     case "$HASH" in \$2*) ;; *) echo "Falha ao gerar o hash. Nada foi gravado."; exit 1;; esac
-    printf 'basic_auth {\n\t%s %s\n}\n' "$NAME" "$HASH" > "$FILE"
+    printf 'basic_auth bcrypt "%s" {\n\t%s %s\n}\n' "$REALM" "$NAME" "$HASH" > "$FILE"
     chmod 0644 "$FILE"
     echo "$FILE gravado (só o hash)."
     if $DC ps --status running caddy | grep -q caddy; then $DC exec -T caddy caddy reload --config /etc/caddy/Caddyfile && echo "Caddy recarregado."; fi;;
