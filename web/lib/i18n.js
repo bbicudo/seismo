@@ -75,11 +75,12 @@ const DICT = {
     houses_in: "Casas em {town}",
     kind_house: "casa",
     kind_guildhall: "guildhall",
-    size: "Tamanho",
-    rent: "Aluguel",
+    size: "Tamanho (sqm)",
+    rent: "Aluguel (gp/mês)",
     status: "Situação",
     owner: "Dono",
-    bid: "Lance atual",
+    bid: "Lance atual (gp)",
+    no_bid: "sem lance",
     time_left: "Tempo restante",
     st_rented: "alugada",
     st_auction: "em leilão",
@@ -235,11 +236,12 @@ const DICT = {
     houses_in: "Houses in {town}",
     kind_house: "house",
     kind_guildhall: "guildhall",
-    size: "Size",
-    rent: "Rent",
+    size: "Size (sqm)",
+    rent: "Rent (gp/month)",
     status: "Status",
     owner: "Owner",
-    bid: "Current bid",
+    bid: "Current bid (gp)",
+    no_bid: "no bid",
     time_left: "Time left",
     st_rented: "rented",
     st_auction: "on auction",
@@ -340,3 +342,12 @@ export const VOC_LABEL = {
   en: { knight: "Knight", paladin: "Paladin", sorcerer: "Sorcerer", druid: "Druid", monk: "Monk", none: "No vocation" },
 };
 export const BANDS = ["1-99", "100-299", "300-599", "600+"];
+
+// Tempo restante de leilão vem em inglês da TibiaData ("4 days", "1 hour"): traduz para o português.
+export function timeLeft(text, locale) {
+  if (!text) return "–";
+  if (locale === "en") return text;
+  return String(text).replace(/(\d+)\s*days?/g, (_, n) => `${n} ${n === "1" ? "dia" : "dias"}`)
+    .replace(/(\d+)\s*hours?/g, (_, n) => `${n} ${n === "1" ? "hora" : "horas"}`)
+    .replace(/(\d+)\s*minutes?/g, (_, n) => `${n} min`);
+}

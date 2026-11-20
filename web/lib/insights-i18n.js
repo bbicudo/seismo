@@ -94,7 +94,7 @@ const PT = {
   occupancy: "Ocupação",
   auctioned: "Em leilão",
   avg_bid: "Lance médio",
-  closed: "Fechados",
+  closed: "Leilões fechados",
   owner_changes: "Trocas de dono",
   // eventos
   impact: "Impacto dos eventos",
@@ -214,7 +214,7 @@ const EN = {
   occupancy: "Occupancy",
   auctioned: "On auction",
   avg_bid: "Avg bid",
-  closed: "Closed",
+  closed: "Auctions closed",
   owner_changes: "Owner changes",
   impact: "Event impact",
   impact_lead: "Each event day compared with the same weekdays in the {w} weeks before without events, across all worlds.",

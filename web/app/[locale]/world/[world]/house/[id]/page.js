@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { api, enc, fmtDate, fmtNum } from "../../../../../../lib/api";
-import { dict } from "../../../../../../lib/i18n";
+import { dict, timeLeft } from "../../../../../../lib/i18n";
 import { D, seo } from "../../../../../../lib/seo";
 
 export async function generateMetadata({ params }) {
@@ -47,8 +47,8 @@ export default async function House({ params }) {
                   <tr key={s.snap_day}>
                     <td>{fmtDate(s.snap_day, locale)}</td>
                     <td>{s.auctioned ? t.st_auction : s.rented ? t.st_rented : t.st_free}</td>
-                    <td className="n">{s.auctioned ? fmtNum(s.current_bid || 0, locale) : "–"}</td>
-                    <td>{s.time_left || "–"}</td>
+                    <td className="n">{s.auctioned ? (s.current_bid ? fmtNum(s.current_bid, locale) : <span className="muted">{t.no_bid}</span>) : "–"}</td>
+                    <td>{timeLeft(s.time_left, locale)}</td>
                   </tr>
                 ))}
               </tbody>
