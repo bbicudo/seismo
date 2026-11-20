@@ -13,7 +13,7 @@ from datetime import date, datetime, timedelta, timezone
 from psycopg_pool import AsyncConnectionPool
 from redis.asyncio import Redis
 
-from . import events, raids
+from . import events, hunts, raids
 from .logic import game_day
 from .privacy import Optouts, process_queue
 from .settings import Settings
@@ -32,6 +32,7 @@ JOB_FLAGS = {
     "events": "collect_events",
     "killstats": "collect_killstats",
     "raids": "collect_killstats",
+    "hunts": "collect_killstats",
     "guild_lists": "collect_guilds",
     "houses": "collect_houses",
 }
@@ -110,6 +111,7 @@ class DailyJobs:
         flags = await self.flags()
         day = self.effective_day()
         for job, fn in (("events", self.job_events), ("killstats", self.job_killstats), ("raids", self.job_raids),
+                        ("hunts", self.job_hunts),
                         ("guild_lists", self.job_guild_lists), ("houses", self.job_houses),
                         ("retention", self.job_retention)):
             flag = JOB_FLAGS.get(job)
@@ -130,6 +132,10 @@ class DailyJobs:
         async with self.pool.connection() as conn:
             cur = await conn.execute("SELECT key, enabled FROM feature_flags")
             return {k: v for k, v in await cur.fetchall()}
+
+    # ---------- hunts (sem requisições: só atualiza a lista de áreas) ----------
+    async def job_hunts(self, day: date) -> int:
+        return await hunts.sync(self.pool)
 
     # ---------- eventos e destaques do dia (poucas requisições) ----------
     async def job_events(self, day: date) -> int:

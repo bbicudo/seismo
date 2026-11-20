@@ -16,6 +16,8 @@ FLAGS: list[dict] = [
      "help": "Lista de guilds por mundo e página de cada guild."},
     {"key": "page_houses", "group": "site", "label": "Casas",
      "help": "Casas por cidade, leilões, donos e histórico."},
+    {"key": "page_hunts", "group": "site", "label": "Mapa de hunts",
+     "help": "Mapa do mundo com as áreas de caça mais movimentadas do dia, a partir das kill statistics."},
     {"key": "page_raids", "group": "site", "label": "Raids e termômetro",
      "help": "Página de raids de cada mundo, com janela provável e termômetro de respawn."},
     {"key": "page_events", "group": "site", "label": "Eventos",

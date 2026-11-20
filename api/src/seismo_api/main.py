@@ -554,6 +554,58 @@ async def world_thermometer(name: str, response: Response):
             "hot": hot, "cold": cold, "day_events": day_events}
 
 
+# ---------------------------------------------------------------- mapa de hunts
+# As kill statistics dizem quantas criaturas de cada tipo morreram no mundo, não onde. Cada hunt da TibiaWiki
+# lista as criaturas que vivem lá: as mortes de uma criatura são divididas igualmente entre as hunts onde ela
+# vive. É uma estimativa de onde se caçou mais, não uma medição de posição de jogadores.
+
+MAP_BOUNDS = {"x_min": 31744, "y_min": 30976, "width": 2560, "height": 2048}
+
+
+@app.get("/v1/worlds/{name}/hunts")
+async def world_hunts(name: str, response: Response, day: str | None = None):
+    await require("page_hunts")
+    w = await world_or_404(name)
+    days = await query(
+        "SELECT DISTINCT stats_day FROM kill_stats_daily WHERE world_id = %s ORDER BY stats_day DESC LIMIT 30", w["id"],
+    )
+    available = [d["stats_day"] for d in days]
+    if not available:
+        return {"world": w["name"], "day": None, "days": [], "hunts": [], "bounds": MAP_BOUNDS}
+    chosen = available[0]
+    if day:
+        try:
+            wanted = datetime.strptime(day, "%Y-%m-%d").date()
+        except ValueError:
+            raise HTTPException(422, "dia inválido (use AAAA-MM-DD)")
+        if wanted not in available:
+            raise HTTPException(404, "sem kill statistics nesse dia")
+        chosen = wanted
+    rows = await query(
+        """
+        WITH hk AS (SELECT DISTINCT h.slug, k AS key FROM hunts h, unnest(h.race_keys) k),
+        share AS (SELECT key, count(*) AS n FROM hk GROUP BY key),
+        kills AS (SELECT lower(race) AS race, race AS label, killed FROM kill_stats_daily
+                  WHERE world_id = %s AND stats_day = %s AND killed > 0),
+        per AS (
+          SELECT hk.slug, kills.label, kills.killed::float / share.n AS part
+          FROM hk JOIN share ON share.key = hk.key JOIN kills ON kills.race = hk.key
+        )
+        SELECT h.slug, h.name, h.city, h.x, h.y, h.z, round(sum(per.part))::int AS kills,
+               (SELECT json_agg(t ORDER BY t.part DESC) FROM (
+                  SELECT p2.label AS creature, round(p2.part)::int AS part FROM per p2
+                  WHERE p2.slug = h.slug ORDER BY p2.part DESC LIMIT 4) t) AS top
+        FROM hunts h JOIN per ON per.slug = h.slug
+        GROUP BY h.slug, h.name, h.city, h.x, h.y, h.z
+        HAVING round(sum(per.part)) > 0
+        ORDER BY kills DESC
+        """,
+        w["id"], chosen,
+    )
+    cache(response, 900)
+    return {"world": w["name"], "day": chosen, "days": available, "hunts": rows, "bounds": MAP_BOUNDS}
+
+
 # ---------------------------------------------------------------- wrapped (resumo do mês)
 # Só totais mensais e diários: nenhum horário. Quem fez opt-out não tem Wrapped.
 

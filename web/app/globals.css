@@ -100,3 +100,11 @@ footer { color: var(--muted); font-size: 12px; padding-block: 8px 32px; }
 .switch { font: 600 12px var(--f-mono), monospace; border-radius: 999px; padding: 6px 14px; min-width: 96px; cursor: pointer; border: 1px solid; }
 .switch.on { background: var(--ok); border-color: var(--ok); color: #fff; }
 .switch.off { background: transparent; border-color: var(--line); color: var(--muted); }
+.huntmap { position: relative; width: 100%; border-radius: 6px; overflow: hidden; border: 1px solid var(--line); background: #0f1412; }
+.huntmap img { display: block; width: 100%; height: auto; image-rendering: pixelated; }
+.huntmap svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.huntmap .hunt { fill: #e0321f; fill-opacity: .45; stroke: #fff; stroke-width: 3; }
+.huntmap .hunt.under { fill: #7b3fe4; }
+.huntmap .hunt:hover { fill-opacity: .8; }
+.huntmap .hunt-label { fill: #fff; font: 600 30px var(--f-mono), monospace; text-anchor: middle; paint-order: stroke; stroke: #000; stroke-width: 6px; pointer-events: none; }
+@media (prefers-color-scheme: dark) { .huntmap img { filter: brightness(.85); } }

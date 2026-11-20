@@ -48,6 +48,9 @@ def main() -> None:
     assert "midnight panthers" in race_keys("Midnight Panther")
     assert "fairies" in race_keys("Fairy")
     seed = load_seed()
+    from .hunts import load_seed as load_hunts
+    hs = load_hunts()
+    assert len(hs) > 100 and all(31744 <= h["x"] < 34304 and 30976 <= h["y"] < 33024 for h in hs)
     assert len(seed) > 50 and all(r["creatures"] for r in seed)
     assert spawn_kind("Raid, Unique, Unblockable") == "raid"
     assert spawn_kind("Regular, Raid") == "regular" and spawn_kind("") == "unknown"
