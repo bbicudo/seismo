@@ -114,3 +114,5 @@ footer { color: var(--muted); font-size: 12px; padding-block: 8px 32px; }
 .param-input button { font: 600 13px var(--f-body), sans-serif; border-radius: 4px; padding: 6px 12px; cursor: pointer; border: 1px solid var(--red); background: var(--red); color: #fff; }
 .param-input button.ghost { background: transparent; color: var(--muted); border-color: var(--line); }
 @media (max-width: 700px) { .param { grid-template-columns: minmax(0, 1fr); } .param-input input { width: 100%; } }
+.big .wide { grid-column: span 2; }
+@media (max-width: 440px) { .big .wide { grid-column: auto; } }

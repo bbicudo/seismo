@@ -42,7 +42,7 @@ export default async function WrappedWorld({ params, searchParams }) {
         <div><b>{nf(d.kills)}</b><span>{t.kills}</span></div>
         <div><b>{nf(d.new_characters)}</b><span>{t.new_chars}</span></div>
         <div><b>+{nf(d.levels_gained)}</b><span>{t.world_levels}</span></div>
-        <div><b>{nf(d.transfers.arrived)} / {nf(d.transfers.left)}</b><span>{t.arrived} / {t.left}</span></div>
+        <div className="wide"><b>{nf(d.transfers.arrived)} / {nf(d.transfers.left)}</b><span>{t.arrived} / {t.left}</span></div>
       </div>
       <div className="grid2">
         <List title={t.top_creatures} rows={d.top_creatures} value={(r) => nf(r.killed)} />

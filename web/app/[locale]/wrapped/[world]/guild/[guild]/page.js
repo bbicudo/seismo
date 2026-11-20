@@ -31,7 +31,7 @@ export default async function WrappedGuild({ params, searchParams }) {
         <div><b>{nf(d.active_members)}</b><span>{t.active}</span></div>
         <div><b>{nf(hours(d.minutes))}</b><span>{t.member_hours}</span></div>
         <div><b>+{nf(d.levels_gained)}</b><span>{t.levels}</span></div>
-        <div><b>{nf(d.joins)} / {nf(d.leaves)}</b><span>{t.joins} / {t.leaves}</span></div>
+        <div className="wide"><b>{nf(d.joins)} / {nf(d.leaves)}</b><span>{t.joins} / {t.leaves}</span></div>
       </div>
       {d.top_levels.length > 0 && (
         <>
