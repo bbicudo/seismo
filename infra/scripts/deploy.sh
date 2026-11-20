@@ -15,6 +15,12 @@ fi
 echo "Atualizando $before -> $after"
 git --no-pager log --oneline "$before..$after"
 
+# cria arquivos novos que o compose monta (sem eles, o Docker criaria pastas no lugar)
+infra/scripts/init-env.sh >/dev/null
+for f in infra/caddy/auth.caddy infra/caddy/admin.caddy; do
+  [ -f "$f" ] || { echo "ERRO: $f não existe (ou virou pasta). Corrija antes de subir."; exit 1; }
+done
+
 docker compose build
 docker compose up -d
 docker compose ps --format 'table {{.Service}}\t{{.State}}\t{{.Status}}'
