@@ -100,7 +100,7 @@ jobs:
     steps:
       - name: Nome da imagem
         run: echo "IMAGE=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/seismo-${{ matrix.service }}" >> "$GITHUB_ENV"
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           pattern: digest-${{ matrix.service }}-*
           path: /tmp/digests
