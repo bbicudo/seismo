@@ -54,6 +54,20 @@ PARAMS: list[dict] = [
     {"key": "thermo_z", "group": "Estatísticas", "applies": "site", "type": "float",
      "default": 2.0, "min": 1.0, "max": 5.0, "label": "Termômetro: sensibilidade (z)",
      "help": "Quanto o dia precisa fugir da média para aparecer. Maior = menos alertas."},
+    # SEO (o endereço do site fica no servidor: SITE_ADDRESS no .env, por causa do certificado HTTPS)
+    {"key": "seo_indexing", "group": "SEO", "applies": "site", "type": "bool", "public": True,
+     "default": True, "label": "Permitir buscadores",
+     "help": "Desligado: o robots.txt bloqueia tudo e todas as páginas pedem para não ser indexadas."},
+    {"key": "seo_index_characters", "group": "SEO", "applies": "site", "type": "bool", "public": True,
+     "default": False, "label": "Indexar perfis de personagem",
+     "help": "Perfis e Wrapped de personagem nos buscadores. Desligado por privacidade: as páginas abrem, mas pedem para não ser indexadas."},
+    {"key": "seo_sitemap_guilds", "group": "SEO", "applies": "site", "type": "bool", "public": True,
+     "default": True, "label": "Guilds no sitemap", "help": "Inclui a página de cada guild ativa no sitemap.xml."},
+    {"key": "seo_sitemap_towns", "group": "SEO", "applies": "site", "type": "bool", "public": True,
+     "default": True, "label": "Cidades no sitemap", "help": "Inclui a lista de casas de cada cidade no sitemap.xml."},
+    {"key": "seo_sitemap_worlds_extra", "group": "SEO", "applies": "site", "type": "bool", "public": True,
+     "default": True, "label": "Hunts, raids e Wrapped de mundo no sitemap",
+     "help": "Além da página principal de cada mundo, inclui as páginas de hunts, raids e Wrapped."},
     # raids
     {"key": "raids_rare_fraction", "group": "Raids", "applies": "coletor", "type": "float",
      "default": 0.05, "min": 0.01, "max": 0.5, "label": "Raridade para contar como raid",
@@ -73,6 +87,15 @@ def validate(key: str, value):
     p = BY_KEY.get(key)
     if not p:
         raise ValueError("parâmetro desconhecido")
+    if p["type"] == "bool":
+        if isinstance(value, bool):
+            return value
+        s = str(value).strip().lower()
+        if s in ("1", "true", "on", "sim", "yes"):
+            return True
+        if s in ("0", "false", "off", "nao", "não", "no"):
+            return False
+        raise ValueError("use ligado ou desligado")
     if p["type"] == "int":
         v = int(value)
     elif p["type"] == "float":

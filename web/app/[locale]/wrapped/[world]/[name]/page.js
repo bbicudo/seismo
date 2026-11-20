@@ -1,4 +1,4 @@
-import { getFlags, on } from "../../../../../lib/flags";
+import { getFlags, getParams, on } from "../../../../../lib/flags";
 import { notFound } from "next/navigation";
 import { api, enc, fmtNum } from "../../../../../lib/api";
 import { fmt } from "../../../../../lib/i18n";
@@ -8,8 +8,9 @@ import { D, seo } from "../../../../../lib/seo";
 
 export async function generateMetadata({ params }) {
   const { locale, world, name } = await params;
+  const sp = await getParams();
   const w = decodeURIComponent(world), n = decodeURIComponent(name);
-  return seo(locale, `/wrapped/${encodeURIComponent(w)}/${encodeURIComponent(n)}`, { title: `Wrapped · ${n}`, description: D.wrappedChar[locale === "en" ? "en" : "pt"](n), noindex: true, ownImage: true });
+  return seo(locale, `/wrapped/${encodeURIComponent(w)}/${encodeURIComponent(n)}`, { title: `Wrapped · ${n}`, description: D.wrappedChar[locale === "en" ? "en" : "pt"](n), noindex: !sp.seo_index_characters, ownImage: true });
 }
 
 export const dynamic = "force-dynamic";

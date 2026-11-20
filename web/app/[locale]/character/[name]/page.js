@@ -1,14 +1,15 @@
 import { notFound } from "next/navigation";
 import { DayBars } from "../../../../components/charts";
 import { api, enc, fmtDate, fmtNum } from "../../../../lib/api";
-import { getFlags, on } from "../../../../lib/flags";
+import { getFlags, getParams, on } from "../../../../lib/flags";
 import { fmt } from "../../../../lib/i18n";
 import { D, seo } from "../../../../lib/seo";
 
 export async function generateMetadata({ params }) {
   const { locale, name } = await params;
+  const sp = await getParams();
   const n = decodeURIComponent(name);
-  return seo(locale, `/character/${encodeURIComponent(n)}`, { title: n, description: D.character[locale === "en" ? "en" : "pt"](n), noindex: true });
+  return seo(locale, `/character/${encodeURIComponent(n)}`, { title: n, description: D.character[locale === "en" ? "en" : "pt"](n), noindex: !sp.seo_index_characters });
 }
 
 export const dynamic = "force-dynamic";

@@ -33,6 +33,8 @@ async function setParam(formData) {
 
 function Param({ p, ok }) {
   const isNum = p.type === "int" || p.type === "float";
+  const isBool = p.type === "bool";
+  const show = (v) => (isBool ? (v ? "ligado" : "desligado") : String(v) || "vazio");
   const differs = p.applies === "coletor" && p.collector_value != null && String(p.collector_value) !== String(p.value);
   return (
     <form action={setParam} className="param" id={`p-${p.key}`}>
@@ -41,16 +43,23 @@ function Param({ p, ok }) {
         <label htmlFor={`in-${p.key}`}><b>{p.label}</b></label>
         {p.help && <p className="muted" style={{ margin: "2px 0 0", fontSize: 14 }}>{p.help}</p>}
         <small className="muted">
-          padrão: {String(p.default) || "vazio"}{isNum ? ` · de ${p.min} a ${p.max}` : ""} · vale para: {p.applies}
+          padrão: {show(p.default)}{isNum ? ` · de ${p.min} a ${p.max}` : ""} · vale para: {p.applies}
           {p.custom && p.updated_at ? ` · alterado` : ""}
           {differs ? ` · coletor ainda com ${p.collector_value} (aplica em até 30 s)` : ""}
           {ok === p.key ? " · salvo ✓" : ""}
         </small>
       </div>
       <div className="param-input">
-        <input id={`in-${p.key}`} name="value" defaultValue={String(p.value)}
-               type={isNum ? "number" : "text"} step={p.type === "float" ? "0.01" : "1"}
-               min={isNum ? p.min : undefined} max={isNum ? p.max : undefined} />
+        {isBool ? (
+          <select id={`in-${p.key}`} name="value" defaultValue={p.value ? "true" : "false"}>
+            <option value="true">ligado</option>
+            <option value="false">desligado</option>
+          </select>
+        ) : (
+          <input id={`in-${p.key}`} name="value" defaultValue={String(p.value)}
+                 type={isNum ? "number" : "text"} step={p.type === "float" ? "0.01" : "1"}
+                 min={isNum ? p.min : undefined} max={isNum ? p.max : undefined} />
+        )}
         <button type="submit">Salvar</button>
         {p.custom && <button type="submit" name="reset" value="1" className="ghost">Padrão</button>}
       </div>

@@ -1037,7 +1037,7 @@ async def admin_set_flag(body: FlagIn, response: Response):
 
 class ParamIn(BaseModel):
     key: str
-    value: str | int | float | None = None   # None = voltar ao padrão
+    value: str | int | float | bool | None = None   # None = voltar ao padrão
 
 
 @app.get("/v1/params")

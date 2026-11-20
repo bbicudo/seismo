@@ -169,3 +169,5 @@ footer { color: var(--muted); font-size: 12px; padding-block: 8px 32px; }
 .charsearch { margin-top: 12px; }
 .charsearch input { font: 14px var(--f-body), sans-serif; background: var(--paper); color: var(--ink); border: 1px solid var(--line); border-radius: 4px; padding: 7px 10px; min-width: 240px; }
 @media (max-width: 600px) { .charsearch input { min-width: 0; } }
+.param-input select { width: 150px; font: 14px var(--f-body), sans-serif; padding: 6px 8px; border: 1px solid var(--line); border-radius: 4px; background: var(--paper); color: var(--ink); }
+@media (max-width: 700px) { .param-input select { width: 100%; } }

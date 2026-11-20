@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import localFont from "next/font/local";
 import { LOCALES, dict } from "../../lib/i18n";
-import { getFlags, on } from "../../lib/flags";
+import { getFlags, getParams, on } from "../../lib/flags";
 import "../globals.css";
 
 // Fontes dentro do projeto (licença SIL OFL): o build não depende de internet e
@@ -28,12 +28,13 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }) {
   const { locale } = await params;
   const t = dict(locale);
+  const p = await getParams();
   return {
     metadataBase: new URL(process.env.PUBLIC_URL || "http://localhost:3000"),
     openGraph: { siteName: "Seismo", locale: locale === "pt" ? "pt_BR" : "en_GB", type: "website" },
     title: { default: `Seismo · ${t.tagline}`, template: "%s · Seismo" },
     description: t.overview_lead,
-    robots: { index: true, follow: true },
+    robots: p.seo_indexing ? { index: true, follow: true } : { index: false, follow: false },
   };
 }
 
