@@ -1,5 +1,5 @@
 # Multi-arch: só imagem base oficial e wheels do PyPI (todas com aarch64 e x86_64).
-FROM python:3.12.11-slim-bookworm
+FROM python:3.15.2-slim-bookworm
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
