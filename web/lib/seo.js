@@ -1,5 +1,7 @@
 // Metadados de SEO por página: título, descrição, canonical e o par em outro idioma (hreflang).
-export function seo(locale, path, { title, description, noindex = false } = {}) {
+export function seo(locale, path, { title, description, noindex = false, ownImage = false } = {}) {
+  // páginas com cartão próprio (Wrapped) apontam para o opengraph-image da própria rota
+  const image = ownImage ? `/${locale}${path}/opengraph-image` : `/${locale}/opengraph-image`;
   const languages = { "pt-BR": `/pt${path}`, en: `/en${path}`, "x-default": `/en${path}` };
   return {
     title,
@@ -8,9 +10,9 @@ export function seo(locale, path, { title, description, noindex = false } = {}) 
     // a imagem padrão precisa ir aqui: definir openGraph substitui o do layout inteiro.
     // Páginas com imagem própria (Wrapped) usam o arquivo opengraph-image, que tem prioridade.
     openGraph: { title: title ? `${title} · Seismo` : "Seismo", description, url: `/${locale}${path}`,
-                 images: [{ url: `/${locale}/opengraph-image`, width: 1200, height: 630 }] },
+                 images: [{ url: image, width: 1200, height: 630 }] },
     twitter: { card: "summary_large_image", title: title ? `${title} · Seismo` : "Seismo", description,
-               images: [`/${locale}/opengraph-image`] },
+               images: [image] },
     ...(noindex ? { robots: { index: false, follow: true } } : {}),
   };
 }
