@@ -7,7 +7,7 @@ import { D, seo } from "../../../../../../lib/seo";
 export async function generateMetadata({ params }) {
   const { locale, world, guild } = await params;
   const w = decodeURIComponent(world), g = decodeURIComponent(guild);
-  return seo(locale, `/wrapped/${encodeURIComponent(w)}/guild/${encodeURIComponent(g)}`, { title: `Wrapped · ${g}`, description: D.wrappedGuild[locale === "en" ? "en" : "pt"](g) });
+  return seo(locale, `/wrapped/${encodeURIComponent(w)}/guild/${encodeURIComponent(g)}`, { title: `Wrapped · ${g}`, description: D.wrappedGuild[locale === "en" ? "en" : "pt"](g), ownImage: true });
 }
 
 export const dynamic = "force-dynamic";
