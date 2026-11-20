@@ -2,6 +2,7 @@
 
 from datetime import date, datetime, timezone
 
+from .events import event_kinds, parse_window
 from .raids import load_seed, race_keys, spawn_kind
 from .logic import (
     activity_counts, cycle_slot, decode_player, diff_snapshots, encode_player, game_day, level_band, split_minutes,
@@ -50,6 +51,12 @@ def main() -> None:
     assert len(seed) > 50 and all(r["creatures"] for r in seed)
     assert spawn_kind("Raid, Unique, Unblockable") == "raid"
     assert spawn_kind("Regular, Raid") == "regular" and spawn_kind("") == "unknown"
+
+    # janela de evento a partir do texto da notícia do tibia.com
+    txt = "Between the server saves of November 20 and November 23 all monsters will yield twice the usual amount of experience"
+    assert parse_window(txt, date(2026, 11, 13)) == [date(2026, 11, 20), date(2026, 11, 21), date(2026, 11, 22)]
+    assert parse_window("server saves of December 30 and January 2", date(2026, 12, 20))[-1] == date(2027, 1, 1)
+    assert event_kinds("Double XP and Double Skill Event", txt) == ["double_xp", "double_skill"]
     print("selftest ok")
 
 

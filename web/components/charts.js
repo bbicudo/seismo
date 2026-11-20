@@ -15,7 +15,7 @@ function niceMax(v) {
  * points: [{ t: ISO, v: number, peak?: number }]
  * Desenha a média como linha com área, e o pico (se houver) como linha tracejada fina.
  */
-export function TimeChart({ points, locale = "pt", height = 220, label, peakLabel = "pico" }) {
+export function TimeChart({ points, locale = "pt", height = 220, label, peakLabel = "pico", shade = [] }) {
   if (!points || points.length < 2) return null;
   const W = 900, H = height, L = 52, R = 12, T = 10, B = 26;
   const ts = points.map((p) => new Date(p.t).getTime());
@@ -59,6 +59,13 @@ export function TimeChart({ points, locale = "pt", height = 220, label, peakLabe
             <text key={t} x={x(t)} y={H - 6} textAnchor={i === 0 ? "start" : i === 5 ? "end" : "middle"}>{fmtTick.format(new Date(t))}</text>
           ))}
         </g>
+        {shade.map((s) => {
+          // dia de jogo vai do server save (10:00 Berlim) ao seguinte; aproximamos por 09:00 UTC
+          const a = Math.max(t0, new Date(`${s.day}T09:00:00Z`).getTime());
+          const b = Math.min(t1, new Date(`${s.day}T09:00:00Z`).getTime() + 864e5);
+          if (b <= a) return null;
+          return <rect key={s.day} className="shade" x={x(a)} y={T} width={x(b) - x(a)} height={H - T - B}><title>{s.names}</title></rect>;
+        })}
         <path className="area" d={area} />
         {peak && <path className="peak" d={peak} />}
         <path className="series" d={line} />

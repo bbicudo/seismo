@@ -67,6 +67,8 @@ form.filters button { font: 600 14px var(--f-body), sans-serif; background: var(
 .chart .series { fill: none; stroke: var(--red); stroke-width: 2; stroke-linejoin: round; }
 .chart .area { fill: var(--red); opacity: .10; }
 .chart .peak { fill: none; stroke: var(--red); stroke-width: 1; opacity: .45; stroke-dasharray: 3 3; }
+.chart .shade { fill: var(--brass); opacity: .14; }
+.legend i.box { width: 14px; height: 10px; border: 0; background: var(--brass); opacity: .35; }
 .chart .hit { fill: transparent; }
 .chart .hit:hover { fill: var(--red); opacity: .08; }
 .legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12px; color: var(--muted); margin-top: 6px; }

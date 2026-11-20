@@ -266,6 +266,11 @@ async def world_health(name: str, response: Response, days: int = 14):
         w["id"], w["id"], days,
     )
     since = await query("SELECT min(ts) AS since FROM world_online_5m WHERE world_id = %s", w["id"])
+    event_days = await query(
+        "SELECT day, string_agg(name, ', ' ORDER BY name) AS names FROM game_events "
+        "WHERE kind IN ('double_xp', 'double_skill', 'rapid_respawn') AND day > current_date - %s GROUP BY day ORDER BY day",
+        days,
+    )
     new_chars = await query(NEW_CHARS_SQL, days, w["id"], w["id"])
     new_by_day = await query(
         f"""
@@ -290,14 +295,18 @@ async def world_health(name: str, response: Response, days: int = 14):
     return {"world": w["name"], "days": days, "hourly": hourly, "record": record[0] if record else None,
             "transfers": transfers[0], "collecting_since": since[0]["since"],
             "new_characters": new_chars[0]["new_characters"] if new_chars else 0,
-            "new_level_max": NEW_LEVEL_MAX, "new_characters_by_day": new_by_day, "deaths_by_day": deaths}
+            "new_level_max": NEW_LEVEL_MAX, "new_characters_by_day": new_by_day, "deaths_by_day": deaths,
+            "event_days": event_days}
 
 
 @app.get("/v1/worlds/{name}/heatmap")
 async def world_heatmap(name: str, response: Response, vocation: str | None = None, band: str | None = None,
-                        tz: str = "America/Sao_Paulo", weeks: int = 4):
+                        tz: str = "America/Sao_Paulo", weeks: int = 4, events: str = "exclude"):
     """Média de jogadores online por dia da semana × hora. Só agregado: célula com média < 5
-    some quando há filtro (k-anonimato), para não expor grupos pequenos."""
+    some quando há filtro (k-anonimato), para não expor grupos pequenos.
+    events: exclude (padrão, ignora dias de double/rapid respawn) | only | include."""
+    if events not in ("exclude", "only", "include"):
+        raise HTTPException(422, "events deve ser exclude, only ou include")
     if tz not in ALLOWED_TZ:
         raise HTTPException(422, "fuso não suportado")
     if vocation and vocation not in VOCATION_GROUPS:
@@ -316,6 +325,9 @@ async def world_heatmap(name: str, response: Response, vocation: str | None = No
           FROM world_hour_snapshots s
           LEFT JOIN activity_buckets b ON b.world_id = s.world_id AND b.hour = s.hour
           WHERE s.world_id = %s AND s.hour > now() - make_interval(weeks => %s)
+            AND (%s = 'include' OR (EXISTS (
+                  SELECT 1 FROM game_events e WHERE e.kind IN ('double_xp', 'rapid_respawn')
+                  AND e.day = ((s.hour AT TIME ZONE 'Europe/Berlin') - interval '10 hours')::date)) = (%s = 'only'))
           GROUP BY s.hour, s.snapshots
         )
         SELECT extract(isodow FROM hour AT TIME ZONE %s)::int AS dow,
@@ -324,12 +336,12 @@ async def world_heatmap(name: str, response: Response, vocation: str | None = No
                count(*)::int AS hours
         FROM per_hour GROUP BY 1, 2 ORDER BY 1, 2
         """,
-        vocs, vocs, band, band, w["id"], weeks, tz, tz,
+        vocs, vocs, band, band, w["id"], weeks, events, events, tz, tz,
     )
     filtered = bool(vocation or band)
     cells = [{**r, "avg": (None if filtered and r["avg"] < MIN_CELL else r["avg"])} for r in rows]
     cache(response, 600)
-    return {"world": w["name"], "tz": tz, "weeks": weeks, "vocation": vocation, "band": band,
+    return {"world": w["name"], "tz": tz, "weeks": weeks, "vocation": vocation, "band": band, "events": events,
             "min_cell": MIN_CELL, "cells": cells}
 
 
@@ -416,6 +428,22 @@ async def world_guild(name: str, guild: str, response: Response):
     return {"world": w["name"], **g, "members": members, "events": events, "vocations": vocations}
 
 
+# ---------------------------------------------------------------- eventos e destaques do dia
+
+@app.get("/v1/events")
+async def game_events(response: Response, past: int = 30, ahead: int = 30):
+    past, ahead = max(0, min(past, 365)), max(0, min(ahead, 60))
+    today = (await query("SELECT ((now() AT TIME ZONE 'Europe/Berlin') - interval '10 hours')::date AS d"))[0]["d"]
+    rows = await query(
+        "SELECT day, name, kind, source, url FROM game_events WHERE day BETWEEN %s AND %s ORDER BY day, name",
+        today - timedelta(days=past), today + timedelta(days=ahead),
+    )
+    boosted = await query("SELECT day, creature, boss FROM daily_boosted ORDER BY day DESC LIMIT 1")
+    cache(response, 600)
+    return {"today": today, "boosted": boosted[0] if boosted else None,
+            "active": [r for r in rows if r["day"] == today], "events": rows}
+
+
 # ---------------------------------------------------------------- raids e termômetro
 
 THERMO_MIN_DAYS = 7      # dias de histórico mínimos para comparar
@@ -474,12 +502,16 @@ async def world_thermometer(name: str, response: Response):
           SELECT k.race, avg(k.killed) AS mu, stddev_samp(k.killed) AS sd, count(*) AS n
           FROM kill_stats_daily k, last
           WHERE k.world_id = %s AND k.stats_day < last.d AND k.stats_day >= last.d - 28
+            AND k.stats_day NOT IN (SELECT day FROM game_events WHERE kind IN ('double_xp', 'rapid_respawn'))
           GROUP BY k.race
         ),
         today AS (SELECT k.race, k.killed FROM kill_stats_daily k, last WHERE k.world_id = %s AND k.stats_day = last.d)
         SELECT h.race, coalesce(t.killed, 0) AS killed, round(h.mu)::int AS average, h.n::int AS days,
                round(((coalesce(t.killed, 0) - h.mu) / nullif(h.sd, 0))::numeric, 1)::float AS z,
-               (SELECT d FROM last) AS day
+               (SELECT d FROM last) AS day,
+               EXISTS (SELECT 1 FROM daily_boosted b, last
+                       WHERE b.day = last.d AND lower(h.race) IN (lower(b.creature), lower(b.creature) || 's',
+                                                                    lower(b.creature) || 'es', lower(b.boss))) AS boosted
         FROM hist h LEFT JOIN today t ON t.race = h.race
         WHERE h.n >= %s AND h.mu >= %s AND h.sd > 0
         """,
@@ -489,9 +521,11 @@ async def world_thermometer(name: str, response: Response):
     cold = sorted((r for r in rows if r["z"] is not None and r["z"] <= -THERMO_Z), key=lambda r: r["z"])[:12]
     history = (await query("SELECT count(DISTINCT stats_day)::int AS n FROM kill_stats_daily WHERE world_id = %s",
                            w["id"]))[0]["n"]
+    day = rows[0]["day"] if rows else None
+    day_events = await query("SELECT name, kind FROM game_events WHERE day = %s ORDER BY name", day) if day else []
     cache(response, 900)
-    return {"world": w["name"], "day": rows[0]["day"] if rows else None, "history_days": history,
-            "min_days": THERMO_MIN_DAYS + 1, "hot": hot, "cold": cold}
+    return {"world": w["name"], "day": day, "history_days": history, "min_days": THERMO_MIN_DAYS + 1,
+            "hot": hot, "cold": cold, "day_events": day_events}
 
 
 # ---------------------------------------------------------------- wrapped (resumo do mês)

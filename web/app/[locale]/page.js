@@ -8,7 +8,7 @@ export default async function Overview({ params, searchParams }) {
   const { locale } = await params;
   const sp = await searchParams;
   const t = dict(locale);
-  const [ov, all] = await Promise.all([api("/v1/overview"), api("/v1/worlds")]);
+  const [ov, all, ev] = await Promise.all([api("/v1/overview"), api("/v1/worlds"), api("/v1/events?past=0&ahead=7")]);
   const region = sp.region || "";
   const pvp = sp.pvp || "";
   const worlds = all.filter((w) => (!region || w.location === region) && (!pvp || w.pvp_type === pvp));
@@ -26,6 +26,16 @@ export default async function Overview({ params, searchParams }) {
           <div className="stat"><b>{fmtNum(all.length, locale)}</b><span>{t.worlds}</span></div>
           <div className="stat"><b>{fmtNum(peak48, locale)}</b><span>{t.peak} 48 h</span></div>
         </div>
+      </section>
+
+      <section className="card">
+        <h2>{t.today_title}</h2>
+        <div className="stats">
+          <div className="stat"><b style={{ fontSize: 20 }}>{ev.boosted?.creature || "–"}</b><span>{t.boosted_creature}</span></div>
+          <div className="stat"><b style={{ fontSize: 20 }}>{ev.boosted?.boss || "–"}</b><span>{t.boosted_boss}</span></div>
+          <div className="stat"><b style={{ fontSize: 20 }}>{ev.active.length ? ev.active.map((e) => e.name).join(", ") : t.no_events_today}</b><span>{t.active_events}</span></div>
+        </div>
+        <p className="muted" style={{ marginTop: 10 }}><a href={`/${locale}/events`}>{t.all_events} →</a></p>
       </section>
 
       <div className="grid2">

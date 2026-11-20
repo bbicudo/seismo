@@ -13,7 +13,7 @@ from datetime import date, datetime, timedelta, timezone
 from psycopg_pool import AsyncConnectionPool
 from redis.asyncio import Redis
 
-from . import raids
+from . import events, raids
 from .logic import game_day
 from .privacy import Optouts, process_queue
 from .settings import Settings
@@ -100,7 +100,7 @@ class DailyJobs:
             return True
         await self.optouts.refresh()
         day = self.effective_day()
-        for job, fn in (("killstats", self.job_killstats), ("raids", self.job_raids),
+        for job, fn in (("events", self.job_events), ("killstats", self.job_killstats), ("raids", self.job_raids),
                         ("guild_lists", self.job_guild_lists), ("houses", self.job_houses),
                         ("retention", self.job_retention)):
             if await self.redis.get(f"seismo:job:{job}:day") != day.isoformat():
@@ -113,6 +113,10 @@ class DailyJobs:
         if await self.house_details_batch(day):
             return True
         return False
+
+    # ---------- eventos e destaques do dia (poucas requisições) ----------
+    async def job_events(self, day: date) -> int:
+        return await events.collect(self.pool, self.td, self.call, day, self.s.user_agent)
 
     # ---------- raids (sem requisições: usa as kill statistics já gravadas) ----------
     async def job_raids(self, day: date) -> int:

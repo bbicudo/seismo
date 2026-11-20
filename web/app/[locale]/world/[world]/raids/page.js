@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation";
 import { api, enc, fmtDate, fmtNum } from "../../../../../lib/api";
-import { fmt } from "../../../../../lib/i18n";
+import { dict, fmt } from "../../../../../lib/i18n";
+
+const DICT = { pt: dict("pt"), en: dict("en") };
 
 export const dynamic = "force-dynamic";
 
@@ -67,7 +69,7 @@ const T = {
   },
 };
 
-function Thermo({ title, rows, t, locale }) {
+function Thermo({ title, rows, t, locale, boostedTag }) {
   return (
     <div>
       <h2 style={{ marginTop: 12 }}>{title}</h2>
@@ -76,7 +78,7 @@ function Thermo({ title, rows, t, locale }) {
           <thead><tr><th>{t.creature}</th><th className="n">{t.today}</th><th className="n">{t.average}</th><th className="n">z</th></tr></thead>
           <tbody>
             {rows.map((r) => (
-              <tr key={r.race}><td>{r.race}</td><td className="n">{fmtNum(r.killed, locale)}</td>
+              <tr key={r.race}><td>{r.race}{r.boosted && <span className="pill off" style={{ marginLeft: 6 }}>{boostedTag}</span>}</td><td className="n">{fmtNum(r.killed, locale)}</td>
                 <td className="n">{fmtNum(r.average, locale)}</td><td className="n">{r.z > 0 ? "+" : ""}{r.z}</td></tr>
             ))}
           </tbody>
@@ -126,8 +128,9 @@ export default async function Raids({ params }) {
           {r.history_days < th.min_days ? <p className="muted">{fmt(t.thermo_wait, { n: th.min_days, h: th.history_days })}</p> : (
             <>
               <p className="lead">{fmt(t.thermo_lead, { day: fmtDate(th.day, locale) })}</p>
-              <Thermo title={t.hot} rows={th.hot} t={t} locale={locale} />
-              <Thermo title={t.cold} rows={th.cold} t={t} locale={locale} />
+              {th.day_events.length > 0 && <p className="notice">{fmt(DICT[locale === "en" ? "en" : "pt"].day_was_event, { names: th.day_events.map((e) => e.name).join(", ") })}</p>}
+              <Thermo title={t.hot} rows={th.hot} t={t} locale={locale} boostedTag={DICT[locale === "en" ? "en" : "pt"].boosted_tag} />
+              <Thermo title={t.cold} rows={th.cold} t={t} locale={locale} boostedTag={DICT[locale === "en" ? "en" : "pt"].boosted_tag} />
             </>
           )}
         </section>

@@ -18,7 +18,8 @@ export default async function World({ params, searchParams }) {
   const vocation = VOCATIONS.includes(sp.vocation) ? sp.vocation : "";
   const band = BANDS.includes(sp.band) ? sp.band : "";
   const days = [7, 14, 30].includes(Number(sp.days)) ? Number(sp.days) : 14;
-  const hq = new URLSearchParams({ tz: TZ[locale] });
+  const evmode = ["exclude", "only", "include"].includes(sp.events) ? sp.events : "exclude";
+  const hq = new URLSearchParams({ tz: TZ[locale], events: evmode });
   if (vocation) hq.set("vocation", vocation);
   if (band) hq.set("band", band);
   const [w, health, heat] = await Promise.all([
@@ -55,8 +56,8 @@ export default async function World({ params, searchParams }) {
             <a key={d} href={`${base}?days=${d}`} style={{ marginRight: 8, fontWeight: d === days ? 700 : 400 }}>{d}d</a>
           ))}
         </p>
-        <TimeChart points={points} locale={locale} label={fmt(t.health_lead, { days })} peakLabel={t.peak} />
-        <div className="legend"><span><i />{t.avg}</span><span><i className="dash" />{t.peak}</span></div>
+        <TimeChart points={points} locale={locale} label={fmt(t.health_lead, { days })} peakLabel={t.peak} shade={health.event_days} />
+        <div className="legend"><span><i />{t.avg}</span><span><i className="dash" />{t.peak}</span>{health.event_days.length > 0 && <span><i className="box" />{t.event_days_legend}</span>}</div>
       </section>
 
       <section className="card" id="new-characters">
@@ -98,6 +99,13 @@ export default async function World({ params, searchParams }) {
             <select id="f-band" name="band" defaultValue={band}>
               <option value="">{t.filter_all}</option>
               {BANDS.map((b) => <option key={b} value={b}>{b}</option>)}
+            </select>
+          </label>
+          <label htmlFor="f-ev">{t.heat_events}
+            <select id="f-ev" name="events" defaultValue={evmode}>
+              <option value="exclude">{t.heat_exclude}</option>
+              <option value="only">{t.heat_only}</option>
+              <option value="include">{t.heat_include}</option>
             </select>
           </label>
           <button type="submit">{t.filter_apply}</button>
