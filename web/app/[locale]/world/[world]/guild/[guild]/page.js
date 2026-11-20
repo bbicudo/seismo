@@ -3,6 +3,13 @@ import { api, enc, fmtDate, fmtNum } from "../../../../../../lib/api";
 import { TZ, TZ_LABEL, VOC_LABEL, dict, fmt } from "../../../../../../lib/i18n";
 import { Heatmap } from "../../../../../../components/charts";
 import { getFlags, on } from "../../../../../../lib/flags";
+import { D, seo } from "../../../../../../lib/seo";
+
+export async function generateMetadata({ params }) {
+  const { locale, world, guild } = await params;
+  const w = decodeURIComponent(world), g = decodeURIComponent(guild);
+  return seo(locale, `/world/${encodeURIComponent(w)}/guild/${encodeURIComponent(g)}`, { title: `${g} · ${w}`, description: D.guild[locale === "en" ? "en" : "pt"](g, w) });
+}
 
 const HT = {
   pt: { title: "Quando a guild joga", lead: "Média de membros online por dia da semana e hora ({tz}). Só a contagem: ninguém é identificado.",
@@ -17,10 +24,6 @@ const HT = {
 
 export const dynamic = "force-dynamic";
 
-export async function generateMetadata({ params }) {
-  const { guild } = await params;
-  return { title: decodeURIComponent(guild) };
-}
 
 export default async function Guild({ params, searchParams }) {
   const { locale, world, guild } = await params;

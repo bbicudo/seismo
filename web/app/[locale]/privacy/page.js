@@ -1,5 +1,13 @@
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Privacidade · Privacy" };
+import { seo } from "../../../lib/seo";
+
+export async function generateMetadata({ params }) {
+  const { locale } = await params;
+  const T = { pt: "Política de privacidade", en: "Privacy policy" };
+  const D = { pt: "Quais dados o Seismo guarda, por quanto tempo e como sair do site.", en: "What data Seismo keeps, for how long and how to opt out." };
+  const k = locale === "en" ? "en" : "pt";
+  return seo(locale, "/privacy", { title: T[k], description: D[k] });
+}
 
 const API = process.env.API_INTERNAL_URL || "http://api:8000";
 

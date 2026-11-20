@@ -3,6 +3,13 @@ import { api, enc, fmtDate, fmtNum } from "../../lib/api";
 import { dict, fmt } from "../../lib/i18n";
 import { getFlags, on } from "../../lib/flags";
 import CharacterSearch from "../../components/character-search";
+import { D, seo } from "../../lib/seo";
+
+export async function generateMetadata({ params }) {
+  const { locale } = await params;
+  const t = dict(locale);
+  return seo(locale, "", { title: t.overview_title, description: t.overview_lead });
+}
 
 export const dynamic = "force-dynamic";
 
@@ -20,6 +27,11 @@ export default async function Overview({ params, searchParams }) {
   const peak48 = points.length ? Math.max(...points.map((p) => p.v)) : null;
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+        "@context": "https://schema.org", "@type": "WebSite", name: "Seismo",
+        url: `${process.env.PUBLIC_URL || ""}/${locale}`, inLanguage: locale === "en" ? "en" : "pt-BR",
+        description: t.overview_lead,
+      }) }} />
       <section className="card hero">
         <h1>{t.overview_title}</h1>
         <p className="lead">{t.overview_lead}</p>

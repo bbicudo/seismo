@@ -1,6 +1,13 @@
 import { notFound } from "next/navigation";
 import { api, enc, fmtDate, fmtNum } from "../../../../../../lib/api";
 import { dict } from "../../../../../../lib/i18n";
+import { D, seo } from "../../../../../../lib/seo";
+
+export async function generateMetadata({ params }) {
+  const { locale, world, id } = await params;
+  const w = decodeURIComponent(world);
+  return seo(locale, `/world/${encodeURIComponent(w)}/house/${id}`, { title: `House ${id} · ${w}`, description: D.house[locale === "en" ? "en" : "pt"](`House ${id}`, w) });
+}
 
 export const dynamic = "force-dynamic";
 

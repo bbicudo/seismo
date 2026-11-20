@@ -3,6 +3,13 @@ import { DayBars } from "../../../../components/charts";
 import { api, enc, fmtDate, fmtNum } from "../../../../lib/api";
 import { getFlags, on } from "../../../../lib/flags";
 import { fmt } from "../../../../lib/i18n";
+import { D, seo } from "../../../../lib/seo";
+
+export async function generateMetadata({ params }) {
+  const { locale, name } = await params;
+  const n = decodeURIComponent(name);
+  return seo(locale, `/character/${encodeURIComponent(n)}`, { title: n, description: D.character[locale === "en" ? "en" : "pt"](n), noindex: true });
+}
 
 export const dynamic = "force-dynamic";
 
@@ -31,10 +38,6 @@ const T = {
   },
 };
 
-export async function generateMetadata({ params }) {
-  const { name } = await params;
-  return { title: decodeURIComponent(name) };
-}
 
 export default async function Character({ params, searchParams }) {
   const { locale, name } = await params;

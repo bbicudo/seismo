@@ -3,7 +3,15 @@ import { fmtTime } from "../../../lib/api";
 import { dict, fmt } from "../../../lib/i18n";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Opt-out" };
+import { seo } from "../../../lib/seo";
+
+export async function generateMetadata({ params }) {
+  const { locale } = await params;
+  const T = { pt: "Tirar meu personagem do Seismo", en: "Remove my character from Seismo" };
+  const D = { pt: "Prove que é dono do personagem e tire ele do Seismo.", en: "Prove you own the character and remove it from Seismo." };
+  const k = locale === "en" ? "en" : "pt";
+  return seo(locale, "/opt-out", { title: T[k], description: D[k] });
+}
 
 const API = process.env.API_INTERNAL_URL || "http://api:8000";
 const NAME_RE = /^[A-Za-z][A-Za-z' -]{1,28}[A-Za-z]$/;

@@ -3,13 +3,16 @@ import { Heatmap, TimeChart } from "../../../../components/charts";
 import { api, enc, fmtDate, fmtNum, fmtTime } from "../../../../lib/api";
 import { getFlags, on } from "../../../../lib/flags";
 import { BANDS, TZ, TZ_LABEL, VOCATIONS, VOC_LABEL, dict, fmt } from "../../../../lib/i18n";
+import { D, seo } from "../../../../lib/seo";
+
+export async function generateMetadata({ params }) {
+  const { locale, world } = await params;
+  const w = decodeURIComponent(world);
+  return seo(locale, `/world/${encodeURIComponent(w)}`, { title: w, description: D.world[locale === "en" ? "en" : "pt"](w) });
+}
 
 export const dynamic = "force-dynamic";
 
-export async function generateMetadata({ params }) {
-  const { world } = await params;
-  return { title: decodeURIComponent(world) };
-}
 
 export default async function World({ params, searchParams }) {
   const { locale, world } = await params;

@@ -5,7 +5,6 @@
 
 	header {
 		-Server
-		X-Robots-Tag "noindex, nofollow"
 		Strict-Transport-Security "max-age=31536000"
 		X-Content-Type-Options nosniff
 		Referrer-Policy strict-origin-when-cross-origin
@@ -18,6 +17,7 @@
 
 	# área administrativa: login próprio (admin.caddy, criado com seismo.sh admin-user)
 	handle /admin* {
+		header X-Robots-Tag "noindex, nofollow"
 		import /etc/caddy/admin.caddy
 		reverse_proxy web:3000
 	}

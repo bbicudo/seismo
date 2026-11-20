@@ -1,0 +1,45 @@
+// sitemap.xml com as páginas públicas em português e inglês (cada uma com o par no outro idioma).
+// Perfis de personagem e páginas de casa ficam de fora de propósito (privacidade e volume).
+export const dynamic = "force-dynamic";
+export const revalidate = 3600;
+
+const API = process.env.API_INTERNAL_URL || "http://api:8000";
+const enc = encodeURIComponent;
+
+export default async function sitemap() {
+  const base = process.env.PUBLIC_URL || "http://localhost:3000";
+  let d = { flags: {}, worlds: [], guilds: [], towns: [] };
+  try {
+    const r = await fetch(`${API}/v1/sitemap`, { cache: "no-store" });
+    if (r.ok) d = await r.json();
+  } catch {}
+  const on = (k) => d.flags[k] !== false;
+  const out = [];
+  const add = (path, opts = {}) => {
+    for (const locale of ["pt", "en"]) {
+      out.push({
+        url: `${base}/${locale}${path}`,
+        lastModified: opts.lastModified ? new Date(opts.lastModified) : undefined,
+        changeFrequency: opts.freq || "daily",
+        priority: opts.priority ?? 0.5,
+        alternates: { languages: { "pt-BR": `${base}/pt${path}`, en: `${base}/en${path}` } },
+      });
+    }
+  };
+  add("", { freq: "hourly", priority: 1 });
+  if (on("page_events")) add("/events", { priority: 0.6 });
+  if (on("page_wrapped")) add("/wrapped", { freq: "weekly", priority: 0.5 });
+  add("/about", { freq: "monthly", priority: 0.3 });
+  add("/privacy", { freq: "monthly", priority: 0.3 });
+  add("/opt-out", { freq: "monthly", priority: 0.3 });
+  for (const w of d.worlds) {
+    const p = `/world/${enc(w.name)}`;
+    add(p, { freq: "hourly", priority: 0.9, lastModified: w.updated_at });
+    if (on("page_hunts")) add(`${p}/hunts`, { priority: 0.7 });
+    if (on("page_raids")) add(`${p}/raids`, { priority: 0.7 });
+    if (on("page_wrapped")) add(`/wrapped/${enc(w.name)}`, { freq: "weekly", priority: 0.5 });
+  }
+  for (const g of d.guilds) add(`/world/${enc(g.world)}/guild/${enc(g.name)}`, { freq: "weekly", priority: 0.4, lastModified: g.updated_at });
+  for (const t of d.towns) add(`/world/${enc(t.world)}/town/${enc(t.town)}`, { priority: 0.4 });
+  return out;
+}

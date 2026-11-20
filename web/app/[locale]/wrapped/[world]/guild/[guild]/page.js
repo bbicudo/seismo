@@ -2,13 +2,16 @@ import { notFound } from "next/navigation";
 import { api, enc, fmtNum } from "../../../../../../lib/api";
 import { hours, monthLabel, validMonth, wt } from "../../../../../../lib/wrapped";
 import ShareBar from "../../../../../../components/share-bar";
+import { D, seo } from "../../../../../../lib/seo";
+
+export async function generateMetadata({ params }) {
+  const { locale, world, guild } = await params;
+  const w = decodeURIComponent(world), g = decodeURIComponent(guild);
+  return seo(locale, `/wrapped/${encodeURIComponent(w)}/guild/${encodeURIComponent(g)}`, { title: `Wrapped · ${g}`, description: D.wrappedGuild[locale === "en" ? "en" : "pt"](g) });
+}
 
 export const dynamic = "force-dynamic";
 
-export async function generateMetadata({ params }) {
-  const { guild } = await params;
-  return { title: `Wrapped · ${decodeURIComponent(guild)}` };
-}
 
 export default async function WrappedGuild({ params, searchParams }) {
   const { locale, world, guild } = await params;

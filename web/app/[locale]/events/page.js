@@ -2,9 +2,15 @@ import { getFlags, on } from "../../../lib/flags";
 import { notFound } from "next/navigation";
 import { api, fmtDate } from "../../../lib/api";
 import { dict } from "../../../lib/i18n";
+import { D, seo } from "../../../lib/seo";
+
+export async function generateMetadata({ params }) {
+  const { locale } = await params;
+  const t = dict(locale);
+  return seo(locale, "/events", { title: t.events_title, description: t.events_lead });
+}
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Eventos · Events" };
 
 function group(rows) {
   const out = new Map();

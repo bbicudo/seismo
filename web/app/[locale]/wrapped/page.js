@@ -4,7 +4,15 @@ import { api, enc } from "../../../lib/api";
 import { wt } from "../../../lib/wrapped";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Wrapped" };
+import { seo } from "../../../lib/seo";
+
+export async function generateMetadata({ params }) {
+  const { locale } = await params;
+  const T = { pt: "Wrapped", en: "Wrapped" };
+  const D = { pt: "O resumo do mês de um personagem, de uma guild ou de um mundo de Tibia, pronto para compartilhar.", en: "A month in review for a Tibia character, guild or world, ready to share." };
+  const k = locale === "en" ? "en" : "pt";
+  return seo(locale, "/wrapped", { title: T[k], description: D[k] });
+}
 
 export default async function WrappedHome({ params }) {
   const { locale } = await params;

@@ -1,6 +1,13 @@
 import { notFound } from "next/navigation";
 import { api, enc, fmtDate, fmtNum } from "../../../../../lib/api";
 import { dict, fmt } from "../../../../../lib/i18n";
+import { D, seo } from "../../../../../lib/seo";
+
+export async function generateMetadata({ params }) {
+  const { locale, world } = await params;
+  const w = decodeURIComponent(world);
+  return seo(locale, `/world/${encodeURIComponent(w)}/raids`, { title: `Raids · ${w}`, description: D.raids[locale === "en" ? "en" : "pt"](w) });
+}
 
 const DICT = { pt: dict("pt"), en: dict("en") };
 
@@ -88,10 +95,6 @@ function Thermo({ title, rows, t, locale, boostedTag }) {
   );
 }
 
-export async function generateMetadata({ params }) {
-  const { world } = await params;
-  return { title: `Raids · ${decodeURIComponent(world)}` };
-}
 
 export default async function Raids({ params }) {
   const { locale, world } = await params;

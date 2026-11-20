@@ -33,7 +33,7 @@ export async function generateMetadata({ params }) {
     openGraph: { siteName: "Seismo", locale: locale === "pt" ? "pt_BR" : "en_GB", type: "website" },
     title: { default: `Seismo · ${t.tagline}`, template: "%s · Seismo" },
     description: t.overview_lead,
-    robots: { index: false, follow: false },
+    robots: { index: true, follow: true },
   };
 }
 

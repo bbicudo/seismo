@@ -1,6 +1,13 @@
 import { notFound } from "next/navigation";
 import { api, enc, fmtDate, fmtNum } from "../../../../../lib/api";
 import { fmt } from "../../../../../lib/i18n";
+import { D, seo } from "../../../../../lib/seo";
+
+export async function generateMetadata({ params }) {
+  const { locale, world } = await params;
+  const w = decodeURIComponent(world);
+  return seo(locale, `/world/${encodeURIComponent(w)}/hunts`, { title: `Hunts · ${w}`, description: D.hunts[locale === "en" ? "en" : "pt"](w) });
+}
 
 export const dynamic = "force-dynamic";
 
@@ -39,10 +46,6 @@ const T = {
   },
 };
 
-export async function generateMetadata({ params }) {
-  const { world } = await params;
-  return { title: `Hunts · ${decodeURIComponent(world)}` };
-}
 
 export default async function Hunts({ params, searchParams }) {
   const { locale, world } = await params;

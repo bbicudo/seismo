@@ -2,13 +2,16 @@ import { notFound } from "next/navigation";
 import { api, enc, fmtNum } from "../../../../lib/api";
 import { hours, monthLabel, validMonth, wt } from "../../../../lib/wrapped";
 import ShareBar from "../../../../components/share-bar";
+import { D, seo } from "../../../../lib/seo";
+
+export async function generateMetadata({ params }) {
+  const { locale, world } = await params;
+  const w = decodeURIComponent(world);
+  return seo(locale, `/wrapped/${encodeURIComponent(w)}`, { title: `Wrapped · ${w}`, description: D.wrappedWorld[locale === "en" ? "en" : "pt"](w) });
+}
 
 export const dynamic = "force-dynamic";
 
-export async function generateMetadata({ params }) {
-  const { world } = await params;
-  return { title: `Wrapped · ${decodeURIComponent(world)}` };
-}
 
 function List({ title, rows, value }) {
   if (!rows.length) return null;

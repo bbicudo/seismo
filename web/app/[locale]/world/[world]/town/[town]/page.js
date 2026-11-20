@@ -1,13 +1,16 @@
 import { notFound } from "next/navigation";
 import { api, enc, fmtNum } from "../../../../../../lib/api";
 import { dict, fmt } from "../../../../../../lib/i18n";
+import { D, seo } from "../../../../../../lib/seo";
+
+export async function generateMetadata({ params }) {
+  const { locale, world, town } = await params;
+  const w = decodeURIComponent(world), tn = decodeURIComponent(town);
+  return seo(locale, `/world/${encodeURIComponent(w)}/town/${encodeURIComponent(tn)}`, { title: `${tn} · ${w}`, description: D.town[locale === "en" ? "en" : "pt"](tn, w) });
+}
 
 export const dynamic = "force-dynamic";
 
-export async function generateMetadata({ params }) {
-  const { world, town } = await params;
-  return { title: `${decodeURIComponent(town)} · ${decodeURIComponent(world)}` };
-}
 
 function houseStatus(h, t) {
   if (h.auctioned) return <span className="pill off">{t.st_auction}</span>;

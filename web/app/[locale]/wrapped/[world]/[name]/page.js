@@ -4,13 +4,16 @@ import { api, enc, fmtNum } from "../../../../../lib/api";
 import { fmt } from "../../../../../lib/i18n";
 import { hours, monthLabel, validMonth, wt } from "../../../../../lib/wrapped";
 import ShareBar from "../../../../../components/share-bar";
+import { D, seo } from "../../../../../lib/seo";
+
+export async function generateMetadata({ params }) {
+  const { locale, world, name } = await params;
+  const w = decodeURIComponent(world), n = decodeURIComponent(name);
+  return seo(locale, `/wrapped/${encodeURIComponent(w)}/${encodeURIComponent(n)}`, { title: `Wrapped · ${n}`, description: D.wrappedChar[locale === "en" ? "en" : "pt"](n), noindex: true });
+}
 
 export const dynamic = "force-dynamic";
 
-export async function generateMetadata({ params }) {
-  const { world, name } = await params;
-  return { title: `Wrapped · ${decodeURIComponent(name)} (${decodeURIComponent(world)})` };
-}
 
 export default async function WrappedCharacter({ params, searchParams }) {
   const { locale, world, name } = await params;

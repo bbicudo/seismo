@@ -638,6 +638,26 @@ async def world_thermometer(name: str, response: Response):
             "hot": hot, "cold": cold, "day_events": day_events}
 
 
+# ---------------------------------------------------------------- sitemap
+# Lista as páginas públicas para o sitemap do site. Perfis de personagem e casas ficam de fora de propósito:
+# são páginas sobre pessoas ou muito numerosas, e não precisam ser oferecidas aos buscadores.
+
+
+@app.get("/v1/sitemap")
+async def sitemap_data(response: Response):
+    f = await flags()
+    worlds = await query("SELECT name, updated_at FROM worlds ORDER BY name")
+    guilds = await query(
+        "SELECT g.name, w.name AS world, g.details_fetched_at AS updated_at FROM guilds g JOIN worlds w ON w.id = g.world_id "
+        "WHERE g.disbanded_day IS NULL ORDER BY w.name, g.name"
+    ) if f.get("page_guilds", True) else []
+    towns = await query(
+        "SELECT DISTINCT w.name AS world, h.town FROM houses h JOIN worlds w ON w.id = h.world_id ORDER BY 1, 2"
+    ) if f.get("page_houses", True) else []
+    response.headers["Cache-Control"] = "public, max-age=3600"
+    return {"flags": f, "worlds": worlds, "guilds": guilds, "towns": towns}
+
+
 # ---------------------------------------------------------------- personagem
 # Mostra só o que a política de privacidade prevê: totais de minutos por dia de jogo (nunca horários),
 # level por mês, guild, casas e transfers. Quem fez opt-out não tem página.
