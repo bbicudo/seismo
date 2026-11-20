@@ -54,7 +54,7 @@ export default async function Hunts({ params, searchParams }) {
   const base = `/${locale}/world/${enc(d.world)}`;
   const { x_min, y_min, width, height } = d.bounds;
   const max = Math.max(1, ...d.hunts.map((h) => h.kills));
-  const radius = (k) => 10 + 70 * Math.sqrt(k / max);
+  const radius = (k) => 4 + 72 * Math.sqrt(k / max);
   const labels = new Set(d.hunts.slice(0, 12).map((h) => h.slug));
   const nf = (n) => fmtNum(n, locale);
   return (

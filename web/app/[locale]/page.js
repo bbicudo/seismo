@@ -34,7 +34,7 @@ export default async function Overview({ params, searchParams }) {
         <div className="stats">
           <div className="stat"><b style={{ fontSize: 20 }}>{ev.boosted?.creature || "–"}</b><span>{t.boosted_creature}</span></div>
           <div className="stat"><b style={{ fontSize: 20 }}>{ev.boosted?.boss || "–"}</b><span>{t.boosted_boss}</span></div>
-          <div className="stat"><b style={{ fontSize: 20 }}>{ev.active.length ? ev.active.map((e) => e.name).join(", ") : t.no_events_today}</b><span>{t.active_events}</span></div>
+          <div className="stat"><b style={{ fontSize: ev.active.length ? 20 : 15, fontWeight: ev.active.length ? 600 : 400 }}>{ev.active.length ? ev.active.map((e) => e.name).join(", ") : t.no_events_today}</b><span>{t.active_events}</span></div>
         </div>
         <p className="muted" style={{ marginTop: 10 }}><a href={`/${locale}/events`}>{t.all_events} →</a></p>
       </section>}

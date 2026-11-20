@@ -56,7 +56,7 @@ export function TimeChart({ points, locale = "pt", height = 220, label, peakLabe
             </g>
           ))}
           {xTicks.map((t, i) => (
-            <text key={t} x={x(t)} y={H - 6} textAnchor={i === 0 ? "start" : i === 5 ? "end" : "middle"}>{fmtTick.format(new Date(t))}</text>
+            <text key={t} className={`xt${i % 2 ? " odd" : ""}`} x={x(t)} y={H - 6} textAnchor={i === 0 ? "start" : i === 5 ? "end" : "middle"}>{fmtTick.format(new Date(t))}</text>
           ))}
         </g>
         {shade.map((s) => {
