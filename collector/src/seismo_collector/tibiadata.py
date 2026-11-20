@@ -51,7 +51,7 @@ class TibiaData:
         max_rps: float = 2.0,
         timeout: float = 20.0,
         max_retries: int = 4,
-        on_request: Callable[[bool], Awaitable[None]] | None = None,
+        on_request: Callable[..., Awaitable[None]] | None = None,
     ):
         self.base = base.rstrip("/")
         self.max_retries = max_retries
@@ -82,7 +82,9 @@ class TibiaData:
                     status, retry_after, error = r.status_code, r.headers.get("retry-after"), None
             ok = status is not None and 200 <= status < 300
             if self._on_request:
-                await self._on_request(ok)
+                # tipo de consulta (primeiro trecho do caminho) e motivo, sem nomes: vira o detalhamento no /admin
+                reason = None if ok else (str(status) if status is not None else type(error).__name__)
+                await self._on_request(ok, path.lstrip("/").split("/")[0], reason)
             if ok:
                 return orjson.loads(r.content)
             if status == 404:
