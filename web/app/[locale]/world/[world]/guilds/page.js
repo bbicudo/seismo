@@ -62,7 +62,7 @@ export default async function Guilds({ params, searchParams }) {
                   <td><a href={`${base}/guild/${enc(g.name)}`}>{g.name}</a></td>
                   <td className="n">{fmtNum(g.members_total, locale)}</td>
                   <td className="n">{g.active_pct == null ? "–" : <span className="meter" style={{ "--p": `${g.active_pct}%` }}>{g.active_pct}%</span>}</td>
-                  <td className="n"><span className="up">{fmtNum(g.joins, locale)}</span> / <span className={g.leaves ? "down" : undefined}>{fmtNum(g.leaves, locale)}</span></td>
+                  <td className="n"><span className={g.joins ? "up" : undefined}>{fmtNum(g.joins, locale)}</span> / <span className={g.leaves ? "down" : undefined}>{fmtNum(g.leaves, locale)}</span></td>
                   <td className="n">{fmtNum(g.avg_level, locale)}</td>
                   <td>{g.in_war == null ? "–" : g.in_war ? <span className="pill red">{t.yes}</span> : t.no}</td>
                 </tr>
