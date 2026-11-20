@@ -4,7 +4,7 @@ export const LOCALES = ["pt", "en"];
 const DICT = {
   pt: {
     tagline: "Sinta o tremor de cada mundo",
-    lab: "laboratório",
+    lab: "beta",
     nav_worlds: "Mundos",
     nav_status: "Status",
     other_locale: "English",
@@ -111,7 +111,7 @@ const DICT = {
     job_killstats: "Kill statistics (raids)",
     job_guild_lists: "Lista de guilds",
     job_houses: "Casas e leilões",
-    footer: "Dados: TibiaData. Tibia é marca registrada da CipSoft GmbH. Ambiente de testes.",
+    footer: "Dados: TibiaData. Tibia é marca registrada da CipSoft GmbH. Versão beta: os números podem mudar enquanto ajustamos o site.",
     not_found: "Não encontramos essa página.",
     top_deaths: "Top mortes",
     top_deaths_lead: "Mundos com mais jogadores mortos por criaturas no dia {date}. As kill statistics não contam mortes em PvP.",
@@ -164,7 +164,7 @@ const DICT = {
   },
   en: {
     tagline: "Feel every world shake",
-    lab: "lab",
+    lab: "beta",
     nav_worlds: "Worlds",
     nav_status: "Status",
     other_locale: "Português",
@@ -271,7 +271,7 @@ const DICT = {
     job_killstats: "Kill statistics (raids)",
     job_guild_lists: "Guild list",
     job_houses: "Houses and auctions",
-    footer: "Data: TibiaData. Tibia is a registered trademark of CipSoft GmbH. Test environment.",
+    footer: "Data: TibiaData. Tibia is a registered trademark of CipSoft GmbH. Beta version: numbers may change while we fine-tune the site.",
     not_found: "We could not find that page.",
     top_deaths: "Top deaths",
     top_deaths_lead: "Worlds with the most players killed by creatures on {date}. Kill statistics do not count PvP deaths.",
