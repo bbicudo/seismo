@@ -1,8 +1,10 @@
 """Detecção de raids pelas kill statistics.
 
-A lista de raids e criaturas vem da TibiaWiki (data/raids.json). Uma criatura só "denuncia" uma raid se for
-rara no dia a dia: morta em menos de 5% dos dias×mundos dos últimos 28 dias. Assim demônios, monks ou wasps
-(que existem o tempo todo) não contam, mas draptors, yetis ou um chefe como Ghazbaran contam.
+A lista de raids e criaturas vem da TibiaWiki (data/raids.json), junto com o "spawn type" de cada criatura.
+Uma criatura "denuncia" a raid quando a wiki diz que ela só nasce em raid (Raid sem Regular), como Midnight
+Panther ou Yeti. Quando a wiki não informa, ela só conta se for rara no dia a dia: morta em menos de 5% dos
+dias×mundos dos últimos 28 dias (assim um chefe como Ghazbaran conta, mas monks não). Raids feitas só de
+criaturas que também nascem normalmente (orcs, wasps) não são detectáveis.
 
 Além disso, num mundo com pelo menos 7 dias de histórico, uma criatura morta na maioria dos dias daquele mundo
 (um chefe caçado todo dia, por exemplo) também não conta como raid ali.
@@ -39,9 +41,20 @@ def race_keys(creature: str) -> list[str]:
     return sorted(keys)
 
 
-def load_seed() -> list[dict]:
+def _seed() -> dict:
     raw = resources.files("seismo_collector").joinpath("data/raids.json").read_text(encoding="utf-8")
-    return json.loads(raw)["raids"]
+    return json.loads(raw)
+
+
+def load_seed() -> list[dict]:
+    return _seed()["raids"]
+
+
+def spawn_kind(spawntype: str) -> str:
+    s = spawntype.lower()
+    if not s:
+        return "unknown"
+    return "raid" if "raid" in s and "regular" not in s else "regular"
 
 
 async def sync_seed(pool: AsyncConnectionPool) -> int:
@@ -82,12 +95,23 @@ async def detect(pool: AsyncConnectionPool, today: date) -> int:
                 (since,),
             )
             frequency = {race: n / total for race, n in await cur.fetchall()}
-            cur = await conn.execute("SELECT id, race_keys FROM raids")
-            raids = await cur.fetchall()
-            for raid_id, keys in raids:
-                # chave nunca vista conta como rara: se um dia aparecer, é sinal de raid
-                signature = [k for k in keys if frequency.get(k, 0.0) < RARE_FRACTION]
-                await conn.execute("UPDATE raids SET signature = %s WHERE id = %s", (signature, raid_id))
+            seed = _seed()
+            kinds = {name: spawn_kind(st) for name, st in seed.get("spawntype", {}).items()}
+            cur = await conn.execute("SELECT id, slug FROM raids")
+            ids = {slug: rid for rid, slug in await cur.fetchall()}
+            for r in seed["raids"]:
+                signature: set[str] = set()
+                for creature in r["creatures"]:
+                    kind = kinds.get(creature, "unknown")
+                    keys = race_keys(creature)
+                    if kind == "raid":
+                        signature.update(keys)
+                    elif kind == "unknown":
+                        # sem informação na wiki: só conta se for rara (chave nunca vista também conta)
+                        signature.update(k for k in keys if frequency.get(k, 0.0) < RARE_FRACTION)
+                if r["slug"] in ids:
+                    await conn.execute("UPDATE raids SET signature = %s WHERE id = %s",
+                                       (sorted(signature), ids[r["slug"]]))
             # reprocessa os dias da janela: as assinaturas podem ter mudado com mais histórico
             await conn.execute("DELETE FROM raid_occurrences WHERE day >= %s", (since,))
             cur = await conn.execute(

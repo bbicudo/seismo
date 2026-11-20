@@ -2,7 +2,7 @@
 
 from datetime import date, datetime, timezone
 
-from .raids import load_seed, race_keys
+from .raids import load_seed, race_keys, spawn_kind
 from .logic import (
     activity_counts, cycle_slot, decode_player, diff_snapshots, encode_player, game_day, level_band, split_minutes,
 )
@@ -48,6 +48,8 @@ def main() -> None:
     assert "fairies" in race_keys("Fairy")
     seed = load_seed()
     assert len(seed) > 50 and all(r["creatures"] for r in seed)
+    assert spawn_kind("Raid, Unique, Unblockable") == "raid"
+    assert spawn_kind("Regular, Raid") == "regular" and spawn_kind("") == "unknown"
     print("selftest ok")
 
 
