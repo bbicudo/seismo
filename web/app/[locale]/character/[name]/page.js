@@ -45,7 +45,10 @@ export default async function Character({ params, searchParams }) {
   if (!c) notFound();
   const nf = (n) => fmtNum(n, locale);
   const today = new Date().toISOString().slice(0, 10);
-  const from = new Date(Date.now() - (days - 1) * 864e5).toISOString().slice(0, 10);
+  // o gráfico começa no primeiro dia em que o personagem foi visto, para as barras não ficarem espremidas
+  const windowStart = new Date(Date.now() - (days - 1) * 864e5).toISOString().slice(0, 10);
+  const from = c.first_seen_day && c.first_seen_day > windowStart ? c.first_seen_day : windowStart;
+  const short = (d) => (d ? new Intl.DateTimeFormat(locale === "en" ? "en-GB" : "pt-BR", { dateStyle: "short", timeZone: "UTC" }).format(new Date(`${d}T12:00:00Z`)) : "–");
   const points = c.daily.map((d) => ({ day: d.day, v: Math.round(d.minutes / 6) / 10 }));
   const wbase = `/${locale}/world/${enc(c.world)}`;
   return (
@@ -58,15 +61,17 @@ export default async function Character({ params, searchParams }) {
           {c.guild ? (on(f, "page_guilds")
             ? <a href={`/${locale}/world/${enc(c.guild.world)}/guild/${enc(c.guild.name)}`}>{fmt(t.in_guild, { rank: c.guild.rank, guild: c.guild.name })}</a>
             : fmt(t.in_guild, { rank: c.guild.rank, guild: c.guild.name })) : t.no_guild}
-          {on(f, "page_wrapped") && <> · <a href={`/${locale}/wrapped/${enc(c.world)}/${enc(c.name)}`}>{t.wrapped}</a></>}
+          {on(f, "page_wrapped") && c.seen_online && <> · <a href={`/${locale}/wrapped/${enc(c.world)}/${enc(c.name)}`}>{t.wrapped}</a></>}
         </p>
         {!c.seen_online && <p className="notice">{t.not_seen}</p>}
         <div className="stats">
           <div className="stat"><b>{nf(c.level)}</b><span>{t.level}</span></div>
-          <div className="stat"><b>{nf(Math.round(c.minutes_30d / 6) / 10)}</b><span>{t.hours30}</span></div>
-          <div className="stat"><b>{nf(c.active_days_30d)}</b><span>{t.days30}</span></div>
-          <div className="stat"><b style={{ fontSize: 18 }}>{fmtDate(c.first_seen_day, locale)}</b><span>{t.since}</span></div>
-          <div className="stat"><b style={{ fontSize: 18 }}>{fmtDate(c.last_seen_day, locale)}</b><span>{t.last}</span></div>
+          {c.seen_online && <>
+            <div className="stat"><b>{nf(Math.round(c.minutes_30d / 6) / 10)}</b><span>{t.hours30}</span></div>
+            <div className="stat"><b>{nf(c.active_days_30d)}</b><span>{t.days30}</span></div>
+            <div className="stat"><b>{short(c.first_seen_day)}</b><span>{t.since}</span></div>
+            <div className="stat"><b>{short(c.last_seen_day)}</b><span>{t.last}</span></div>
+          </>}
         </div>
       </section>
 

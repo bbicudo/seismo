@@ -123,7 +123,8 @@ export function DayBars({ points, from, to, locale = "pt", label, unit = "h", he
   const map = new Map(points.map((p) => [p.day, p.v]));
   const W = 900, H = height, L = 40, R = 8, T = 8, B = 24;
   const vmax = niceMax(Math.max(1, ...points.map((p) => p.v)));
-  const bw = (W - L - R) / days.length;
+  const slots = Math.max(days.length, 14);
+  const bw = (W - L - R) / slots;
   const y = (v) => T + (1 - v / vmax) * (H - T - B);
   const nf = new Intl.NumberFormat(NUM[locale], { maximumFractionDigits: 1 });
   const df = new Intl.DateTimeFormat(NUM[locale], { day: "2-digit", month: "2-digit", timeZone: "UTC" });
