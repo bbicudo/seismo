@@ -39,8 +39,9 @@ export default async function World({ params, searchParams }) {
     // número direto para quem lê; o "por mil online" (usado no índice para comparar mundos de tamanhos diferentes) vai como nota
     { v: h.new_characters, show: nf(h.new_characters), label: fmt(x.v_new, { w: h.window }),
       note: h.new_per_1k != null ? fmt(x.v_per_1k, { n: nf(h.new_per_1k, 1) }) : null },
-    { v: h.net_transfers, show: signed(h.net_transfers, locale, 0, ""), label: fmt(x.v_transfers, { w: h.window }), cls: trendClass(h.net_transfers),
-      note: h.net_transfers_per_1k != null ? fmt(x.v_per_1k, { n: signed(h.net_transfers_per_1k, locale, 1, "") }) : null },
+    // chegaram / saíram em vez de saldo com sinal (−2 sozinho não diz se é bom ou ruim)
+    { v: h.transfers_in, show: `${nf(h.transfers_in)} / ${nf(h.transfers_out)}`, label: fmt(x.v_transfers, { w: h.window }),
+      note: h.net_transfers != null ? fmt(x.v_net, { n: signed(h.net_transfers, locale, 0, "") }) : null },
   ] : null;
   const points = health ? health.hourly.map((p) => ({ t: p.hour, v: p.avg, peak: p.max })) : [];
   return (
@@ -49,7 +50,7 @@ export default async function World({ params, searchParams }) {
         <section className="card">
           <h2>{x.vitals}</h2>
           <p className="lead">
-            {h.ready ? fmt(x.vitals_lead, { w: h.window }) : fmt(x.vitals_wait, { n: h.days_needed, d: nf(h.days_collected, 1) })}
+            {h.ready ? fmt(x.vitals_lead, { w: h.window }) : fmt(x.vitals_wait, { n: h.days_needed, d: Math.max(1, Math.ceil(h.days_needed - h.days_collected)) })}
           </p>
           <div className="stats">
             {vitals.map((v) => (

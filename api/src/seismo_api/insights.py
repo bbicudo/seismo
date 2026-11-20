@@ -89,13 +89,14 @@ async def health_raw(window: int, new_max: int) -> dict:
         ),
         moves AS (
           SELECT w.id AS world_id,
-                 (SELECT count(*) FROM transfers t WHERE t.to_world_id = w.id AND t.detected_day > current_date - %s)
-               - (SELECT count(*) FROM transfers t WHERE t.from_world_id = w.id AND t.detected_day > current_date - %s) AS net
+                 (SELECT count(*) FROM transfers t WHERE t.to_world_id = w.id AND t.detected_day > current_date - %s) AS arrived,
+                 (SELECT count(*) FROM transfers t WHERE t.from_world_id = w.id AND t.detected_day > current_date - %s) AS left_
           FROM worlds w
         )
         SELECT w.name, w.location, w.pvp_type, w.players_online,
                o.cur::float AS online_cur, o.prev::float AS online_prev,
-               r.base AS ret_base, r.kept AS ret_kept, coalesce(f.n, 0) AS new_chars, mv.net AS net_transfers
+               r.base AS ret_base, r.kept AS ret_kept, coalesce(f.n, 0) AS new_chars,
+               mv.arrived::int AS arrived, mv.left_::int AS left_, (mv.arrived - mv.left_)::int AS net_transfers
         FROM worlds w
         LEFT JOIN online o ON o.world_id = w.id
         LEFT JOIN ret r ON r.world_id = w.id
@@ -133,7 +134,8 @@ def score_worlds(raw: dict, window: int, weights: dict) -> dict:
                     "retention_pct": round(retention, 1) if retention is not None else None,
                     "new_per_1k": round(new_k, 1) if new_k is not None else None,
                     "net_transfers_per_1k": round(net_k, 1) if net_k is not None else None,
-                    "net_transfers": r["net_transfers"], "new_characters": r["new_chars"]})
+                    "net_transfers": r["net_transfers"], "transfers_in": r["arrived"], "transfers_out": r["left_"],
+                    "new_characters": r["new_chars"]})
     ranks = {k: pct_rank(v) for k, v in parts.items()}
     for o in out:
         num = den = 0.0

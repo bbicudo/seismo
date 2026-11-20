@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { api, enc, fmtNum } from "../../../../../../lib/api";
-import { dict, fmt } from "../../../../../../lib/i18n";
+import { dict, fmt, timeLeft } from "../../../../../../lib/i18n";
 import { D, seo } from "../../../../../../lib/seo";
 
 export async function generateMetadata({ params }) {
@@ -51,8 +51,8 @@ export default async function Town({ params }) {
                   <td>{h.owner ? <a href={`/${locale}/character/${enc(h.owner)}`}>{h.owner}</a> : (h.rented ? <span className="muted">{t.owner_unknown}</span> : "–")}</td>
                   <td className="n">{fmtNum(h.size, locale)}</td>
                   <td className="n">{fmtNum(h.rent, locale)}</td>
-                  <td className="n">{h.auctioned ? fmtNum(h.current_bid || 0, locale) : "–"}</td>
-                  <td>{h.time_left || "–"}</td>
+                  <td className="n">{h.auctioned ? (h.current_bid ? fmtNum(h.current_bid, locale) : <span className="muted">{t.no_bid}</span>) : "–"}</td>
+                  <td>{timeLeft(h.time_left, locale)}</td>
                 </tr>
               ))}
             </tbody>

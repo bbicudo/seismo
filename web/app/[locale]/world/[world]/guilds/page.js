@@ -52,8 +52,8 @@ export default async function Guilds({ params, searchParams }) {
         {d.rows.length === 0 ? <p className="muted">{t.not_yet}</p> : (
           <div className="tbl"><table>
             <thead><tr>
-              <th>#</th><th>{t.guilds}</th><th className="n">{x.g_members}</th><th className="n">{x.g_active}</th>
-              <th className="n">{x.g_net}</th><th className="n">{x.g_level}</th><th>{x.g_war}</th>
+              <th>#</th><th>{t.guilds}</th><th className="n">{x.g_members}</th><th className="n">{fmt(x.g_active_col, { a: d.active_days })}</th>
+              <th className="n">{fmt(x.g_moves_col, { w: d.window })}</th><th className="n">{x.g_level}</th><th>{x.g_war}</th>
             </tr></thead>
             <tbody>
               {d.rows.map((g, i) => (
@@ -62,7 +62,7 @@ export default async function Guilds({ params, searchParams }) {
                   <td><a href={`${base}/guild/${enc(g.name)}`}>{g.name}</a></td>
                   <td className="n">{fmtNum(g.members_total, locale)}</td>
                   <td className="n">{g.active_pct == null ? "–" : <span className="meter" style={{ "--p": `${g.active_pct}%` }}>{g.active_pct}%</span>}</td>
-                  <td className={`n ${trendClass(g.joins - g.leaves)}`} title={`+${g.joins} / −${g.leaves}`}>{signed(g.joins - g.leaves, locale, 0, "")}</td>
+                  <td className="n"><span className={g.joins ? "up" : undefined}>{fmtNum(g.joins, locale)}</span> / <span className={g.leaves ? "down" : undefined}>{fmtNum(g.leaves, locale)}</span></td>
                   <td className="n">{fmtNum(g.avg_level, locale)}</td>
                   <td>{g.in_war == null ? "–" : g.in_war ? <span className="pill red">{t.yes}</span> : t.no}</td>
                 </tr>
