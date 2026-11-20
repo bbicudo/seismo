@@ -1,5 +1,5 @@
 # Imagem da API. Também roda as migrações (serviço "migrate" do compose).
-FROM python:3.12.11-slim-bookworm
+FROM python:3.12.16-slim-bookworm
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -20,4 +20,4 @@ RUN useradd --system --uid 10001 seismo
 USER seismo
 
 EXPOSE 8000
-CMD ["uvicorn", "seismo_api.main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers", "--forwarded-allow-ips", "*"]
+CMD ["uvicorn", "seismo_api.main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers", "--forwarded-allow-ips", "*", "--root-path", "/api"]

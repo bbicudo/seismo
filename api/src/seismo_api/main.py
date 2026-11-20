@@ -33,7 +33,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="Seismo API", version=__version__, lifespan=lifespan,
-              default_response_class=ORJSONResponse, root_path="/api")
+              default_response_class=ORJSONResponse)  # prefixo /api: --root-path do uvicorn (Dockerfile)
 
 
 async def query(sql: str, *params) -> list[dict]:
