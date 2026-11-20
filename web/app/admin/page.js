@@ -1,6 +1,6 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { fmtTime } from "../../lib/api";
+import { fmtNum, fmtTime } from "../../lib/api";
 
 export const dynamic = "force-dynamic";
 
@@ -9,7 +9,7 @@ const API = process.env.API_INTERNAL_URL || "http://api:8000";
 async function load() {
   const [f, s, p] = await Promise.all([
     fetch(`${API}/v1/admin/flags`, { cache: "no-store" }).then((r) => r.json()),
-    fetch(`${API}/v1/status`, { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)),
+    fetch(`${API}/v1/admin/status`, { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)),
     fetch(`${API}/v1/admin/params`, { cache: "no-store" }).then((r) => r.json()),
   ]);
   return { ...f, status: s, params: p.params };
@@ -110,6 +110,33 @@ export default async function Admin({ searchParams }) {
           </p>
         )}
       </section>
+
+      {d.status && (
+        <section className="card">
+          <h2>Status do coletor</h2>
+          <div className="stats">
+            <div className="stat"><b>{fmtNum(d.status.collector.requests_today_utc)}</b><span>requisições hoje (UTC){d.status.collector.request_cap ? ` de ${fmtNum(d.status.collector.request_cap)}` : ""}</span></div>
+            <div className="stat"><b>{fmtNum(d.status.collector.errors_today_utc)}</b><span>erros hoje</span></div>
+            <div className="stat"><b>{d.status.collector.last_cycle_seconds != null ? `${d.status.collector.last_cycle_seconds.toFixed(0)} s` : "–"}</b><span>última rodada ({d.status.collector.last_cycle_worlds || "–"} mundos)</span></div>
+            <div className="stat"><b>{fmtNum(d.status.database.characters)}</b><span>personagens vistos</span></div>
+            <div className="stat"><b>{(d.status.database.db_bytes / 1e6).toFixed(0)} MB</b><span>banco</span></div>
+          </div>
+          <div className="tbl" style={{ marginTop: 14 }}><table>
+            <thead><tr><th>Coleta diária</th><th>Dia de jogo</th><th className="n">Itens</th><th className="n">Duração</th><th>Terminou</th></tr></thead>
+            <tbody>
+              {Object.entries(d.status.daily_jobs).map(([k, j]) => (
+                <tr key={k}><td>{k}</td><td>{j.day || "aguardando"}</td><td className="n">{fmtNum(j.items)}</td>
+                  <td className="n">{j.seconds ? `${Math.max(1, Math.round(j.seconds / 60))} min` : "–"}</td><td>{fmtTime(j.finished_at, "pt")}</td></tr>
+              ))}
+            </tbody>
+          </table></div>
+          <p className="muted">
+            Detalhes de guild lidos: {fmtNum(d.status.progress.guilds_read)} de {fmtNum(d.status.progress.guilds)} ·
+            {" "}donos de casa lidos: {fmtNum(d.status.progress.houses_read)} de {fmtNum(d.status.progress.houses)} ·
+            {" "}linhas de kill statistics: {fmtNum(d.status.progress.kill_rows)}
+          </p>
+        </section>
+      )}
 
       <section className="card">
         <h2>Coletor de online</h2>

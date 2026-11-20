@@ -95,6 +95,18 @@ async def healthz():
 
 @app.get("/v1/status")
 async def status(response: Response):
+    """Status público: só existe se a flag page_status estiver ligada (padrão: desligada no beta)."""
+    await require("page_status")
+    return await status_payload(response)
+
+
+@app.get("/v1/admin/status")
+async def admin_status(response: Response):
+    """Mesmo conteúdo, só para a área administrativa (a rota não sai pelo Caddy)."""
+    return await status_payload(response)
+
+
+async def status_payload(response: Response):
     r = app.state.redis
     day = datetime.now(timezone.utc).date().isoformat()
     keys = ["seismo:paused", "seismo:last_cycle_at", "seismo:last_cycle_seconds", "seismo:last_cycle_worlds",
