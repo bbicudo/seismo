@@ -25,13 +25,17 @@ Project layout: `collector/` (Python collector), `api/` (FastAPI and migrations)
 
 ## Pull requests
 
-1. Fork the repository and create a branch from `main` (`feat/...`, `fix/...`, `docs/...`).
+1. Fork the repository and create a branch from `main`: `feature/...` for new features, `fix/...` for bug fixes,
+   `enhancement/...` for improvements to something that already exists. Nothing is committed straight to `main`.
 2. Keep changes focused: one topic per pull request.
 3. Use [Conventional Commits](https://www.conventionalcommits.org/) for messages (`feat:`, `fix:`, `docs:`, `chore:`).
 4. Make sure CI passes: the collector self-test (`python -m seismo_collector.selftest` inside `collector/src`),
    the Python syntax checks and the Docker builds for both architectures.
 5. Database changes go in a new Alembic migration under `api/migrations/versions/`.
 6. Fill in the pull request template.
+
+Releases are tagged `vX.Y.Z` ([Semantic Versioning](https://semver.org/)) and described in
+[CHANGELOG.md](CHANGELOG.md); add your change under *Unreleased*.
 
 ## Ground rules
 
