@@ -10,12 +10,24 @@ updates:
   - package-ecosystem: npm
     directory: /web
     schedule: { interval: weekly }
+    ignore:
+      # Next 16 muda APIs: a migração é planejada à parte (correções de segurança do 15.x continuam chegando)
+      - dependency-name: next
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: docker
     directories: ["/collector", "/api", "/web"]
     schedule: { interval: weekly }
+    ignore:
+      # trocar a versão do Python (3.12 -> 3.x) é planejado à parte; correções 3.12.x continuam chegando
+      - dependency-name: python
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
   - package-ecosystem: docker-compose
     directory: /
     schedule: { interval: weekly }
+    ignore:
+      # versão principal do Postgres exige dump e restore dos dados: só com migração planejada
+      - dependency-name: postgres
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: github-actions
     directory: /
     schedule: { interval: weekly }
