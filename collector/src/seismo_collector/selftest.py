@@ -57,6 +57,8 @@ def main() -> None:
     assert parse_window(txt, date(2026, 11, 13)) == [date(2026, 11, 20), date(2026, 11, 21), date(2026, 11, 22)]
     assert parse_window("server saves of December 30 and January 2", date(2026, 12, 20))[-1] == date(2027, 1, 1)
     assert event_kinds("Double XP and Double Skill Event", txt) == ["double_xp", "double_skill"]
+    nbsp = "Between the server saves of\xa0November 20 and November 23\xa0all monsters"
+    assert parse_window(nbsp, date(2026, 11, 13)) == [date(2026, 11, 20), date(2026, 11, 21), date(2026, 11, 22)]
     print("selftest ok")
 
 

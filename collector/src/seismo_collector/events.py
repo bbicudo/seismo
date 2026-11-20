@@ -28,8 +28,13 @@ SAVES_RE = re.compile(
 CALENDAR_URL = "https://api.tibiamarket.top/events"
 
 
+def normalize(text: str) -> str:
+    """As notícias do tibia.com usam espaço não separável (\\xa0) no meio das frases."""
+    return re.sub(r"\s+", " ", (text or "").replace("\xa0", " "))
+
+
 def event_kinds(title: str, text: str) -> list[str]:
-    s = f"{title} {text}".lower()
+    s = normalize(f"{title} {text}").lower()
     kinds = []
     if "double xp" in s or "double experience" in s or "twice the usual amount of experience" in s:
         kinds.append("double_xp")
@@ -42,7 +47,7 @@ def event_kinds(title: str, text: str) -> list[str]:
 
 def parse_window(text: str, published: date) -> list[date]:
     """Dias de jogo entre dois server saves citados no texto da notícia (o dia do segundo save não entra)."""
-    m = SAVES_RE.search(text)
+    m = SAVES_RE.search(normalize(text))
     if not m:
         return []
     m1 = MONTHS.get(m["m1"].lower())
