@@ -32,6 +32,8 @@ const T = {
     next: "Próxima janela provável",
     days_word: "dias",
     unknown: "poucos dados",
+    in_window: "na janela",
+    overdue: "atrasada",
     detectable: "{d} de {t} raids da TibiaWiki têm criaturas raras o bastante para serem detectadas.",
     thermo: "Termômetro de respawn",
     thermo_lead: "Compara as mortes do dia {day} com a média dos 28 dias anteriores neste mundo.",
@@ -62,6 +64,8 @@ const T = {
     next: "Likely next window",
     days_word: "days",
     unknown: "not enough data",
+    in_window: "in window",
+    overdue: "overdue",
     detectable: "{d} of {t} TibiaWiki raids have creatures rare enough to be detected.",
     thermo: "Respawn thermometer",
     thermo_lead: "Compares kills on {day} with the average of the previous 28 days in this world.",
@@ -102,14 +106,33 @@ export default async function Raids({ params }) {
   const name = decodeURIComponent(world);
   const [r, th] = await Promise.all([api(`/v1/worlds/${enc(name)}/raids`), api(`/v1/worlds/${enc(name)}/thermometer`)]);
   if (!r) notFound();
-  const base = `/${locale}/world/${enc(r.world)}`;
+  const today = new Date().toISOString().slice(0, 10);
   return (
     <>
       <section className="card">
-        <p className="crumbs"><a href={base}>← {t.back}</a></p>
-        <h1>{t.title} · {r.world}</h1>
-        <p className="lead">{t.lead}</p>
-        <p className="muted">{fmt(t.detectable, { d: r.detectable, t: r.total })}</p>
+        <h2>{t.title}</h2>
+        <p className="lead">{t.lead} {fmt(t.detectable, { d: r.detectable, t: r.total })}</p>
+      </section>
+
+      <section className="card">
+        <h2>{t.summary}</h2>
+        <p className="lead">{t.summary_lead}</p>
+        {r.raids.length === 0 ? <p className="muted">{fmt(t.none, { n: r.history_days })}</p> : (
+          <div className="tbl"><table>
+            <thead><tr><th>{t.raid}</th><th>{t.region}</th><th className="n">{t.count}</th><th>{t.last}</th><th className="n">{t.gap}</th><th>{t.next}</th></tr></thead>
+            <tbody>
+              {r.raids.map((s) => (
+                <tr key={s.slug}>
+                  <td>{s.name}</td><td>{s.region}</td><td className="n">{fmtNum(s.count, locale)}</td><td>{fmtDate(s.last, locale)}</td>
+                  <td className="n">{s.median_gap_days ? `${s.median_gap_days} ${t.days_word}` : "–"}</td>
+                  <td>{s.next_from ? <>{`${fmtDate(s.next_from, locale)} – ${fmtDate(s.next_to, locale)}`}
+                    {today >= s.next_from && today <= s.next_to && <> <span className="pill on">{t.in_window}</span></>}
+                    {today > s.next_to && <> <span className="pill off">{t.overdue}</span></>}</> : <span className="muted">{t.unknown}</span>}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table></div>
+        )}
       </section>
 
       <div className="grid2">
@@ -139,25 +162,7 @@ export default async function Raids({ params }) {
         </section>
       </div>
 
-      <section className="card">
-        <h2>{t.summary}</h2>
-        <p className="lead">{t.summary_lead}</p>
-        {r.raids.length === 0 ? <p className="muted">{fmt(t.none, { n: r.history_days })}</p> : (
-          <div className="tbl"><table>
-            <thead><tr><th>{t.raid}</th><th>{t.region}</th><th className="n">{t.count}</th><th>{t.last}</th><th className="n">{t.gap}</th><th>{t.next}</th></tr></thead>
-            <tbody>
-              {r.raids.map((s) => (
-                <tr key={s.slug}>
-                  <td>{s.name}</td><td>{s.region}</td><td className="n">{fmtNum(s.count, locale)}</td><td>{fmtDate(s.last, locale)}</td>
-                  <td className="n">{s.median_gap_days ? `${s.median_gap_days} ${t.days_word}` : "–"}</td>
-                  <td>{s.next_from ? `${fmtDate(s.next_from, locale)} – ${fmtDate(s.next_to, locale)}` : <span className="muted">{t.unknown}</span>}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table></div>
-        )}
-        <p className="muted" style={{ marginTop: 10 }}>{t.credit}</p>
-      </section>
+      <p className="muted">{t.credit}</p>
     </>
   );
 }

@@ -42,8 +42,8 @@ export default async function Guild({ params, searchParams }) {
   return (
     <>
       <section className="card">
-        <p className="crumbs"><a href={`/${locale}`}>{t.nav_worlds}</a> / <a href={base}>{g.world}</a></p>
-        <h1>{g.name}</h1>
+        <p className="crumbs"><a href={`${base}/guilds`}>← {t.guilds}</a></p>
+        <h2 className="title">{g.name}</h2>
         <p className="lead">{t.guild_lead} <a href={`/${locale}/wrapped/${enc(g.world)}/guild/${enc(g.name)}`}>Wrapped →</a></p>
         {!g.details_fetched_at ? <p className="muted">{t.guild_not_read}</p> : (
           <div className="stats">

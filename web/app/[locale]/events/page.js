@@ -1,7 +1,8 @@
 import { getFlags, on } from "../../../lib/flags";
 import { notFound } from "next/navigation";
-import { api, fmtDate } from "../../../lib/api";
-import { dict } from "../../../lib/i18n";
+import { api, fmtDate, fmtNum } from "../../../lib/api";
+import { dict, fmt } from "../../../lib/i18n";
+import { it, signed, trendClass } from "../../../lib/insights-i18n";
 import { D, seo } from "../../../lib/seo";
 
 export async function generateMetadata({ params }) {
@@ -42,8 +43,14 @@ function Days({ rows, locale, t }) {
 export default async function Events({ params }) {
   const { locale } = await params;
   const t = dict(locale);
-  if (!on(await getFlags(), "page_events")) notFound();
-  const d = await api("/v1/events?past=30&ahead=30");
+  const f = await getFlags();
+  if (!on(f, "page_events")) notFound();
+  const x = it(locale);
+  const [d, imp] = await Promise.all([
+    api("/v1/events?past=30&ahead=30"),
+    on(f, "page_event_impact") ? api("/v1/events/impact") : null,
+  ]);
+  const span = (a, b) => (a === b ? fmtDate(a, locale) : `${fmtDate(a, locale)} – ${fmtDate(b, locale)}`);
   const upcoming = d.events.filter((e) => e.day > d.today);
   const past = d.events.filter((e) => e.day < d.today).reverse();
   return (
@@ -64,6 +71,53 @@ export default async function Events({ params }) {
         <section className="card"><h2>{t.upcoming}</h2><Days rows={upcoming} locale={locale} t={t} /></section>
         <section className="card"><h2>{t.past}</h2><Days rows={past} locale={locale} t={t} /></section>
       </div>
+      {imp && (
+        <section className="card">
+          <h2>{x.impact}</h2>
+          <p className="lead">{fmt(x.impact_lead, { w: imp.baseline_weeks })}</p>
+          {imp.events.length === 0 ? <p className="muted">{x.impact_none}</p> : (
+            <div className="tbl"><table>
+              <thead><tr><th>{x.event}</th><th>{x.period}</th><th className="n">{x.i_online}</th><th className="n">{x.i_kills}</th><th className="n">{x.i_deaths}</th></tr></thead>
+              <tbody>
+                {imp.events.map((e) => (
+                  <tr key={e.name + e.from}>
+                    <td>{e.name}</td>
+                    <td>{span(e.from, e.to)}</td>
+                    {e.status === "ok" ? <>
+                      <td className={`n ${trendClass(e.online_pct)}`}>{signed(e.online_pct, locale, 1)}</td>
+                      <td className={`n ${trendClass(e.kills_pct)}`}>{signed(e.kills_pct, locale, 1)}</td>
+                      <td className={`n ${trendClass(-e.deaths_pct)}`}>{signed(e.deaths_pct, locale, 1)}</td>
+                    </> : <td colSpan={3} className="muted">{e.status === "upcoming" ? x.upcoming_event : x.no_baseline}</td>}
+                  </tr>
+                ))}
+              </tbody>
+            </table></div>
+          )}
+        </section>
+      )}
+
+      {imp && (
+        <section className="card">
+          <h2>{x.boosted}</h2>
+          <p className="lead">{x.boosted_lead} {imp.boosted_median != null && <b>{fmt(x.boosted_median, { x: imp.boosted_median })}</b>}</p>
+          {imp.boosted.length === 0 ? <p className="muted">{x.boosted_wait}</p> : (
+            <div className="tbl"><table>
+              <thead><tr><th>{x.day}</th><th>{x.creature}</th><th className="n">{x.kills}</th><th className="n">{x.normal}</th><th className="n">{x.times}</th></tr></thead>
+              <tbody>
+                {imp.boosted.map((b) => (
+                  <tr key={b.day}>
+                    <td>{fmtDate(b.day, locale)}</td><td>{b.creature}</td><td className="n">{fmtNum(b.kills, locale)}</td>
+                    <td className="n">{b.normal == null ? <span className="muted">–</span> : fmtNum(b.normal, locale)}</td>
+                    <td className="n">{b.multiplier == null ? <span className="muted">–</span> : <b>{b.multiplier}×</b>}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table></div>
+          )}
+          {imp.boosted.some((b) => b.multiplier == null) && <p className="muted" style={{ marginTop: 8 }}>{x.boosted_wait}</p>}
+        </section>
+      )}
+
       <p className="muted">tibia.com (via TibiaData) · <a href="https://tibiamarket.top">TibiaMarket</a></p>
     </>
   );

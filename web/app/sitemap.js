@@ -40,8 +40,11 @@ export default async function sitemap() {
     const wp = `/world/${enc(w.name)}`;
     add(wp, { freq: "hourly", priority: 0.9, lastModified: w.updated_at });
     if (!p.seo_sitemap_worlds_extra) continue;
+    if (on("page_heatmap") || on("page_vocations") || on("page_funnel") || on("page_retention") || on("page_leveling")) add(`${wp}/activity`, { priority: 0.7 });
     if (on("page_hunts")) add(`${wp}/hunts`, { priority: 0.7 });
     if (on("page_raids")) add(`${wp}/raids`, { priority: 0.7 });
+    if (on("page_guilds")) add(`${wp}/guilds`, { priority: 0.6 });
+    if (on("page_houses")) add(`${wp}/houses`, { priority: 0.6 });
     if (on("page_wrapped")) add(`/wrapped/${enc(w.name)}`, { freq: "weekly", priority: 0.5 });
   }
   if (p.seo_sitemap_guilds) for (const g of d.guilds) add(`/world/${enc(g.world)}/guild/${enc(g.name)}`, { freq: "weekly", priority: 0.4, lastModified: g.updated_at });

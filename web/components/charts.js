@@ -160,3 +160,23 @@ export function DayBars({ points, from, to, locale = "pt", label, unit = "h", he
     </div>
   );
 }
+
+/**
+ * Barras horizontais simples (ranking): rows = [{ label, v, href?, note? }]. A barra é proporcional ao maior valor.
+ */
+export function Bars({ rows, locale = "pt", tone = "", digits = 0, unit = "" }) {
+  if (!rows || !rows.length) return null;
+  const max = Math.max(1, ...rows.map((r) => r.v || 0));
+  const nf = new Intl.NumberFormat(NUM[locale], { maximumFractionDigits: digits });
+  return (
+    <ul className={`bars ${tone}`}>
+      {rows.map((r) => (
+        <li key={r.label}>
+          <span className="bl">{r.href ? <a href={r.href}>{r.label}</a> : r.label}{r.note && <small> {r.note}</small>}</span>
+          <span className="bt"><i style={{ width: `${Math.max(2, (100 * (r.v || 0)) / max)}%` }} /></span>
+          <span className="bv">{nf.format(r.v || 0)}{unit}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}

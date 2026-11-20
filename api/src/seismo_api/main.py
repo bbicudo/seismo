@@ -763,7 +763,8 @@ async def world_hunts(name: str, response: Response, day: str | None = None):
     )
     available = [d["stats_day"] for d in days]
     if not available:
-        return {"world": w["name"], "day": None, "days": [], "hunts": [], "bounds": MAP_BOUNDS}
+        return {"world": w["name"], "day": None, "days": [], "hunts": [], "bounds": MAP_BOUNDS, "creatures": [],
+                "totals": {"killed": None, "deaths": None}, "trends": False}
     chosen = available[0]
     if day:
         try:
@@ -773,29 +774,66 @@ async def world_hunts(name: str, response: Response, day: str | None = None):
         if wanted not in available:
             raise HTTPException(404, "sem kill statistics nesse dia")
         chosen = wanted
+    trend_days = PARAM["hunt_trend_days"]
     rows = await query(
         """
         WITH hk AS (SELECT DISTINCT h.slug, k AS key FROM hunts h, unnest(h.race_keys) k),
         share AS (SELECT key, count(*) AS n FROM hk GROUP BY key),
-        kills AS (SELECT lower(race) AS race, race AS label, killed FROM kill_stats_daily
-                  WHERE world_id = %s AND stats_day = %s AND killed > 0),
+        kills AS (SELECT stats_day, lower(race) AS race, race AS label, killed, players_killed FROM kill_stats_daily
+                  WHERE world_id = %s AND stats_day BETWEEN %s::date - %s AND %s::date
+                    AND (killed > 0 OR players_killed > 0)),
         per AS (
-          SELECT hk.slug, kills.label, kills.killed::float / share.n AS part
+          SELECT hk.slug, kills.stats_day, kills.label, kills.killed::float / share.n AS part,
+                 kills.players_killed::float / share.n AS pk
           FROM hk JOIN share ON share.key = hk.key JOIN kills ON kills.race = hk.key
+        ),
+        agg AS (
+          SELECT slug, sum(part) FILTER (WHERE stats_day = %s) AS kills, sum(pk) FILTER (WHERE stats_day = %s) AS deaths,
+                 sum(part) FILTER (WHERE stats_day < %s) AS base_kills
+          FROM per GROUP BY slug
         )
-        SELECT h.slug, h.name, h.city, h.x, h.y, h.z, round(sum(per.part))::int AS kills,
+        SELECT h.slug, h.name, h.city, h.x, h.y, h.z, round(agg.kills)::int AS kills,
+               round(coalesce(agg.deaths, 0))::int AS deaths, coalesce(agg.base_kills, 0)::float AS base_kills,
                (SELECT json_agg(t ORDER BY t.part DESC) FROM (
                   SELECT p2.label AS creature, round(p2.part)::int AS part FROM per p2
-                  WHERE p2.slug = h.slug ORDER BY p2.part DESC LIMIT 4) t) AS top
-        FROM hunts h JOIN per ON per.slug = h.slug
-        GROUP BY h.slug, h.name, h.city, h.x, h.y, h.z
-        HAVING round(sum(per.part)) > 0
+                  WHERE p2.slug = h.slug AND p2.stats_day = %s ORDER BY p2.part DESC LIMIT 4) t) AS top
+        FROM hunts h JOIN agg ON agg.slug = h.slug
+        WHERE round(agg.kills) > 0
         ORDER BY kills DESC
         """,
-        w["id"], chosen,
+        w["id"], chosen, trend_days, chosen, chosen, chosen, chosen, chosen,
     )
+    base_n = sum(1 for d in available if chosen - timedelta(days=trend_days) <= d < chosen)
+    trends = (await flags()).get("page_hunt_trends", True)
+    for r in rows:
+        base = r.pop("base_kills") / base_n if base_n else None
+        r["delta_pct"] = round((r["kills"] - base) / base * 100) if trends and base_n >= 3 and base and base >= 50 else None
+        r["risk"] = round(r["deaths"] / r["kills"] * 1000, 1) if trends and r["kills"] >= 100 else None
+        if not trends:
+            r.pop("deaths")
+    creatures = await query(
+        """
+        WITH base AS (SELECT race, sum(killed)::float AS killed FROM kill_stats_daily
+                      WHERE world_id = %s AND stats_day >= %s::date - %s AND stats_day < %s GROUP BY race)
+        SELECT k.race, k.killed, k.players_killed, coalesce(b.killed, 0) AS base_killed
+        FROM kill_stats_daily k LEFT JOIN base b ON b.race = k.race
+        WHERE k.world_id = %s AND k.stats_day = %s ORDER BY k.killed DESC LIMIT 15
+        """,
+        w["id"], chosen, trend_days, chosen, w["id"], chosen,
+    )
+    for c in creatures:
+        base = c.pop("base_killed") / base_n if base_n else None
+        c["delta_pct"] = round((c["killed"] - base) / base * 100) if trends and base_n >= 3 and base and base >= 50 else None
+        c["risk"] = round(c["players_killed"] / c["killed"] * 1000, 1) if trends and c["killed"] >= 100 else None
+    totals = (await query(
+        "SELECT sum(killed)::int AS killed, sum(players_killed)::int AS deaths FROM kill_stats_daily "
+        "WHERE world_id = %s AND stats_day = %s",
+        w["id"], chosen,
+    ))[0]
     cache(response, 900)
-    return {"world": w["name"], "day": chosen, "days": available, "hunts": rows, "bounds": MAP_BOUNDS}
+    return {"world": w["name"], "day": chosen, "days": available, "hunts": rows, "bounds": MAP_BOUNDS,
+            "creatures": creatures, "totals": totals, "trend_days": trend_days, "base_days": base_n, "trends": trends}
+
 
 
 # ---------------------------------------------------------------- wrapped (resumo do mês)
@@ -1165,3 +1203,9 @@ async def optout_verify(body: OptoutIn, response: Response):
     )
     await app.state.redis.rpush(OPTOUT_QUEUE, name)
     return await optout_state(name)
+
+
+# rotas de insights (módulo separado para este arquivo não crescer demais)
+from . import insights  # noqa: E402
+
+app.include_router(insights.router)

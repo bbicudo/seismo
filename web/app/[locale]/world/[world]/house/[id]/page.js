@@ -24,9 +24,9 @@ export default async function House({ params }) {
     <>
       <section className="card">
         <p className="crumbs">
-          <a href={`/${locale}`}>{t.nav_worlds}</a> / <a href={base}>{h.world}</a> / <a href={`${base}/town/${enc(h.town)}`}>{h.town}</a>
+          <a href={`${base}/houses`}>{locale === "en" ? "Houses" : "Casas"}</a> / <a href={`${base}/town/${enc(h.town)}`}>{h.town}</a>
         </p>
-        <h1>{h.name}</h1>
+        <h2 className="title">{h.name}</h2>
         <p className="lead">{h.kind === "guildhall" ? t.kind_guildhall : t.kind_house} · {h.town}</p>
         <div className="stats">
           <div className="stat"><b>{now ? (now.auctioned ? t.st_auction : now.rented ? t.st_rented : t.st_free) : "–"}</b><span>{t.status}</span></div>

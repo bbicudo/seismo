@@ -29,8 +29,8 @@ export default async function Town({ params }) {
   return (
     <>
       <section className="card">
-        <p className="crumbs"><a href={`/${locale}`}>{t.nav_worlds}</a> / <a href={base}>{d.world}</a></p>
-        <h1>{fmt(t.houses_in, { town: d.town })}</h1>
+        <p className="crumbs"><a href={`${base}/houses`}>← {locale === "en" ? "Houses" : "Casas"}</a></p>
+        <h2 className="title">{fmt(t.houses_in, { town: d.town })}</h2>
         <div className="stats">
           <div className="stat"><b>{fmtNum(d.houses.length, locale)}</b><span>{t.total}</span></div>
           <div className="stat"><b>{fmtNum(rented, locale)}</b><span>{t.rented}</span></div>

@@ -10,32 +10,53 @@ continuously and turns it into live statistics, maps and monthly summaries, in P
 
 ## Features
 
-**Worlds**
-- **Overview** of all worlds: players online right now, 48-hour chart, breakdown by region, filters by region and PvP type.
-- **World health**: hourly average and peak of players over 7, 14 or 30 days, all-time record, and transfers in/out.
+**Worlds** (each world page is split into tabs, so no page gets too long and nothing is shown twice)
+- **Overview** of all worlds: players online right now, 48-hour chart, top deaths, and a worlds table that can be
+  sorted by players online, health index or trend, and filtered by region and PvP type.
+- **Health index** (0 to 100): ranks every world by its online trend, how many players come back, new characters
+  and net transfers, comparing the last 7 days with the 7 before. Weights and window are adjustable in `/admin`.
+- **World health**: hourly average and peak of players over 7, 14 or 30 days, all-time record, event days shaded.
+- **Transfer flows**: which worlds characters came from and went to.
 - **Activity heatmap**: average players online by weekday and hour, filterable by vocation and level band.
   Anonymous aggregates only; event days (double XP, rapid respawn) are excluded by default.
-- **Who is online now**: anonymous count by vocation and level band.
-- **Characters created**: daily count of new characters per world (characters first seen at a low level).
+- **Vocations**: average players online by vocation and level band, share of each vocation and its change
+  against the previous week.
+- **Leveling speed**: levels gained per hour online by vocation and level band.
+- **Newcomer funnel**: characters created per day and how many reach levels 8, 20, 50 and 100.
+- **Newcomer retention**: share of each weekly class still playing after 7, 30 and 90 days.
+
+**Characters**
+- **Character page**: level, hours online per day, levels per month, guild, houses and transfers (no login times).
+  Not indexed by search engines by default.
 
 **Hunting and raids**
 - **Top deaths**: worlds with the most players killed by creatures on the last day.
-- **Most killed creatures** per world.
 - **Hunt map**: the game map with the busiest hunting areas of the day, drawn from kill statistics
-  (329 hunting areas from TibiaWiki).
+  (329 hunting areas from TibiaWiki), with each area's change against the previous days and a risk index
+  (players killed per thousand creatures killed).
+- **Creatures of the day** per world, with the same change and risk columns.
 - **Raids**: raids detected from kill statistics (47 detectable raids out of 116 listed on TibiaWiki), how often
-  each one happens and a likely next window.
+  each one happens and a likely next window, flagged when it is open now or overdue.
 - **Respawn thermometer**: creatures with unusually high or low kills compared with the previous 28 days
   (spot likely crowded or likely free), with the daily boosted creature flagged.
 
 **Guilds and houses**
-- **Guilds**: members, rank, level, founding date, war status, vocation mix, and joins/departures over time.
-- **Houses**: every house by town, rent status, auctions with current bid, current owner and owner history.
+- **Guild vitality**: per world, each guild's members, share of members active in the last 7 days, net joins and
+  departures, and average level, sortable by each of them.
+- **Member exchange between guilds**: guild pairs with the most members leaving one and joining the other
+  (totals only, shown from 5 people up).
+- **Guild page**: members, rank, level, founding date, war status, vocation mix, joins/departures over time and a
+  heatmap of when the guild plays (guilds with 15+ members only).
+- **House market**: per town, occupancy, open auctions, average bid, auctions closed, median days to rent and owner
+  changes; every house by town with current owner and owner history.
 
 **Events**
 - **Game events**: double XP, double skill and rapid respawn read from official tibia.com news; full moon and
   seasonal events from a community calendar.
 - **Today in Tibia**: boosted creature, boosted boss and active events.
+- **Event impact**: how much each double XP, double skill or rapid respawn changes players online, creatures killed
+  and players killed across all worlds, against the same weekdays in the weeks before.
+- **Boosted creature effect**: how many times more the boosted creature is hunted than on a usual day.
 
 **Wrapped**
 - **Monthly summaries** for a character, a guild or a world: hours online, days played, levels gained, rank within
@@ -48,7 +69,9 @@ continuously and turns it into live statistics, maps and monthly summaries, in P
   disappears from the site, the data tied to it is deleted and it is no longer recorded.
 - **About** and **Privacy** pages in both languages.
 - **Admin area** (`/admin`, separate login): feature flags to turn each part of the site and each collection on or
-  off, and adjustable parameters (daily request cap, pace, privacy thresholds, thermometer and raid tuning).
+  off, and adjustable parameters (daily request cap, pace, privacy thresholds, SEO, thermometer, raid tuning and
+  every insight window, weight and threshold).
+- **SEO**: sitemap, robots, canonical and pt/en alternate links, and a preview image for every page.
 - **Daily request cap** (34k by default) that keeps the load on TibiaData predictable.
 
 ## How it works
@@ -72,6 +95,7 @@ TibiaData ──► collector (Python) ──► Redis (who is online right now)
 - No per-character login or logout times are stored: only total minutes per day and the last day seen.
 - Heatmaps are aggregates only. With a filter, cells with fewer than 5 players are hidden.
 - Online/offline status of guild members is not stored.
+- Insights (vocations, leveling speed, retention, guild exchanges) are totals only; groups under 5 people are hidden.
 - Daily minutes per character are kept for 400 days.
 - Any character owner can opt out at any time.
 
