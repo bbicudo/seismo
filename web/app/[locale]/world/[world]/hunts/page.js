@@ -42,7 +42,9 @@ export default async function Hunts({ params, searchParams }) {
   const radius = (k) => 4 + 72 * Math.sqrt(k / max);
   const labels = new Set(d.hunts.slice(0, 12).map((h) => h.slug));
   const nf = (n) => fmtNum(n, locale);
-  const risk = (r) => (r == null ? <span className="muted">–</span> : new Intl.NumberFormat(locale === "en" ? "en-GB" : "pt-BR", { maximumFractionDigits: 1 }).format(r));
+  // jogadores mortos (estimativa) com a proporção na dica: mais fácil de ler que "por mil"
+  const deaths = (h) => (h.deaths == null ? <span className="muted">–</span>
+    : <span title={h.deaths > 0 ? fmt(x.risk_tip, { n: nf(Math.round(h.kills / h.deaths)) }) : undefined}>{nf(h.deaths)}</span>);
   const trends = d.trends;
   const deltaHead = fmt(x.delta_days, { d: d.trend_days });
   return (
@@ -100,7 +102,7 @@ export default async function Hunts({ params, searchParams }) {
           <div className="tbl"><table>
             <thead><tr>
               <th>#</th><th>{t.hunt}</th><th>{t.city}</th><th className="n">{t.kills}</th>
-              {trends && <><th className="n">{deltaHead}</th><th className="n" title={x.risk_hint}>{x.risk} ‰</th></>}
+              {trends && <><th className="n">{deltaHead}</th><th className="n">{x.deaths_est}</th></>}
               <th>{t.top}</th>
             </tr></thead>
             <tbody>
@@ -110,13 +112,12 @@ export default async function Hunts({ params, searchParams }) {
                   <td>{h.name}{h.z !== 7 && <span className="muted"> · {t.underground}</span>}</td>
                   <td>{h.city || "–"}</td>
                   <td className="n">{nf(h.kills)}</td>
-                  {trends && <><td className={`n ${trendClass(h.delta_pct)}`}>{signed(h.delta_pct, locale)}</td><td className="n">{risk(h.risk)}</td></>}
+                  {trends && <><td className={`n ${trendClass(h.delta_pct)}`}>{signed(h.delta_pct, locale)}</td><td className="n">{deaths(h)}</td></>}
                   <td className="muted wrap-cell">{(h.top || []).map((c) => c.creature).join(", ")}</td>
                 </tr>
               ))}
             </tbody>
           </table></div>
-          {trends && <p className="muted" style={{ marginTop: 8 }}>{x.risk} ‰ = {x.risk_hint}.</p>}
         </section>
       )}
 
@@ -126,13 +127,13 @@ export default async function Hunts({ params, searchParams }) {
           <div className="tbl"><table>
             <thead><tr>
               <th>{x.creature}</th><th className="n">{x.killed}</th><th className="n">{x.players_killed}</th>
-              {trends && <><th className="n">{deltaHead}</th><th className="n" title={x.risk_hint}>{x.risk} ‰</th></>}
+              {trends && <th className="n">{deltaHead}</th>}
             </tr></thead>
             <tbody>
               {d.creatures.map((c) => (
                 <tr key={c.race}>
                   <td>{c.race}</td><td className="n">{nf(c.killed)}</td><td className="n">{nf(c.players_killed)}</td>
-                  {trends && <><td className={`n ${trendClass(c.delta_pct)}`}>{signed(c.delta_pct, locale)}</td><td className="n">{risk(c.risk)}</td></>}
+                  {trends && <td className={`n ${trendClass(c.delta_pct)}`}>{signed(c.delta_pct, locale)}</td>}
                 </tr>
               ))}
             </tbody>
