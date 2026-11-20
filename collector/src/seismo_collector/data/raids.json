@@ -592,7 +592,7 @@
   },
   {
    "slug": "southern-darama-gargoyle-raid-in-oasis-tomb",
-   "name": "Gargoyle Raid in [[Oasis Tomb]]",
+   "name": "Gargoyle Raid in Oasis Tomb",
    "region": "Southern Darama",
    "creatures": [
     "Gargoyle"
@@ -600,7 +600,7 @@
   },
   {
    "slug": "southern-darama-slime-raid-in-shadow-tomb",
-   "name": "Slime Raid in [[Shadow Tomb]]",
+   "name": "Slime Raid in Shadow Tomb",
    "region": "Southern Darama",
    "creatures": [
     "Slime"
@@ -616,7 +616,7 @@
   },
   {
    "slug": "southern-darama-bonebeast-raid-in-mountain-tomb",
-   "name": "Bonebeast Raid in [[Mountain Tomb]]",
+   "name": "Bonebeast Raid in Mountain Tomb",
    "region": "Southern Darama",
    "creatures": [
     "Bonebeast"
@@ -624,7 +624,7 @@
   },
   {
    "slug": "southern-darama-necromancer-raid-in-peninsula-tomb",
-   "name": "Necromancer Raid in [[Peninsula Tomb]]",
+   "name": "Necromancer Raid in Peninsula Tomb",
    "region": "Southern Darama",
    "creatures": [
     "Necromancer"
@@ -632,7 +632,7 @@
   },
   {
    "slug": "southern-darama-cobra-raid-in-mountain-tomb",
-   "name": "Cobra Raid in [[Mountain Tomb]]",
+   "name": "Cobra Raid in Mountain Tomb",
    "region": "Southern Darama",
    "creatures": [
     "Cobra"
@@ -640,7 +640,7 @@
   },
   {
    "slug": "southern-darama-vampire-raid-in-tarpit-tomb",
-   "name": "Vampire Raid in [[Tarpit Tomb]]",
+   "name": "Vampire Raid in Tarpit Tomb",
    "region": "Southern Darama",
    "creatures": [
     "Vampire"
@@ -972,7 +972,7 @@
   },
   {
    "slug": "venore-witches-raid-at-green-claw-swamp",
-   "name": "Witches Raid at [[Green Claw Swamp]]",
+   "name": "Witches Raid at Green Claw Swamp",
    "region": "Venore",
    "creatures": [
     "Witch"
@@ -1036,7 +1036,7 @@
   },
   {
    "slug": "zao-orcs-raid-on-zzaion",
-   "name": "[[Orcs]] raid on [[Zzaion]]",
+   "name": "Orcs raid on Zzaion",
    "region": "Zao",
    "creatures": [
     "Orc",
@@ -1054,7 +1054,7 @@
   },
   {
    "slug": "zao-orcs-raid-on-zao-steppe",
-   "name": "[[Orcs]] raid on Zao Steppe",
+   "name": "Orcs raid on Zao Steppe",
    "region": "Zao",
    "creatures": [
     "Orc Spearman",
@@ -1067,7 +1067,7 @@
   },
   {
    "slug": "zao-gnarlhound-s-raid-on-zao-steppes",
-   "name": "[[Gnarlhound]]s raid on Zao Steppes",
+   "name": "Gnarlhounds raid on Zao Steppes",
    "region": "Zao",
    "creatures": [
     "Gnarlhound"
@@ -1075,7 +1075,7 @@
   },
   {
    "slug": "zao-lancer-beetle-s-raid-on-muggy-plains",
-   "name": "[[Lancer Beetle]]s raid on [[Muggy Plains]]",
+   "name": "Lancer Beetles raid on Muggy Plains",
    "region": "Zao",
    "creatures": [
     "Lancer Beetle",
@@ -1084,7 +1084,7 @@
   },
   {
    "slug": "zao-dragon-s-raid-on-muggy-plains",
-   "name": "[[Dragon]]s raid on [[Muggy Plains]]",
+   "name": "Dragons raid on Muggy Plains",
    "region": "Zao",
    "creatures": [
     "Dragon",

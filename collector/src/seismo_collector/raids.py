@@ -1,9 +1,11 @@
 """Detecção de raids pelas kill statistics.
 
 A lista de raids e criaturas vem da TibiaWiki (data/raids.json). Uma criatura só "denuncia" uma raid se for
-rara no dia a dia: morta em menos de 20% dos dias×mundos dos últimos 28 dias. Assim demônios ou monks (que
-existem o tempo todo) não contam, mas draptors, yetis ou um chefe como Ghazbaran contam. Raids formadas só por
-criaturas comuns não são detectáveis e ficam de fora.
+rara no dia a dia: morta em menos de 5% dos dias×mundos dos últimos 28 dias. Assim demônios, monks ou wasps
+(que existem o tempo todo) não contam, mas draptors, yetis ou um chefe como Ghazbaran contam.
+
+Além disso, num mundo com pelo menos 7 dias de histórico, uma criatura morta na maioria dos dias daquele mundo
+(um chefe caçado todo dia, por exemplo) também não conta como raid ali.
 """
 
 import json
@@ -14,7 +16,9 @@ from importlib import resources
 from psycopg_pool import AsyncConnectionPool
 
 log = logging.getLogger("seismo.raids")
-RARE_FRACTION = 0.20
+RARE_FRACTION = 0.05     # fração máxima de dias×mundos em que a criatura aparece
+LOCAL_DAILY = 0.5        # num mundo, aparecer em mais da metade dos dias = rotina, não raid
+LOCAL_MIN_DAYS = 7       # a regra local só vale com essa quantidade de dias de histórico no mundo
 WINDOW_DAYS = 28
 
 
@@ -88,15 +92,26 @@ async def detect(pool: AsyncConnectionPool, today: date) -> int:
             await conn.execute("DELETE FROM raid_occurrences WHERE day >= %s", (since,))
             cur = await conn.execute(
                 """
+                WITH world_days AS (
+                  SELECT world_id, count(DISTINCT stats_day) AS n FROM kill_stats_daily
+                  WHERE stats_day >= %s GROUP BY world_id
+                ),
+                local AS (
+                  SELECT k.world_id, lower(k.race) AS race, count(*)::float / wd.n AS freq, wd.n
+                  FROM kill_stats_daily k JOIN world_days wd ON wd.world_id = k.world_id
+                  WHERE k.stats_day >= %s AND k.killed > 0 GROUP BY k.world_id, lower(k.race), wd.n
+                )
                 INSERT INTO raid_occurrences (world_id, raid_id, day, kills)
                 SELECT k.world_id, r.id, k.stats_day, sum(k.killed + k.players_killed)::int
                 FROM raids r
                 JOIN kill_stats_daily k ON lower(k.race) = ANY(r.signature)
+                JOIN local l ON l.world_id = k.world_id AND l.race = lower(k.race)
                 WHERE k.stats_day >= %s AND k.killed > 0 AND cardinality(r.signature) > 0
+                  AND NOT (l.n >= %s AND l.freq > %s)
                 GROUP BY k.world_id, r.id, k.stats_day
                 ON CONFLICT DO NOTHING
                 """,
-                (since,),
+                (since, since, since, LOCAL_MIN_DAYS, LOCAL_DAILY),
             )
             inserted = cur.rowcount
     log.info("raids: %d ocorrências na janela de %d dias", inserted, WINDOW_DAYS)
