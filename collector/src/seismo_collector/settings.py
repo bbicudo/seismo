@@ -22,7 +22,10 @@ class Settings(BaseSettings):
     # coletas diárias (rodam nas folgas da coleta de online)
     daily_jobs_enabled: bool = True
     guild_refresh_days: int = 3            # cada guild é lida de novo a cada N dias
-    house_detail_daily_budget: int = 3000  # leituras de detalhe de casa por dia (dono, pagamento)
+    house_detail_daily_budget: int = 30000  # teto próprio da leitura de donos de casa por dia
+    # teto de requisições à TibiaData por dia (UTC). A foto de online e as coletas diárias nunca são cortadas;
+    # a leitura de donos de casa e de membros de guild se ajusta para o total não passar disso.
+    daily_request_cap: int = 34000
 
     postgres_host: str = "postgres"
     postgres_db: str = "seismo"

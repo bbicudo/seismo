@@ -76,8 +76,8 @@ async def status(response: Response):
     r = app.state.redis
     day = datetime.now(timezone.utc).date().isoformat()
     keys = ["seismo:paused", "seismo:last_cycle_at", "seismo:last_cycle_seconds", "seismo:last_cycle_worlds",
-            f"seismo:requests:{day}", f"seismo:errors:{day}"]
-    paused, last_at, last_s, last_w, reqs, errs = await r.mget(keys)
+            f"seismo:requests:{day}", f"seismo:errors:{day}", "seismo:request_cap", "seismo:budget_left"]
+    paused, last_at, last_s, last_w, reqs, errs, cap, left = await r.mget(keys)
     counts = (await query(
         """
         SELECT (SELECT count(*) FROM worlds) AS worlds,
@@ -111,6 +111,8 @@ async def status(response: Response):
             "last_cycle_worlds": last_w,
             "requests_today_utc": int(reqs or 0),
             "errors_today_utc": int(errs or 0),
+            "request_cap": int(cap) if cap else None,
+            "budget_left": int(left) if left else None,
         },
         "database": counts,
     }

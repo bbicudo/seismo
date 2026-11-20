@@ -58,7 +58,8 @@ export default async function Admin() {
         {c && (
           <p className="muted">
             Coletor {c.paused ? "pausado" : "coletando"} · última rodada {fmtTime(c.last_cycle_at, "pt")} ·
-            {" "}{c.requests_today_utc} requisições hoje · {c.errors_today_utc} erros
+            {" "}{c.requests_today_utc}{c.request_cap ? ` de ${c.request_cap}` : ""} requisições hoje (UTC) · {c.errors_today_utc} erros
+            {c.budget_left != null && ` · folga para leituras de casas e guilds: ${c.budget_left}`}
           </p>
         )}
       </section>

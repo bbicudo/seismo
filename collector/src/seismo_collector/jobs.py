@@ -219,7 +219,30 @@ class DailyJobs:
             total += len(rows)
         return total
 
+    async def budget_left(self) -> int:
+        """Quantas requisições ainda cabem hoje (UTC) no teto, guardando a reserva das fotos de online que
+        faltam até a meia-noite UTC e das coletas diárias que ainda não rodaram hoje."""
+        now = datetime.now(timezone.utc)
+        used = int(await self.redis.get(f"seismo:requests:{now.date().isoformat()}") or 0)
+        seconds_left = 86400 - (now.hour * 3600 + now.minute * 60 + now.second)
+        cycles_left = seconds_left // max(60, self.s.collect_interval_seconds) + 1
+        n_worlds = len(await self.worlds())
+        reserve = cycles_left * (n_worlds + 1)
+        day = self.effective_day().isoformat()
+        for job, cost in (("houses", n_worlds * len(TOWNS)), ("killstats", n_worlds),
+                          ("guild_lists", n_worlds), ("events", 10)):
+            if await self.redis.get(f"seismo:job:{job}:day") != day:
+                reserve += cost
+        left = self.s.daily_request_cap - used - reserve
+        await self.redis.set("seismo:budget_left", max(0, left), ex=600)
+        await self.redis.set("seismo:request_cap", self.s.daily_request_cap)
+        return left
+
     async def guild_details_batch(self, day: date, limit: int = 25) -> bool:
+        left = await self.budget_left()
+        if left <= 0:
+            return False
+        limit = min(limit, left)
         async with self.pool.connection() as conn:
             cur = await conn.execute(
                 """
@@ -361,7 +384,8 @@ class DailyJobs:
 
     async def house_details_batch(self, day: date, limit: int = 25) -> bool:
         used = int(await self.redis.get(f"seismo:count:house_details:{day.isoformat()}") or 0)
-        if used >= self.s.house_detail_daily_budget:
+        left = await self.budget_left()
+        if used >= self.s.house_detail_daily_budget or left <= 0:
             return False
         async with self.pool.connection() as conn:
             cur = await conn.execute(
@@ -372,7 +396,7 @@ class DailyJobs:
                 ORDER BY h.details_fetched_at NULLS FIRST, h.world_id, h.house_id
                 LIMIT %s
                 """,
-                (min(limit, self.s.house_detail_daily_budget - used),),
+                (min(limit, self.s.house_detail_daily_budget - used, left),),
             )
             due = await cur.fetchall()
         for wid, world, hid in due:

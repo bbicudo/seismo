@@ -22,7 +22,7 @@ export default async function Status({ params }) {
           {c.last_cycle_seconds != null && ` · ${c.last_cycle_seconds.toFixed(0)} s (${c.last_cycle_worlds})`}
         </p>
         <div className="stats">
-          <div className="stat"><b>{fmtNum(c.requests_today_utc, locale)}</b><span>{t.requests_today}</span></div>
+          <div className="stat"><b>{fmtNum(c.requests_today_utc, locale)}{c.request_cap ? <small style={{ fontSize: 14 }}> / {fmtNum(c.request_cap, locale)}</small> : null}</b><span>{t.requests_today}</span></div>
           <div className="stat"><b>{fmtNum(c.errors_today_utc, locale)}</b><span>{t.errors_today}</span></div>
           <div className="stat"><b>{fmtNum(s.database.characters, locale)}</b><span>{t.characters_seen}</span></div>
           <div className="stat"><b>{(s.database.db_bytes / 1e6).toFixed(0)} MB</b><span>{t.database}</span></div>
