@@ -433,6 +433,9 @@ async def guild_heatmap(name: str, guild: str, response: Response, tz: str = "Am
           FROM world_hour_snapshots s
           LEFT JOIN guild_activity_buckets b ON b.guild_id = %s AND b.hour = s.hour
           WHERE s.world_id = %s AND s.hour > now() - make_interval(weeks => %s)
+            -- só horas completas desde que a contagem por guild começou (antes disso não havia dado, não zero)
+            AND s.hour > (SELECT min(hour) FROM guild_activity_buckets)
+            AND s.hour < date_trunc('hour', now())
             AND (%s = 'include' OR (EXISTS (
                   SELECT 1 FROM game_events e WHERE e.kind IN ('double_xp', 'rapid_respawn')
                   AND e.day = ((s.hour AT TIME ZONE 'Europe/Berlin') - interval '10 hours')::date)) = (%s = 'only'))
