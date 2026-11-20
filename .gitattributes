@@ -1,0 +1,5 @@
+# Tudo em LF: o servidor é Linux (scripts com CRLF quebram o shebang)
+* text=auto eol=lf
+*.woff2 binary
+*.gif binary
+*.png binary
