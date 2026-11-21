@@ -39,7 +39,7 @@ export default async function About({ params }) {
   return (
     <section className="card" style={{ maxWidth: 820 }}>
       <h1>{c.title}</h1>
-      {c.paras.map((p) => <p key={p.slice(0, 32)} style={{ maxWidth: "72ch" }}>{p}</p>)}
+      {c.paras.map((p) => <p key={p.slice(0, 32)}>{p}</p>)}
       <ul>
         {c.links.map(([href, label]) => <li key={href}><a href={`/${locale}/${href}`}>{label}</a></li>)}
       </ul>
