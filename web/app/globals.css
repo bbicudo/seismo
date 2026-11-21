@@ -210,7 +210,7 @@ details.how p { color: var(--muted); margin: 8px 0 0; }
 .score { display: inline-block; min-width: 34px; text-align: center; font: 600 13px var(--f-mono), monospace; padding: 1px 6px; border-radius: 3px; background: color-mix(in oklab, var(--ok) var(--p), var(--red)); color: var(--paper); }
 td.wrap-cell { white-space: normal; min-width: 180px; }
 /* tabelas largas: cabeçalhos numéricos quebram em duas linhas em vez de esticar a coluna */
-table.compact th.n { white-space: normal; min-width: 7ch; max-width: 13ch; vertical-align: bottom; }
+table.compact th.n { white-space: normal; min-width: 7ch; max-width: 15ch; vertical-align: bottom; }
 td.place { white-space: normal; min-width: 150px; }
 td.place small { display: block; color: var(--muted); font-size: 12px; }
 @media (max-width: 600px) {
