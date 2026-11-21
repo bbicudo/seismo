@@ -100,7 +100,7 @@ export default async function Hunts({ params, searchParams }) {
         <section className="card">
           <h2>{t.rank}</h2>
           {/* o que se caça (área + criaturas) vem primeiro; os números ficam compactos à direita */}
-          <div className="tbl"><table className="compact">
+          <div className="tbl"><table className="compact cards">
             <thead><tr>
               <th>#</th><th>{t.hunt}</th><th>{t.top}</th><th className="n">{t.kills}</th>
               {trends && <><th className="n">{deltaHead}</th><th className="n">{x.deaths_est}</th></>}
@@ -108,7 +108,7 @@ export default async function Hunts({ params, searchParams }) {
             <tbody>
               {d.hunts.slice(0, 40).map((h, i) => (
                 <tr key={h.slug}>
-                  <td>{i + 1}</td>
+                  <td className="idx">{i + 1}</td>
                   <td className="place">{h.name}{(h.city || h.z !== 7) && <small>{[h.city, h.z !== 7 ? t.underground : null].filter(Boolean).join(" · ")}</small>}</td>
                   <td className="wrap-cell">{(h.top || []).map((c) => c.creature).join(", ")}</td>
                   <td className="n">{nf(h.kills)}</td>

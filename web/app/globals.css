@@ -228,3 +228,24 @@ td.place small { display: block; color: var(--muted); font-size: 12px; }
   .world-head .stat span { font-size: 10px; letter-spacing: .02em; }
 }
 .stat small.stat-note { display: block; font: 11px var(--f-mono), monospace; color: var(--muted); margin-top: 2px; }
+
+/* ---------- tabelas largas viram cartões no celular ----------
+   Cada linha vira um cartão; o nome (td.place) é o título e cada número aparece com o rótulo da coluna
+   (data-label, preenchido a partir do cabeçalho pelo script do layout). */
+@media (max-width: 600px) {
+  .tbl:has(table.cards) { overflow: visible; }
+  table.cards, table.cards tbody, table.cards tr, table.cards td { display: block; width: 100%; }
+  table.cards thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  table.cards tr { position: relative; border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; margin-bottom: 10px; }
+  table.cards td { display: grid; grid-template-columns: minmax(0, 46%) minmax(0, 1fr); gap: 10px; align-items: baseline;
+    border: 0; padding: 3px 0; white-space: normal; text-align: right; }
+  table.cards td::before { content: attr(data-label); color: var(--muted); font-size: 12px; text-align: left; }
+  table.cards td.place, table.cards td.wrap-cell { display: block; text-align: left; min-width: 0; }
+  table.cards td.place { font-weight: 600; font-size: 15px; padding: 0 28px 4px 0; }
+  table.cards td.place::before { content: none; }
+  table.cards td.wrap-cell::before { display: block; margin-bottom: 1px; }
+  table.cards td.idx { display: block; position: absolute; top: 10px; right: 12px; width: auto; padding: 0; color: var(--muted); font: 12px var(--f-mono), monospace; }
+  table.cards td.idx::before { content: "#"; }
+  table.cards td[colspan] { display: block; text-align: left; }
+  table.cards td[colspan]::before { content: none; }
+}

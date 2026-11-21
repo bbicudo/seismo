@@ -50,7 +50,7 @@ export default async function Guilds({ params, searchParams }) {
           {SORTS.map((s) => <a key={s} href={`${base}/guilds?sort=${s}`} aria-current={s === sort ? "true" : undefined}>{label[s]}</a>)}
         </p>
         {d.rows.length === 0 ? <p className="muted">{t.not_yet}</p> : (
-          <div className="tbl"><table className="compact">
+          <div className="tbl"><table className="compact cards">
             <thead><tr>
               <th>#</th><th>{t.guilds}</th><th className="n">{x.g_members}</th><th className="n">{fmt(x.g_active_col, { a: d.active_days })}</th>
               <th className="n">{fmt(x.g_moves_col, { w: d.window })}</th><th className="n">{x.g_level}</th>
@@ -58,7 +58,7 @@ export default async function Guilds({ params, searchParams }) {
             <tbody>
               {d.rows.map((g, i) => (
                 <tr key={g.name}>
-                  <td>{i + 1}</td>
+                  <td className="idx">{i + 1}</td>
                   <td className="place"><a href={`${base}/guild/${enc(g.name)}`}>{g.name}</a>{g.in_war && <> <span className="pill red">{x.g_war.toLowerCase()}</span></>}</td>
                   <td className="n">{fmtNum(g.members_total, locale)}</td>
                   <td className="n">{g.active_pct == null ? "–" : <span className="meter" style={{ "--p": `${g.active_pct}%` }}>{g.active_pct}%</span>}</td>

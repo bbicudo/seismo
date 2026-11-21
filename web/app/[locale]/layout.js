@@ -38,6 +38,9 @@ export async function generateMetadata({ params }) {
   };
 }
 
+// Tabelas com a classe "cards" viram cartões no celular: cada célula ganha o rótulo da sua coluna.
+const CARD_LABELS = `document.querySelectorAll("table.cards").forEach(function(t){var h=[].map.call(t.querySelectorAll("thead th"),function(th){return th.textContent.trim()});t.querySelectorAll("tbody tr").forEach(function(r){var i=0;[].forEach.call(r.cells,function(c){if(!c.hasAttribute("data-label"))c.setAttribute("data-label",h[i]||"");i+=c.colSpan||1})})})`;
+
 export default async function LocaleLayout({ children, params }) {
   const { locale } = await params;
   if (!LOCALES.includes(locale)) redirect("/pt");
@@ -72,6 +75,7 @@ export default async function LocaleLayout({ children, params }) {
           </nav>
           {t.footer}
         </footer>
+        <script dangerouslySetInnerHTML={{ __html: CARD_LABELS }} />
       </body>
     </html>
   );

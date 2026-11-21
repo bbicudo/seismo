@@ -75,13 +75,12 @@ export default async function Events({ params }) {
           <h2>{x.impact}</h2>
           <p className="lead">{fmt(x.impact_lead, { w: imp.baseline_weeks })}</p>
           {imp.events.length === 0 ? <p className="muted">{x.impact_none}</p> : (
-            <div className="tbl"><table className="compact">
-              <thead><tr><th>{x.event}</th><th>{x.period}</th><th className="n">{x.i_online}</th><th className="n">{x.i_kills}</th><th className="n">{x.i_deaths}</th></tr></thead>
+            <div className="tbl"><table className="compact cards">
+              <thead><tr><th>{x.event}</th><th className="n">{x.i_online}</th><th className="n">{x.i_kills}</th><th className="n">{x.i_deaths}</th></tr></thead>
               <tbody>
                 {imp.events.map((e) => (
                   <tr key={e.name + e.from}>
-                    <td>{e.name}</td>
-                    <td>{span(e.from, e.to)}</td>
+                    <td className="place">{e.name}<small>{span(e.from, e.to)}</small></td>
                     {e.status === "ok" ? <>
                       <td className={`n ${trendClass(e.online_pct)}`}>{signed(e.online_pct, locale, 1)}</td>
                       <td className={`n ${trendClass(e.kills_pct)}`}>{signed(e.kills_pct, locale, 1)}</td>

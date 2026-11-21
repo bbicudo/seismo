@@ -111,7 +111,7 @@ export default async function Raids({ params }) {
         <h2>{t.summary}</h2>
         <p className="lead">{t.lead}</p>
         {r.raids.length === 0 ? <p className="muted">{fmt(t.none, { n: r.history_days })}</p> : (
-          <div className="tbl"><table className="compact">
+          <div className="tbl"><table className="compact cards">
             <thead><tr><th>{t.raid}</th><th>{t.next}</th><th>{t.last}</th><th className="n">{t.count}</th><th className="n">{t.gap}</th></tr></thead>
             <tbody>
               {r.raids.map((s) => (

@@ -39,7 +39,7 @@ export default async function Town({ params }) {
       </section>
       <section className="card">
         <div className="tbl">
-          <table className="compact">
+          <table className="compact cards">
             <thead>
               <tr><th>{t.house}</th><th>{t.status}</th><th>{t.owner}</th><th className="n">{t.bid}</th><th>{t.time_left}</th><th className="n">{t.rent}</th></tr>
             </thead>
