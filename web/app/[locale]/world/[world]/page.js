@@ -36,9 +36,8 @@ export default async function World({ params, searchParams }) {
   const vitals = h && on(f, "page_health_index") ? [
     { v: h.trend_pct, show: signed(h.trend_pct, locale, 1), label: fmt(x.v_trend, { w: h.window }), cls: trendClass(h.trend_pct) },
     { v: h.retention_pct, show: h.retention_pct == null ? null : `${nf(h.retention_pct, 1)}%`, label: fmt(x.v_retention, { w: h.window }) },
-    // número direto para quem lê; o "por mil online" (usado no índice para comparar mundos de tamanhos diferentes) vai como nota
-    { v: h.new_characters, show: nf(h.new_characters), label: fmt(x.v_new, { w: h.window }),
-      note: h.new_per_1k != null ? fmt(x.v_per_1k, { n: nf(h.new_per_1k, 1) }) : null },
+    // só o número: o "por mil online" serve ao índice (comparar mundos de tamanhos diferentes), não a quem lê
+    { v: h.new_characters, show: nf(h.new_characters), label: fmt(x.v_new, { w: h.window }) },
     // chegaram / saíram em vez de saldo com sinal (−2 sozinho não diz se é bom ou ruim)
     { v: h.transfers_in, show: `${nf(h.transfers_in)} / ${nf(h.transfers_out)}`, label: fmt(x.v_transfers, { w: h.window }),
       note: h.net_transfers != null ? fmt(x.v_net, { n: signed(h.net_transfers, locale, 0, "") }) : null },
