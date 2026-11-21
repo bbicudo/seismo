@@ -50,7 +50,7 @@ export default async function Guilds({ params, searchParams }) {
           {SORTS.map((s) => <a key={s} href={`${base}/guilds?sort=${s}`} aria-current={s === sort ? "true" : undefined}>{label[s]}</a>)}
         </p>
         {d.rows.length === 0 ? <p className="muted">{t.not_yet}</p> : (
-          <div className="tbl"><table>
+          <div className="tbl"><table className="compact">
             <thead><tr>
               <th>#</th><th>{t.guilds}</th><th className="n">{x.g_members}</th><th className="n">{fmt(x.g_active_col, { a: d.active_days })}</th>
               <th className="n">{fmt(x.g_moves_col, { w: d.window })}</th><th className="n">{x.g_level}</th><th>{x.g_war}</th>
