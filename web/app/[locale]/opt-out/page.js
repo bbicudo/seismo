@@ -76,7 +76,7 @@ export default async function OptOut({ params, searchParams }) {
       {(!state || state.status === "none") && form}
       {state?.status === "expired" && (<><p className="muted">{t.optout_expired}</p>{form}</>)}
       {state && ["pending", "failed", "checking"].includes(state.status) && (
-        <div style={{ display: "grid", gap: 10, maxWidth: "70ch" }}>
+        <div style={{ display: "grid", gap: 10 }}>
           <p><b>{state.name}</b></p>
           <p>{t.optout_step1}</p>
           <p><code style={{ fontSize: 20, padding: "4px 10px", userSelect: "all" }}>{state.code}</code></p>

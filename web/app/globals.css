@@ -40,7 +40,7 @@ main.wrap { display: grid; gap: 18px; padding-block: 20px 40px; }
 .hero h1 { font-family: var(--f-display), "Courier New", monospace; font-size: clamp(26px, 4vw, 38px); line-height: 1.1; margin: 0 0 6px; text-wrap: balance; }
 h1 { font-family: var(--f-display), "Courier New", monospace; font-size: clamp(26px, 4vw, 36px); line-height: 1.1; margin: 0 0 6px; }
 h2 { font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--brass); margin: 0 0 10px; font-family: var(--f-mono), monospace; font-weight: 600; }
-.lead { color: var(--muted); margin: 0 0 12px; max-width: 70ch; }
+.lead { color: var(--muted); margin: 0 0 12px; }
 .muted { color: var(--muted); }
 .crumbs { font: 13px var(--f-mono), monospace; margin: 0 0 8px; }
 .crumbs a { text-decoration: none; }
@@ -205,10 +205,14 @@ h3.sub b { color: var(--ink); font-size: 14px; margin-left: 4px; }
 .bars .bv { font: 13px var(--f-mono), monospace; font-variant-numeric: tabular-nums; text-align: right; min-width: 3ch; }
 details.how { margin-top: 12px; font-size: 14px; }
 details.how summary { cursor: pointer; color: var(--red); font-weight: 600; width: fit-content; }
-details.how p { color: var(--muted); max-width: 75ch; margin: 8px 0 0; }
+details.how p { color: var(--muted); margin: 8px 0 0; }
 .meter { display: inline-block; min-width: 46px; padding: 0 4px; border-radius: 3px; background: linear-gradient(90deg, var(--brass-soft) var(--p), transparent var(--p)); }
 .score { display: inline-block; min-width: 34px; text-align: center; font: 600 13px var(--f-mono), monospace; padding: 1px 6px; border-radius: 3px; background: color-mix(in oklab, var(--ok) var(--p), var(--red)); color: var(--paper); }
 td.wrap-cell { white-space: normal; min-width: 180px; }
+/* tabelas largas: cabeçalhos numéricos quebram em duas linhas em vez de esticar a coluna */
+table.compact th.n { white-space: normal; min-width: 7ch; max-width: 13ch; vertical-align: bottom; }
+td.place { white-space: normal; min-width: 150px; }
+td.place small { display: block; color: var(--muted); font-size: 12px; }
 @media (max-width: 600px) {
   .tabs { margin: 12px -14px -14px; padding: 0 8px; }
   .tabs a { padding: 10px 9px 9px; font-size: 13px; }

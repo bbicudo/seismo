@@ -95,7 +95,7 @@ export default async function Privacy({ params }) {
       {c.sections.map(([h, ps]) => (
         <div key={h}>
           <h2 style={{ marginTop: 22 }}>{h}</h2>
-          {ps.map((p) => <p key={p.slice(0, 32)} style={{ maxWidth: "72ch" }}>{p}</p>)}
+          {ps.map((p) => <p key={p.slice(0, 32)}>{p}</p>)}
         </div>
       ))}
       <h2 style={{ marginTop: 22 }}>{c.contact}</h2>
