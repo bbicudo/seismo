@@ -31,7 +31,7 @@ FLAGS: list[dict] = [
     {"key": "page_hunts", "group": "site", "label": "Mapa de hunts",
      "help": "Mapa do mundo com as áreas de caça mais movimentadas do dia, a partir das kill statistics."},
     {"key": "page_hunt_trends", "group": "site", "label": "Hunts: variação e risco",
-     "help": "No ranking de hunts, a variação contra os dias anteriores e o risco (jogadores mortos a cada mil criaturas)."},
+     "help": "No ranking de hunts, a variação contra a média dos dias anteriores e os jogadores mortos (estimativa)."},
     {"key": "page_raids", "group": "site", "label": "Raids e termômetro",
      "help": "Página de raids de cada mundo, com janela provável e termômetro de respawn."},
     {"key": "page_events", "group": "site", "label": "Eventos",
@@ -42,6 +42,8 @@ FLAGS: list[dict] = [
      "help": "Resumo do mês de personagem, guild e mundo, com imagem para compartilhar."},
     {"key": "page_status", "group": "site", "label": "Página de status",
      "help": "Status público do coletor e das coletas."},
+    {"key": "ui_mobile_cards", "group": "site", "label": "Tabelas em cartões no celular",
+     "help": "No celular, as tabelas largas (hunts, raids, guilds, casas, impacto dos eventos) viram um cartão por linha. Desligado, ficam como tabela com rolagem lateral."},
     # coletas (desligar economiza requisições à TibiaData)
     {"key": "collect_killstats", "group": "coleta", "label": "Kill statistics",
      "help": "Coleta diária das kill statistics. Raids e termômetro dependem dela."},
