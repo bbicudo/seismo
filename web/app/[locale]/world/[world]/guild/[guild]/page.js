@@ -89,7 +89,7 @@ export default async function Guild({ params, searchParams }) {
         <section className="card">
           <h2>{t.members}</h2>
           <div className="tbl">
-            <table>
+            <table className="cards">
               <thead><tr><th>{t.name}</th><th>{t.vocation}</th><th className="n">{t.level}</th><th>{t.joined}</th></tr></thead>
               <tbody>
                 {g.members.map((m) => (
