@@ -111,16 +111,17 @@ export default async function Raids({ params }) {
         <h2>{t.summary}</h2>
         <p className="lead">{t.lead}</p>
         {r.raids.length === 0 ? <p className="muted">{fmt(t.none, { n: r.history_days })}</p> : (
-          <div className="tbl"><table>
-            <thead><tr><th>{t.raid}</th><th>{t.region}</th><th className="n">{t.count}</th><th>{t.last}</th><th className="n">{t.gap}</th><th>{t.next}</th></tr></thead>
+          <div className="tbl"><table className="compact">
+            <thead><tr><th>{t.raid}</th><th>{t.next}</th><th>{t.last}</th><th className="n">{t.count}</th><th className="n">{t.gap}</th></tr></thead>
             <tbody>
               {r.raids.map((s) => (
                 <tr key={s.slug}>
-                  <td>{s.name}</td><td>{s.region}</td><td className="n">{fmtNum(s.count, locale)}</td><td>{fmtDate(s.last, locale)}</td>
-                  <td className="n">{s.median_gap_days ? `${s.median_gap_days} ${t.days_word}` : "–"}</td>
+                  <td className="place">{s.name}{s.region && <small>{s.region}</small>}</td>
                   <td>{s.next_from ? <>{`${fmtDate(s.next_from, locale)} – ${fmtDate(s.next_to, locale)}`}
                     {today >= s.next_from && today <= s.next_to && <> <span className="pill on">{t.in_window}</span></>}
                     {today > s.next_to && <> <span className="pill off">{t.overdue}</span></>}</> : <span className="muted">{t.unknown}</span>}</td>
+                  <td>{fmtDate(s.last, locale)}</td><td className="n">{fmtNum(s.count, locale)}</td>
+                  <td className="n">{s.median_gap_days ? `${s.median_gap_days} ${t.days_word}` : "–"}</td>
                 </tr>
               ))}
             </tbody>
