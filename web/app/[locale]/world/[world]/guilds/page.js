@@ -53,18 +53,17 @@ export default async function Guilds({ params, searchParams }) {
           <div className="tbl"><table className="compact">
             <thead><tr>
               <th>#</th><th>{t.guilds}</th><th className="n">{x.g_members}</th><th className="n">{fmt(x.g_active_col, { a: d.active_days })}</th>
-              <th className="n">{fmt(x.g_moves_col, { w: d.window })}</th><th className="n">{x.g_level}</th><th>{x.g_war}</th>
+              <th className="n">{fmt(x.g_moves_col, { w: d.window })}</th><th className="n">{x.g_level}</th>
             </tr></thead>
             <tbody>
               {d.rows.map((g, i) => (
                 <tr key={g.name}>
                   <td>{i + 1}</td>
-                  <td><a href={`${base}/guild/${enc(g.name)}`}>{g.name}</a></td>
+                  <td className="place"><a href={`${base}/guild/${enc(g.name)}`}>{g.name}</a>{g.in_war && <> <span className="pill red">{x.g_war.toLowerCase()}</span></>}</td>
                   <td className="n">{fmtNum(g.members_total, locale)}</td>
                   <td className="n">{g.active_pct == null ? "–" : <span className="meter" style={{ "--p": `${g.active_pct}%` }}>{g.active_pct}%</span>}</td>
                   <td className="n"><span className={g.joins ? "up" : undefined}>{fmtNum(g.joins, locale)}</span> / <span className={g.leaves ? "down" : undefined}>{fmtNum(g.leaves, locale)}</span></td>
                   <td className="n">{fmtNum(g.avg_level, locale)}</td>
-                  <td>{g.in_war == null ? "–" : g.in_war ? <span className="pill red">{t.yes}</span> : t.no}</td>
                 </tr>
               ))}
             </tbody>
