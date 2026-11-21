@@ -99,21 +99,20 @@ export default async function Hunts({ params, searchParams }) {
       {d.hunts.length > 0 && (
         <section className="card">
           <h2>{t.rank}</h2>
-          <div className="tbl"><table>
+          {/* o que se caça (área + criaturas) vem primeiro; os números ficam compactos à direita */}
+          <div className="tbl"><table className="compact">
             <thead><tr>
-              <th>#</th><th>{t.hunt}</th><th>{t.city}</th><th className="n">{t.kills}</th>
+              <th>#</th><th>{t.hunt}</th><th>{t.top}</th><th className="n">{t.kills}</th>
               {trends && <><th className="n">{deltaHead}</th><th className="n">{x.deaths_est}</th></>}
-              <th>{t.top}</th>
             </tr></thead>
             <tbody>
               {d.hunts.slice(0, 40).map((h, i) => (
                 <tr key={h.slug}>
                   <td>{i + 1}</td>
-                  <td>{h.name}{h.z !== 7 && <span className="muted"> · {t.underground}</span>}</td>
-                  <td>{h.city || "–"}</td>
+                  <td className="place">{h.name}{(h.city || h.z !== 7) && <small>{[h.city, h.z !== 7 ? t.underground : null].filter(Boolean).join(" · ")}</small>}</td>
+                  <td className="wrap-cell">{(h.top || []).map((c) => c.creature).join(", ")}</td>
                   <td className="n">{nf(h.kills)}</td>
                   {trends && <><td className={`n ${trendClass(h.delta_pct)}`}>{signed(h.delta_pct, locale)}</td><td className="n">{deaths(h)}</td></>}
-                  <td className="muted wrap-cell">{(h.top || []).map((c) => c.creature).join(", ")}</td>
                 </tr>
               ))}
             </tbody>
