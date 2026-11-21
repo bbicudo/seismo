@@ -5,6 +5,31 @@ and versions follow [Semantic Versioning](https://semver.org/). Each version has
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-21
+
+Numbers that read on their own, and up-to-date dependencies.
+
+### Changed
+
+- **Vital signs**: new characters and transfers shown as plain counts ("arrived / left" instead of a signed net
+  balance), with the per-thousand-online value as a note; the header says how many days are left until the health
+  index is ready.
+- **Hunts**: the risk-per-thousand column became "Players killed (estimate)", with the ratio in a tooltip; columns
+  say they count creatures killed and compare with the N-day average.
+- **Guilds**: "Played in N days" and "Joined / left (N days)" instead of "Active" and a signed balance.
+- **Houses**: units on size and rent (sqm, gp/month), "no bid", time left in Portuguese, "auctions closed".
+- **Texts across the site**: every section intro now says only what the data shows; method details live in the
+  "How we calculate it" boxes or were dropped.
+- **Dependencies**: Node 26, Redis 8.4, Caddy 2.11.9, Postgres 16.15, Python 3.12.16, FastAPI 0.163, uvicorn 0.54,
+  alembic 1.20, psycopg 3.3.9, redis-py 8.1, pydantic 2.14 and newer GitHub Actions. Security fixes for next, postcss,
+  sharp and orjson.
+- The API's `/api` prefix moved to uvicorn's `--root-path` (the FastAPI parameter is deprecated).
+- Dependabot no longer opens major upgrades of Postgres, Python minor/major or Next; those need planned migrations.
+
+### Added
+
+- **Admin**: today's collector errors broken down by request type and reason, each with a short explanation.
+
 ## [0.1.0] - 2026-11-20
 
 First tagged version: the open beta.
@@ -39,5 +64,6 @@ First tagged version: the open beta.
 - **Project**: AGPL-3.0 license, code of conduct, contributing guide, security policy, issue and PR templates,
   Dependabot.
 
-[Unreleased]: https://github.com/bbicudo/seismo/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/bbicudo/seismo/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/bbicudo/seismo/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/bbicudo/seismo/releases/tag/v0.1.0
