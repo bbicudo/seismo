@@ -39,20 +39,20 @@ export default async function Town({ params }) {
       </section>
       <section className="card">
         <div className="tbl">
-          <table>
+          <table className="compact">
             <thead>
-              <tr><th>{t.house}</th><th>{t.status}</th><th>{t.owner}</th><th className="n">{t.size}</th><th className="n">{t.rent}</th><th className="n">{t.bid}</th><th>{t.time_left}</th></tr>
+              <tr><th>{t.house}</th><th>{t.status}</th><th>{t.owner}</th><th className="n">{t.bid}</th><th>{t.time_left}</th><th className="n">{t.rent}</th></tr>
             </thead>
             <tbody>
               {d.houses.map((h) => (
                 <tr key={h.house_id}>
-                  <td><a href={`${base}/house/${h.house_id}`}>{h.name}</a>{h.kind === "guildhall" && <span className="muted"> · {t.kind_guildhall}</span>}</td>
+                  <td className="place"><a href={`${base}/house/${h.house_id}`}>{h.name}</a>
+                    <small>{[h.kind === "guildhall" ? t.kind_guildhall : null, h.size ? `${fmtNum(h.size, locale)} sqm` : null].filter(Boolean).join(" · ")}</small></td>
                   <td>{houseStatus(h, t)}</td>
                   <td>{h.owner ? <a href={`/${locale}/character/${enc(h.owner)}`}>{h.owner}</a> : (h.rented ? <span className="muted">{t.owner_unknown}</span> : "–")}</td>
-                  <td className="n">{fmtNum(h.size, locale)}</td>
-                  <td className="n">{fmtNum(h.rent, locale)}</td>
                   <td className="n">{h.auctioned ? (h.current_bid ? fmtNum(h.current_bid, locale) : <span className="muted">{t.no_bid}</span>) : "–"}</td>
-                  <td>{timeLeft(h.time_left, locale)}</td>
+                  <td>{h.auctioned ? timeLeft(h.time_left, locale) : "–"}</td>
+                  <td className="n">{fmtNum(h.rent, locale)}</td>
                 </tr>
               ))}
             </tbody>

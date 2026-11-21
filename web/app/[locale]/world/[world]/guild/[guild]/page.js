@@ -90,11 +90,11 @@ export default async function Guild({ params, searchParams }) {
           <h2>{t.members}</h2>
           <div className="tbl">
             <table>
-              <thead><tr><th>{t.name}</th><th>{t.rank}</th><th>{t.vocation}</th><th className="n">{t.level}</th><th>{t.joined}</th></tr></thead>
+              <thead><tr><th>{t.name}</th><th>{t.vocation}</th><th className="n">{t.level}</th><th>{t.joined}</th></tr></thead>
               <tbody>
                 {g.members.map((m) => (
                   <tr key={m.name}>
-                    <td><a href={`/${locale}/character/${enc(m.name)}`}>{m.name}</a></td><td>{m.rank}</td><td>{m.vocation}</td>
+                    <td className="place"><a href={`/${locale}/character/${enc(m.name)}`}>{m.name}</a>{m.rank && <small>{m.rank}</small>}</td><td>{m.vocation}</td>
                     <td className="n">{fmtNum(m.level, locale)}</td><td>{m.joined ? fmtDate(m.joined, locale) : "–"}</td>
                   </tr>
                 ))}

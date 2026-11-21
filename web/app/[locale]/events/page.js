@@ -26,13 +26,12 @@ function Days({ rows, locale, t }) {
   if (!rows.length) return <p className="muted">–</p>;
   return (
     <div className="tbl"><table>
-      <thead><tr><th>{t.day}</th><th>{t.events_title}</th><th>{t.event_source}</th></tr></thead>
+      <thead><tr><th>{t.day}</th><th>{t.events_title}</th></tr></thead>
       <tbody>
         {group(rows).map(([day, evs]) => (
           <tr key={day}>
             <td>{fmtDate(day, locale)}</td>
-            <td>{evs.map((e) => <span key={e.name} className={`pill ${e.kind === "calendar" ? "" : "red"}`} style={{ marginRight: 6 }}>{e.name}</span>)}</td>
-            <td className="muted">{[...new Set(evs.map((e) => e.source))].join(", ")}</td>
+            <td className="wrap-cell">{evs.map((e) => <span key={e.name} className={`pill ${e.kind === "calendar" ? "" : "red"}`} style={{ margin: "2px 6px 2px 0" }}>{e.name}</span>)}</td>
           </tr>
         ))}
       </tbody>
@@ -76,7 +75,7 @@ export default async function Events({ params }) {
           <h2>{x.impact}</h2>
           <p className="lead">{fmt(x.impact_lead, { w: imp.baseline_weeks })}</p>
           {imp.events.length === 0 ? <p className="muted">{x.impact_none}</p> : (
-            <div className="tbl"><table>
+            <div className="tbl"><table className="compact">
               <thead><tr><th>{x.event}</th><th>{x.period}</th><th className="n">{x.i_online}</th><th className="n">{x.i_kills}</th><th className="n">{x.i_deaths}</th></tr></thead>
               <tbody>
                 {imp.events.map((e) => (
