@@ -47,7 +47,7 @@ export default async function Houses({ params }) {
 
       {d.towns.length > 0 && (
         <section className="card">
-          <div className="tbl"><table>
+          <div className="tbl"><table className="compact">
             <thead><tr>
               <th>{x.town}</th><th className="n">{t.total}</th><th className="n">{x.occupancy}</th><th className="n">{x.auctioned}</th>
               <th className="n">{x.avg_bid}</th><th className="n">{x.closed}</th><th className="n">{x.owner_changes}</th>
