@@ -127,20 +127,18 @@ export default async function Overview({ params, searchParams }) {
             <thead><tr>
               <th>{t.world}</th><th className="n">{t.online_now}</th>
               {showH && <><th className="n">{x.health_col}</th><th className="n">{x.trend_col} {hl.window}d</th></>}
-              <th>{t.location}</th><th>{t.pvp}</th>
             </tr></thead>
             <tbody>
               {worlds.map((w) => {
                 const h = health.get(w.name);
                 return (
                   <tr key={w.name}>
-                    <td><a href={`/${locale}/world/${enc(w.name)}`}>{w.name}</a></td>
+                    <td className="place"><a href={`/${locale}/world/${enc(w.name)}`}>{w.name}</a><small>{w.location} · {w.pvp_type}</small></td>
                     <td className="n">{fmtNum(w.players_online, locale)}</td>
                     {showH && <>
                       <td className="n">{h?.score == null ? <span className="muted">–</span> : <span className="score" style={{ "--p": `${h.score}%` }}>{h.score}</span>}</td>
                       <td className={`n ${trendClass(h?.trend_pct)}`}>{signed(h?.trend_pct, locale, 1)}</td>
                     </>}
-                    <td>{w.location}</td><td>{w.pvp_type}</td>
                   </tr>
                 );
               })}
