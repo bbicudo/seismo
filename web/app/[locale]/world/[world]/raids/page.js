@@ -117,9 +117,9 @@ export default async function Raids({ params }) {
               {r.raids.map((s) => (
                 <tr key={s.slug}>
                   <td className="place">{s.name}{s.region && <small>{s.region}</small>}</td>
-                  <td>{s.next_from ? <>{`${fmtDate(s.next_from, locale)} – ${fmtDate(s.next_to, locale)}`}
+                  <td>{s.next_from ? <span>{`${fmtDate(s.next_from, locale)} – ${fmtDate(s.next_to, locale)}`}
                     {today >= s.next_from && today <= s.next_to && <> <span className="pill on">{t.in_window}</span></>}
-                    {today > s.next_to && <> <span className="pill off">{t.overdue}</span></>}</> : <span className="muted">{t.unknown}</span>}</td>
+                    {today > s.next_to && <> <span className="pill off">{t.overdue}</span></>}</span> : <span className="muted">{t.unknown}</span>}</td>
                   <td>{fmtDate(s.last, locale)}</td><td className="n">{fmtNum(s.count, locale)}</td>
                   <td className="n">{s.median_gap_days ? `${s.median_gap_days} ${t.days_word}` : "–"}</td>
                 </tr>

@@ -49,7 +49,7 @@ export default async function LocaleLayout({ children, params }) {
   const other = locale === "pt" ? "en" : "pt";
   return (
     <html lang={locale === "pt" ? "pt-BR" : "en"} className={`${display.variable} ${body.variable} ${mono.variable}`}>
-      <body>
+      <body className={on(f, "ui_mobile_cards") ? "cards-on" : undefined}>
         <header className="top">
           <div className="wrap">
             <a href={`/${locale}`} className="brand">
@@ -75,7 +75,7 @@ export default async function LocaleLayout({ children, params }) {
           </nav>
           {t.footer}
         </footer>
-        <script dangerouslySetInnerHTML={{ __html: CARD_LABELS }} />
+        {on(f, "ui_mobile_cards") && <script dangerouslySetInnerHTML={{ __html: CARD_LABELS }} />}
       </body>
     </html>
   );
