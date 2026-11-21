@@ -239,6 +239,7 @@ td.place small { display: block; color: var(--muted); font-size: 12px; }
   table.cards tr { position: relative; border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; margin-bottom: 10px; }
   table.cards td { display: grid; grid-template-columns: minmax(0, 46%) minmax(0, 1fr); gap: 10px; align-items: baseline;
     border: 0; padding: 3px 0; white-space: normal; text-align: right; }
+  table.cards td > .pill { justify-self: end; }
   table.cards td::before { content: attr(data-label); color: var(--muted); font-size: 12px; text-align: left; }
   table.cards td.place, table.cards td.wrap-cell { display: block; text-align: left; min-width: 0; }
   table.cards td.place { font-weight: 600; font-size: 15px; padding: 0 28px 4px 0; }
