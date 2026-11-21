@@ -47,7 +47,7 @@ export default async function Houses({ params }) {
 
       {d.towns.length > 0 && (
         <section className="card">
-          <div className="tbl"><table className="compact">
+          <div className="tbl"><table className="compact cards">
             <thead><tr>
               <th>{x.town}</th><th className="n">{t.total}</th><th className="n">{x.occupancy}</th><th className="n">{x.auctioned}</th>
               <th className="n">{x.avg_bid}</th><th className="n">{x.closed}</th><th className="n">{x.owner_changes}</th>
@@ -55,7 +55,7 @@ export default async function Houses({ params }) {
             <tbody>
               {d.towns.map((h) => (
                 <tr key={h.town}>
-                  <td><a href={`${base}/town/${enc(h.town)}`}>{h.town}</a></td>
+                  <td className="place"><a href={`${base}/town/${enc(h.town)}`}>{h.town}</a></td>
                   <td className="n">{nf(h.total)}</td>
                   <td className="n"><span className="meter" style={{ "--p": `${h.occupancy_pct ?? 0}%` }}>{h.occupancy_pct == null ? "–" : `${h.occupancy_pct}%`}</span></td>
                   <td className="n">{nf(h.auctioned)}</td>
