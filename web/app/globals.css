@@ -246,6 +246,7 @@ td.place small { display: block; color: var(--muted); font-size: 12px; }
   table.cards td.wrap-cell::before { display: block; margin-bottom: 1px; }
   table.cards td.idx { display: block; position: absolute; top: 10px; right: 12px; width: auto; padding: 0; color: var(--muted); font: 12px var(--f-mono), monospace; }
   table.cards td.idx::before { content: "#"; }
+  table.cards td.empty:not(.place) { display: none; }
   table.cards td[colspan] { display: block; text-align: left; }
   table.cards td[colspan]::before { content: none; }
 }
