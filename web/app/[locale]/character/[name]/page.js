@@ -18,24 +18,24 @@ const T = {
   pt: {
     level: "level atual", world: "Mundo", since: "visto pela primeira vez", last: "último dia visto",
     hours30: "horas online (30 dias)", days30: "dias jogados (30 dias)", no_guild: "sem guild",
-    in_guild: "{rank} na {guild}", daily: "Horas online por dia", daily_lead: "Total de cada dia de jogo nos últimos {n} dias. O Seismo não guarda horários de login, só a soma do dia.",
+    in_guild: "{rank} na {guild}", daily: "Horas online por dia", daily_lead: "Soma de cada dia de jogo nos últimos {n} dias.",
     no_daily: "Ainda não há minutos registrados.", months: "Levels por mês", month: "Mês", from: "Início", to: "Fim", gained: "Ganho",
     no_months: "Nenhuma mudança de level registrada ainda.", houses: "Casas", no_houses: "Nenhuma casa registrada no nome.",
     transfers: "Transfers", no_transfers: "Nenhum transfer detectado.", day: "Dia", wrapped: "Wrapped do mês →",
     guild: "Guild", optout: "É seu e não quer aparecer aqui? Faça o opt-out.",
     days_opts: "Período:",
-    not_seen: "Este personagem ainda não foi visto online pelo Seismo. Os dados abaixo vêm da guild.",
+    not_seen: "Ainda não vimos este personagem online. Os dados abaixo vêm da guild.",
   },
   en: {
     level: "current level", world: "World", since: "first seen", last: "last day seen",
     hours30: "hours online (30 days)", days30: "days played (30 days)", no_guild: "no guild",
-    in_guild: "{rank} of {guild}", daily: "Hours online per day", daily_lead: "Total for each game day over the last {n} days. Seismo stores no login times, only the daily sum.",
+    in_guild: "{rank} of {guild}", daily: "Hours online per day", daily_lead: "Total for each game day over the last {n} days.",
     no_daily: "No minutes recorded yet.", months: "Levels per month", month: "Month", from: "Start", to: "End", gained: "Gained",
     no_months: "No level changes recorded yet.", houses: "Houses", no_houses: "No houses recorded under this name.",
     transfers: "Transfers", no_transfers: "No transfers detected.", day: "Day", wrapped: "Monthly Wrapped →",
     guild: "Guild", optout: "Is this yours and you would rather not be listed? Use the opt-out.",
     days_opts: "Period:",
-    not_seen: "Seismo has not seen this character online yet. The data below comes from the guild.",
+    not_seen: "We have not seen this character online yet. The data below comes from the guild.",
   },
 };
 

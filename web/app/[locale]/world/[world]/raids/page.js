@@ -17,15 +17,14 @@ const T = {
   pt: {
     title: "Raids e termômetro",
     back: "voltar ao mundo",
-    lead: "Raids detectadas pelas kill statistics: quando uma criatura que só aparece em raid é morta, sabemos que a raid aconteceu naquele dia.",
+    lead: "Raids que aconteceram neste mundo e quando a próxima deve vir.",
     recent: "Raids recentes",
-    none: "Nenhuma raid detectada ainda. O histórico começou há {n} dia(s).",
+    none: "Nenhuma raid detectada ainda.",
     raid: "Raid",
     region: "Região",
     day: "Dia",
     kills: "Mortes",
     summary: "Frequência e próxima janela",
-    summary_lead: "A janela é uma estimativa a partir dos intervalos entre ocorrências (precisa de pelo menos 3). Não é uma data certa.",
     count: "Vezes",
     last: "Última",
     gap: "Intervalo típico",
@@ -34,10 +33,10 @@ const T = {
     unknown: "poucos dados",
     in_window: "na janela",
     overdue: "atrasada",
-    detectable: "{d} de {t} raids da TibiaWiki têm criaturas raras o bastante para serem detectadas.",
+    detectable: "Acompanhamos {d} das {t} raids conhecidas.",
     thermo: "Termômetro de respawn",
-    thermo_lead: "Compara as mortes do dia {day} com a média dos 28 dias anteriores neste mundo.",
-    thermo_wait: "O termômetro precisa de pelo menos {n} dias de histórico. Hoje temos {h}.",
+    thermo_lead: "Criaturas mortas em {day} comparadas à média dos 28 dias anteriores.",
+    thermo_wait: "O termômetro aparece com {n} dias de histórico.",
     hot: "Em alta (spot provavelmente lotado)",
     cold: "Em queda (spot provavelmente livre)",
     creature: "Criatura",
@@ -49,15 +48,14 @@ const T = {
   en: {
     title: "Raids and thermometer",
     back: "back to the world",
-    lead: "Raids detected from kill statistics: when a creature that only shows up in a raid is killed, we know the raid happened that day.",
+    lead: "Raids that happened in this world and when the next one is likely.",
     recent: "Recent raids",
-    none: "No raids detected yet. History started {n} day(s) ago.",
+    none: "No raids detected yet.",
     raid: "Raid",
     region: "Region",
     day: "Day",
     kills: "Kills",
     summary: "Frequency and next window",
-    summary_lead: "The window is an estimate from the gaps between occurrences (needs at least 3). It is not an exact date.",
     count: "Times",
     last: "Last",
     gap: "Typical gap",
@@ -66,10 +64,10 @@ const T = {
     unknown: "not enough data",
     in_window: "in window",
     overdue: "overdue",
-    detectable: "{d} of {t} TibiaWiki raids have creatures rare enough to be detected.",
+    detectable: "We track {d} of the {t} known raids.",
     thermo: "Respawn thermometer",
-    thermo_lead: "Compares kills on {day} with the average of the previous 28 days in this world.",
-    thermo_wait: "The thermometer needs at least {n} days of history. We have {h} so far.",
+    thermo_lead: "Creatures killed on {day} compared with the previous 28-day average.",
+    thermo_wait: "The thermometer shows up with {n} days of history.",
     hot: "Running hot (spot likely crowded)",
     cold: "Cooling down (spot likely free)",
     creature: "Creature",
@@ -111,7 +109,7 @@ export default async function Raids({ params }) {
     <>
       <section className="card">
         <h2>{t.summary}</h2>
-        <p className="lead">{t.lead} {t.summary_lead}</p>
+        <p className="lead">{t.lead}</p>
         {r.raids.length === 0 ? <p className="muted">{fmt(t.none, { n: r.history_days })}</p> : (
           <div className="tbl"><table>
             <thead><tr><th>{t.raid}</th><th>{t.region}</th><th className="n">{t.count}</th><th>{t.last}</th><th className="n">{t.gap}</th><th>{t.next}</th></tr></thead>
