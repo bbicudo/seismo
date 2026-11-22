@@ -86,6 +86,9 @@ continuously and turns it into live statistics, maps and monthly summaries, in P
   TibiaData's `battleye_date` (flag `filter_battleye`).
 - **Mobile cards**: on phones, wide tables (hunts, raids, guilds, houses, event impact) turn into one card per row,
   with each number labelled by its column (flag `ui_mobile_cards`).
+- **Suggest a fix**: "Found a mistake?" link in the footer and on the utils pages, with a form to pick the tool (or
+  "another part of the site") and describe the mistake; suggestions show up in `/admin`, no name, e-mail or IP is
+  stored and each visitor is limited per hour (flag `feedback_form`, parameter `feedback_per_hour`).
 - **SEO**: sitemap, robots, canonical and pt/en alternate links, and a preview image for every page.
 - **Daily request cap** (34k by default) that keeps the load on TibiaData predictable.
 

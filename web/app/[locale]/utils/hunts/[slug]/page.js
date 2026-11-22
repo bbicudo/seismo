@@ -5,7 +5,7 @@ import { fmtDate, fmtNum } from "../../../../../lib/api";
 import { getFlags, on } from "../../../../../lib/flags";
 import { ATTACK, ICON_CDN, advise } from "../../../../../lib/hunt-advice";
 import { EL, ht } from "../../../../../lib/hunts-i18n";
-import { fmt } from "../../../../../lib/i18n";
+import { dict, fmt } from "../../../../../lib/i18n";
 import { seo } from "../../../../../lib/seo";
 
 const BY_SLUG = new Map(data.areas.map((a) => [a.slug, a]));
@@ -139,6 +139,9 @@ export default async function HuntArea({ params }) {
           </>
         )}
       </section>
+      {on(f, "feedback_form") && (
+        <p className="muted"><a href={`/${locale}/feedback?f=hunts&from=/${locale}/utils/hunts/${slug}`}>{dict(locale).fb_link}</a></p>
+      )}
       <p className="muted">{fmt(t.credit, { d: fmtDate(data.updated, locale) })}</p>
     </>
   );

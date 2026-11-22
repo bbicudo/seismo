@@ -1210,6 +1210,7 @@ async def optout_verify(body: OptoutIn, response: Response):
 
 
 # rotas de insights (módulo separado para este arquivo não crescer demais)
-from . import insights  # noqa: E402
+from . import feedback, insights  # noqa: E402
 
 app.include_router(insights.router)
+app.include_router(feedback.router)

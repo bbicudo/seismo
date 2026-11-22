@@ -34,6 +34,7 @@ export default async function Utils({ params }) {
           ))}
         </div>
       )}
+      {on(f, "feedback_form") && <p className="muted util-fb"><a href={`/${locale}/feedback?from=/${locale}/utils`}>{t.fb_link}</a></p>}
     </section>
   );
 }
