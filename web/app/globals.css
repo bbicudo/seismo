@@ -285,3 +285,13 @@ td.place small { display: block; color: var(--muted); font-size: 12px; }
 .boss-list { display: flex; flex-wrap: wrap; gap: 8px 18px; margin: 6px 0 0; }
 .boss { display: inline-flex; align-items: center; gap: 6px; }
 .boss img { image-rendering: pixelated; }
+
+/* ---------- sugestão de correção ---------- */
+.util-fb { margin: 14px 0 0; }
+.fb-form { display: grid; gap: 12px; max-width: 640px; }
+.fb-form label { display: grid; gap: 4px; font-size: 14px; color: var(--muted); }
+.fb-form select, .fb-form textarea { font: 15px var(--f-body), sans-serif; background: var(--paper); color: var(--ink);
+  border: 1px solid var(--line); border-radius: 4px; padding: 9px 12px; width: 100%; }
+.fb-form textarea { resize: vertical; }
+.fb-form button { justify-self: start; }
+.fb-hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
