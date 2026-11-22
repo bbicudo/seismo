@@ -16,6 +16,8 @@ const T = {
     },
     market: "mercado paga {m}", npc: "outro NPC paga {n} gp",
     task_why: "cai na Delivery Task semanal",
+    named: { quest: "quest", addon: "addon", imbuement: "imbuement" },
+    done_hint: "Itens de quest ou addon: se você já fez, pode vender.",
   },
   en: {
     search: "Find an item", placeholder: "Item name, e.g. Blazing Bone",
@@ -30,6 +32,8 @@ const T = {
     },
     market: "market pays {m}", npc: "another NPC pays {n} gp",
     task_why: "shows up in the weekly Delivery Task",
+    named: { quest: "quest", addon: "addon", imbuement: "imbuement" },
+    done_hint: "Quest or addon items: if you have already done it, you can sell them.",
   },
 };
 
@@ -56,12 +60,26 @@ export default function YasirList({ items, locale = "pt" }) {
     return items.filter((r) => (f === "all" || r.status === f) && (!k || hit(r.name)));
   }, [items, q, f]);
 
+  // um motivo por linha; quest, addon e imbuement com o nome, para quem já fez saber que pode vender
   const why = (r) => {
-    const parts = (r.tags || []).filter((x) => x !== "market" && x !== "npc").map((x) => t.tags[x]);
+    const named = { quest: r.quests, addon: r.addons, imbuement: r.imbuements };
+    const parts = (r.tags || []).filter((x) => x !== "market" && x !== "npc").map((x) => {
+      const names = named[x];
+      if (!names) return t.tags[x];
+      const list = x === "quest" ? names.map((n) => n.replace(/ Quest$/, "")) : names;
+      return `${t.named[x]}: ${list.join(", ")}`;
+    });
+    // nome encontrado nas notas sem a etiqueta genérica (ex.: addon citado num item marcado só como quest)
+    for (const x of ["addon", "quest", "imbuement"]) {
+      if (named[x] && !(r.tags || []).includes(x)) {
+        const list = x === "quest" ? named[x].map((n) => n.replace(/ Quest$/, "")) : named[x];
+        parts.unshift(`${t.named[x]}: ${list.join(", ")}`);
+      }
+    }
     if (r.status === "task") parts.unshift(t.task_why);
     if (r.market) parts.push(t.market.replace("{m}", r.market.replace(/,/g, ".").replace(/ - /, "–") + " gp"));
     if (r.npc) parts.push(t.npc.replace("{n}", nf.format(r.npc)));
-    return parts.join(" · ");
+    return parts;
   };
 
   return (
@@ -78,6 +96,7 @@ export default function YasirList({ items, locale = "pt" }) {
           ))}
           <span className="muted">{t.count.replace("{n}", nf.format(rows.length))}</span>
         </p>
+        <p className="muted util-hint">{t.done_hint}</p>
       </div>
       {rows.length === 0 ? <p className="muted">{t.none}</p> : (
         <div className="tbl"><table className="compact cards">
@@ -88,7 +107,9 @@ export default function YasirList({ items, locale = "pt" }) {
                 <td className="place">{r.name}<small><a href={wikiUrl(r.name)} target="_blank" rel="noopener noreferrer">{t.wiki} ↗</a></small></td>
                 <td data-label={t.verdict}><span className={PILL[r.status]}>{t[r.status]}</span></td>
                 <td className="n" data-label={t.pays}>{nf.format(r.price)}</td>
-                <td className={`wrap-cell${why(r) ? "" : " empty"}`} data-label={t.why}>{why(r) || "–"}</td>
+                <td className={`wrap-cell${why(r).length ? "" : " empty"}`} data-label={t.why}>
+                  {why(r).length ? why(r).map((w) => <span key={w} className="why-line">{w}</span>) : "–"}
+                </td>
               </tr>
             ))}
           </tbody>
