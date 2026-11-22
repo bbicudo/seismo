@@ -67,7 +67,8 @@ continuously and turns it into live statistics, maps and monthly summaries, in P
 **Utils**
 - **Selling loot to Yasir**: every item Yasir buys, with what he pays and whether it is safe to sell, only worth
   selling if you skip the weekly Delivery Task, or worth more kept (quest, addon, imbuement, market), with search and
-  filters. Data from TibiaWiki (CC BY-SA). Flags `page_utils` (the whole area) and `util_yasir`.
+  filters, the quest, addon or imbuement each item is used for, and item sprites loaded by the browser from
+  TibiaWiki. Data from TibiaWiki (CC BY-SA). Flags `page_utils` (the whole area) and `util_yasir`.
 
 **Privacy and administration**
 - **Opt-out**: a character owner proves ownership with a code in the character comment on tibia.com; the name then

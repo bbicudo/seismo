@@ -7,7 +7,7 @@ const T = {
     search: "Buscar item", placeholder: "Nome do item, ex.: Blazing Bone",
     all: "Todos", keep: "Não venda", task: "Só sem Delivery Task", sell: "Pode vender",
     item: "Item", verdict: "O que fazer", pays: "Yasir paga (gp)", why: "Por quê",
-    none: "Nenhum item com esse nome na lista do Yasir.", count: "{n} itens",
+    none: "Nenhum item com esse nome na lista do Yasir.", count: "{n} itens", count_one: "1 item",
     wiki: "ver no TibiaWiki",
     tags: {
       imbuement: "imbuement", addon: "addon / outfit", quest: "quest", mount: "montaria", achievement: "conquista",
@@ -23,7 +23,7 @@ const T = {
     search: "Find an item", placeholder: "Item name, e.g. Blazing Bone",
     all: "All", keep: "Don't sell", task: "Only without Delivery Task", sell: "Safe to sell",
     item: "Item", verdict: "What to do", pays: "Yasir pays (gp)", why: "Why",
-    none: "No item with that name on Yasir's list.", count: "{n} items",
+    none: "No item with that name on Yasir's list.", count: "{n} items", count_one: "1 item",
     wiki: "see on TibiaWiki",
     tags: {
       imbuement: "imbuement", addon: "addon / outfit", quest: "quest", mount: "mount", achievement: "achievement",
@@ -37,6 +37,8 @@ const T = {
   },
 };
 
+// sprites carregados pelo navegador direto do TibiaWiki (o servidor do Seismo não busca nada)
+const SPRITES = "https://static.wikia.nocookie.net/tibia/images/";
 const PILL = { keep: "pill red", task: "pill off", sell: "pill on" };
 const FILTERS = ["all", "keep", "task", "sell"];
 
@@ -63,7 +65,7 @@ export default function YasirList({ items, locale = "pt" }) {
   // um motivo por linha; quest, addon e imbuement com o nome, para quem já fez saber que pode vender
   const why = (r) => {
     const named = { quest: r.quests, addon: r.addons, imbuement: r.imbuements };
-    const parts = (r.tags || []).filter((x) => x !== "market" && x !== "npc").map((x) => {
+    const parts = (r.tags || []).filter((x) => !["market", "npc", "warn"].includes(x)).map((x) => {
       const names = named[x];
       if (!names) return t.tags[x];
       const list = x === "quest" ? names.map((n) => n.replace(/ Quest$/, "")) : names;
@@ -94,7 +96,7 @@ export default function YasirList({ items, locale = "pt" }) {
             <a key={k} href="#" role="button" aria-current={f === k ? "true" : undefined}
                onClick={(e) => { e.preventDefault(); setF(k); }}>{t[k]}</a>
           ))}
-          <span className="muted">{t.count.replace("{n}", nf.format(rows.length))}</span>
+          <span className="muted">{rows.length === 1 ? t.count_one : t.count.replace("{n}", nf.format(rows.length))}</span>
         </p>
         <p className="muted util-hint">{t.done_hint}</p>
       </div>
@@ -104,7 +106,12 @@ export default function YasirList({ items, locale = "pt" }) {
           <tbody>
             {rows.map((r) => (
               <tr key={r.name}>
-                <td className="place">{r.name}<small><a href={wikiUrl(r.name)} target="_blank" rel="noopener noreferrer">{t.wiki} ↗</a></small></td>
+                <td className="place">
+                  <span className="item-name">
+                    {r.img ? <img src={SPRITES + r.img} alt="" width={32} height={32} loading="lazy" referrerPolicy="no-referrer" /> : <i className="item-noimg" />}
+                    <span>{r.name}<small><a href={wikiUrl(r.name)} target="_blank" rel="noopener noreferrer">{t.wiki} ↗</a></small></span>
+                  </span>
+                </td>
                 <td data-label={t.verdict}><span className={PILL[r.status]}>{t[r.status]}</span></td>
                 <td className="n" data-label={t.pays}>{nf.format(r.price)}</td>
                 <td className={`wrap-cell${why(r).length ? "" : " empty"}`} data-label={t.why}>

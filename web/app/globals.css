@@ -264,3 +264,6 @@ td.place small { display: block; color: var(--muted); font-size: 12px; }
 .util-search input:focus { outline: 2px solid var(--red); outline-offset: 1px; }
 .why-line { display: block; }
 .util-hint { margin: 0; font-size: 13px; }
+.item-name { display: flex; align-items: center; gap: 10px; }
+.item-name img, .item-noimg { flex: none; width: 32px; height: 32px; image-rendering: pixelated; }
+.item-name small { display: block; }
