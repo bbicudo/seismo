@@ -30,7 +30,7 @@ export default async function WorldLayout({ children, params }) {
         <p className="crumbs"><a href={`/${locale}`}>← {t.back_worlds}</a></p>
         <h1>{w.name}</h1>
         <p className="lead">
-          {w.location} · {w.pvp_type}{w.battleye_protected ? " · BattlEye" : ""} · {fmt(x.updated, { t: fmtTime(w.updated_at, locale) })}
+          {w.location} · {w.pvp_type}{w.battleye_protected ? ` · BattlEye${w.battleye_type ? ` ${w.battleye_type}` : ""}` : ""} · {fmt(x.updated, { t: fmtTime(w.updated_at, locale) })}
         </p>
         <div className="stats">
           <div className="stat"><b>{fmtNum(w.players_online, locale)}</b><span>{t.online_now}</span></div>
