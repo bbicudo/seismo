@@ -251,3 +251,14 @@ td.place small { display: block; color: var(--muted); font-size: 12px; }
   .cards-on table.cards td[colspan] { display: block; text-align: left; }
   .cards-on table.cards td[colspan]::before { content: none; }
 }
+
+/* ---------- utilidades ---------- */
+.util-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.util-card { display: grid; gap: 4px; border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; text-decoration: none; color: var(--ink); background: var(--paper); }
+.util-card:hover { border-color: var(--red); }
+.util-card b { color: var(--red); }
+.util-card span { color: var(--muted); font-size: 14px; }
+.util-tools { display: grid; gap: 10px; margin-bottom: 4px; }
+.util-search { display: grid; gap: 4px; font-size: 13px; color: var(--muted); }
+.util-search input { font: 15px var(--f-body), sans-serif; background: var(--paper); color: var(--ink); border: 1px solid var(--line); border-radius: 4px; padding: 9px 12px; width: 100%; }
+.util-search input:focus { outline: 2px solid var(--red); outline-offset: 1px; }
