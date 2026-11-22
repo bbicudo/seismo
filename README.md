@@ -71,6 +71,8 @@ continuously and turns it into live statistics, maps and monthly summaries, in P
 - **Admin area** (`/admin`, separate login): feature flags to turn each part of the site and each collection on or
   off, and adjustable parameters (daily request cap, pace, privacy thresholds, SEO, thermometer, raid tuning and
   every insight window, weight and threshold).
+- **BattlEye filter** on the world list: green (protected since launch) or yellow (added later), read from
+  TibiaData's `battleye_date` (flag `filter_battleye`).
 - **Mobile cards**: on phones, wide tables (hunts, raids, guilds, houses, event impact) turn into one card per row,
   with each number labelled by its column (flag `ui_mobile_cards`).
 - **SEO**: sitemap, robots, canonical and pt/en alternate links, and a preview image for every page.
