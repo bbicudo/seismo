@@ -5,6 +5,26 @@ and versions follow [Semantic Versioning](https://semver.org/). Each version has
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-22
+
+Hunting areas and a way to report mistakes.
+
+### Added
+
+- **Hunting areas** (`/utils/hunts`, flag `util_hunts`): every hunting place on TibiaWiki (438) with search and filters
+  (town, best element, vocation and level), and a page per area with the recommended level, exp and loot, the
+  recommended damage type (average of the monsters' elemental weaknesses, bosses left out), the recommended
+  protections (each element's share of the monsters' maximum damage) and a monster table with sprites, HP, exp,
+  weaknesses and the damage they deal. Data built by `tools/build_hunt_areas.py`; sprites and element icons load in
+  the browser straight from TibiaWiki.
+- **Suggest a fix** (flag `feedback_form`, parameter `feedback_per_hour`): "Found a mistake?" link in the footer, under
+  the utils cards and on each tool, with a form to pick the tool or "another part of the site"; suggestions show up in
+  `/admin` to resolve or delete. No name, e-mail or IP is stored.
+
+### Changed
+
+- Privacy page mentions the images loaded from TibiaWiki and what the suggestion form keeps.
+
 ## [0.3.0] - 2026-11-22
 
 Utils, a BattlEye filter and tables that work on phones.
@@ -88,7 +108,8 @@ First tagged version: the open beta.
 - **Project**: AGPL-3.0 license, code of conduct, contributing guide, security policy, issue and PR templates,
   Dependabot.
 
-[Unreleased]: https://github.com/bbicudo/seismo/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/bbicudo/seismo/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/bbicudo/seismo/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/bbicudo/seismo/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/bbicudo/seismo/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/bbicudo/seismo/releases/tag/v0.1.0

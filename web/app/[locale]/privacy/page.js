@@ -45,7 +45,7 @@ const CONTENT = {
         "Você pode tirar seu personagem do Seismo a qualquer momento pela página de opt-out, provando que é o dono com um código no comentário do personagem. Depois da confirmação, apagamos os dados ligados ao nome e paramos de registrá-lo. Ficam só os contadores anônimos.",
       ]],
       ["Cookies e navegação", [
-        "O site não usa cookies de rastreamento nem ferramentas de analytics de terceiros, e as fontes ficam no próprio servidor. A única exceção são as imagens dos itens na página do Yasir, que o seu navegador carrega direto do TibiaWiki (Fandom). O servidor não mantém registro de acessos por visitante; só registros técnicos de erro, que têm tamanho limitado e são sobrescritos sozinhos.",
+        "O site não usa cookies de rastreamento nem ferramentas de analytics de terceiros, e as fontes ficam no próprio servidor. A única exceção são as imagens de itens, monstros e elementos nas utilidades, que o seu navegador carrega direto do TibiaWiki (Fandom). O formulário “Encontrou um erro?” guarda só a parte do site e o texto enviado, sem nome, e-mail ou endereço IP. O servidor não mantém registro de acessos por visitante; só registros técnicos de erro, que têm tamanho limitado e são sobrescritos sozinhos.",
       ]],
     ],
     contact: "Contato",
@@ -76,7 +76,7 @@ const CONTENT = {
         "You can remove your character from Seismo at any time on the opt-out page, proving ownership with a code in the character comment. Once confirmed, we delete the data tied to the name and stop recording it. Only anonymous counters remain.",
       ]],
       ["Cookies and browsing", [
-        "The site uses no tracking cookies or third-party analytics, and fonts are served from our own server. The only exception is the item images on the Yasir page, which your browser loads straight from TibiaWiki (Fandom). The server keeps no per-visitor access log; only technical error logs, which are size-limited and overwrite themselves.",
+        "The site uses no tracking cookies or third-party analytics, and fonts are served from our own server. The only exception is the item, monster and element images in Utils, which your browser loads straight from TibiaWiki (Fandom). The “Found a mistake?” form keeps only the part of the site and the text you send, with no name, e-mail or IP address. The server keeps no per-visitor access log; only technical error logs, which are size-limited and overwrite themselves.",
       ]],
     ],
     contact: "Contact",
