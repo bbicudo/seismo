@@ -42,6 +42,8 @@ FLAGS: list[dict] = [
      "help": "Resumo do mês de personagem, guild e mundo, com imagem para compartilhar."},
     {"key": "page_status", "group": "site", "label": "Página de status",
      "help": "Status público do coletor e das coletas."},
+    {"key": "filter_battleye", "group": "site", "label": "Filtro de BattlEye",
+     "help": "Na lista de mundos, filtro por BattlEye green (desde o lançamento) ou yellow (adicionado depois)."},
     {"key": "ui_mobile_cards", "group": "site", "label": "Tabelas em cartões no celular",
      "help": "No celular, as tabelas largas (hunts, raids, guilds, casas, impacto dos eventos) viram um cartão por linha. Desligado, ficam como tabela com rolagem lateral."},
     # coletas (desligar economiza requisições à TibiaData)

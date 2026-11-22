@@ -27,13 +27,15 @@ export default async function Overview({ params, searchParams }) {
   ]);
   const region = sp.region || "";
   const pvp = sp.pvp || "";
+  const beOn = on(f, "filter_battleye");
+  const be = beOn && ["green", "yellow"].includes(sp.be) ? sp.be : "";
   const health = new Map((hl?.worlds || []).map((w) => [w.name, w]));
   const showH = !!hl?.ready; // colunas só depois que o índice existe (antes disso seriam só traços)
   const sort = ["online", "health", "trend"].includes(sp.sort) && hl?.ready ? sp.sort : "online";
   const key = { online: (w) => w.players_online ?? -1, health: (w) => health.get(w.name)?.score ?? -1, trend: (w) => health.get(w.name)?.trend_pct ?? -1e9 }[sort];
-  const worlds = all.filter((w) => (!region || w.location === region) && (!pvp || w.pvp_type === pvp))
+  const worlds = all.filter((w) => (!region || w.location === region) && (!pvp || w.pvp_type === pvp) && (!be || w.battleye_type === be))
     .sort((a, b) => key(b) - key(a) || a.name.localeCompare(b.name));
-  const qs = (o) => { const q = new URLSearchParams({ ...(region && { region }), ...(pvp && { pvp }), ...o }); return `/${locale}?${q}#worlds`; };
+  const qs = (o) => { const q = new URLSearchParams({ ...(region && { region }), ...(pvp && { pvp }), ...(be && { be }), ...o }); return `/${locale}?${q}#worlds`; };
   const total = all.reduce((s, w) => s + (w.players_online || 0), 0);
   const pvps = [...new Set(all.map((w) => w.pvp_type))].sort();
   const points = ov.series_48h.map((p) => ({ t: p.ts, v: p.players_online }));
@@ -112,6 +114,15 @@ export default async function Overview({ params, searchParams }) {
               {pvps.map((p) => <option key={p} value={p}>{p}</option>)}
             </select>
           </label>
+          {beOn && (
+            <label htmlFor="f-be">{t.battleye}
+              <select id="f-be" name="be" defaultValue={be}>
+                <option value="">{t.filter_all}</option>
+                <option value="green">{t.be_green}</option>
+                <option value="yellow">{t.be_yellow}</option>
+              </select>
+            </label>
+          )}
           <input type="hidden" name="sort" value={sort} />
           <button type="submit">{t.filter_apply}</button>
         </form>
@@ -133,7 +144,7 @@ export default async function Overview({ params, searchParams }) {
                 const h = health.get(w.name);
                 return (
                   <tr key={w.name}>
-                    <td className="place"><a href={`/${locale}/world/${enc(w.name)}`}>{w.name}</a><small>{w.location} · {w.pvp_type}</small></td>
+                    <td className="place"><a href={`/${locale}/world/${enc(w.name)}`}>{w.name}</a><small>{w.location} · {w.pvp_type}{w.battleye_type ? ` · BattlEye ${w.battleye_type}` : ""}</small></td>
                     <td className="n">{fmtNum(w.players_online, locale)}</td>
                     {showH && <>
                       <td className="n">{h?.score == null ? <span className="muted">–</span> : <span className="score" style={{ "--p": `${h.score}%` }}>{h.score}</span>}</td>

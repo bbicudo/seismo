@@ -7,7 +7,7 @@ from typing import Any
 
 from psycopg_pool import AsyncConnectionPool
 
-from .logic import Diff, activity_counts, decode_player, game_day, hour_bucket
+from .logic import Diff, activity_counts, battleye_type, decode_player, game_day, hour_bucket
 
 
 async def upsert_worlds(pool: AsyncConnectionPool, worlds: list[dict[str, Any]], ts: datetime) -> dict[str, int]:
@@ -15,6 +15,7 @@ async def upsert_worlds(pool: AsyncConnectionPool, worlds: list[dict[str, Any]],
         (
             w["name"], w.get("location"), w.get("pvp_type"), bool(w.get("battleye_protected")),
             w.get("transfer_type"), w.get("game_world_type"), int(w.get("players_online") or 0), ts,
+            battleye_type(w),
         )
         for w in worlds
     ]
@@ -23,13 +24,13 @@ async def upsert_worlds(pool: AsyncConnectionPool, worlds: list[dict[str, Any]],
             await cur.executemany(
                 """
                 INSERT INTO worlds (name, location, pvp_type, battleye_protected, transfer_type,
-                                    game_world_type, players_online, updated_at)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                                    game_world_type, players_online, updated_at, battleye_type)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
                 ON CONFLICT (name) DO UPDATE SET
                   location = EXCLUDED.location, pvp_type = EXCLUDED.pvp_type,
                   battleye_protected = EXCLUDED.battleye_protected, transfer_type = EXCLUDED.transfer_type,
                   game_world_type = EXCLUDED.game_world_type, players_online = EXCLUDED.players_online,
-                  updated_at = EXCLUDED.updated_at
+                  updated_at = EXCLUDED.updated_at, battleye_type = EXCLUDED.battleye_type
                 """,
                 rows,
             )

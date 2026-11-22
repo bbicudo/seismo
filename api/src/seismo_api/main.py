@@ -160,7 +160,7 @@ async def status_payload(response: Response):
 async def worlds(response: Response):
     rows = await query(
         """
-        SELECT name, location, pvp_type, battleye_protected, transfer_type, players_online, updated_at
+        SELECT name, location, pvp_type, battleye_protected, battleye_type, transfer_type, players_online, updated_at
         FROM worlds ORDER BY players_online DESC, name
         """
     )
@@ -253,7 +253,7 @@ ALLOWED_TZ = {"America/Sao_Paulo", "Europe/Berlin", "UTC"}
 
 async def world_or_404(name: str) -> dict:
     await params()
-    found = await query("SELECT id, name, location, pvp_type, battleye_protected, transfer_type, players_online, "
+    found = await query("SELECT id, name, location, pvp_type, battleye_protected, battleye_type, transfer_type, players_online, "
                         "updated_at FROM worlds WHERE lower(name) = lower(%s)", name)
     if not found:
         raise HTTPException(404, "mundo não encontrado")
