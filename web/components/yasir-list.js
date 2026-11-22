@@ -79,7 +79,7 @@ export default function YasirList({ items, locale = "pt" }) {
       }
     }
     if (r.status === "task") parts.unshift(t.task_why);
-    if (r.market) parts.push(t.market.replace("{m}", r.market.replace(/,/g, ".").replace(/ - /, "–") + " gp"));
+    // preço de mercado do wiki fica de fora: muda muito de servidor para servidor
     if (r.npc) parts.push(t.npc.replace("{n}", nf.format(r.npc)));
     return parts;
   };
