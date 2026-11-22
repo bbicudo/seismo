@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+import LocaleLink from "../../components/locale-link";
 import { redirect } from "next/navigation";
 import localFont from "next/font/local";
 import { LOCALES, dict } from "../../lib/i18n";
@@ -63,7 +65,9 @@ export default async function LocaleLayout({ children, params }) {
               {on(f, "page_utils") && <a href={`/${locale}/utils`}>{t.nav_utils}</a>}
               {on(f, "page_wrapped") && <a href={`/${locale}/wrapped`}>Wrapped</a>}
               {on(f, "page_status") && <a href={`/${locale}/status`}>{t.nav_status}</a>}
-              <a href={`/${other}`} hrefLang={other}>{t.other_locale}</a>
+              <Suspense fallback={<a href={`/${other}`} hrefLang={other}>{t.other_locale}</a>}>
+                <LocaleLink to={other} label={t.other_locale} />
+              </Suspense>
             </nav>
           </div>
         </header>
