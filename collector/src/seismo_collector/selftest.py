@@ -5,6 +5,7 @@ from datetime import date, datetime, timezone
 from .events import event_kinds, parse_window
 from .raids import load_seed, race_keys, spawn_kind
 from .logic import (
+    battleye_type,
     activity_counts, cycle_slot, decode_player, diff_snapshots, encode_player, game_day, level_band, split_minutes,
 )
 
@@ -62,6 +63,10 @@ def main() -> None:
     assert event_kinds("Double XP and Double Skill Event", txt) == ["double_xp", "double_skill"]
     nbsp = "Between the server saves of\xa0November 20 and November 23\xa0all monsters"
     assert parse_window(nbsp, date(2026, 11, 13)) == [date(2026, 11, 20), date(2026, 11, 21), date(2026, 11, 22)]
+    # BattlEye: "release" = green, data = yellow, sem proteção = nenhum
+    assert battleye_type({"battleye_protected": True, "battleye_date": "release"}) == "green"
+    assert battleye_type({"battleye_protected": True, "battleye_date": "2017-08-29"}) == "yellow"
+    assert battleye_type({"battleye_protected": False, "battleye_date": ""}) is None
     print("selftest ok")
 
 

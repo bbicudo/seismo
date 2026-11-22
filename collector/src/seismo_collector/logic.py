@@ -96,3 +96,10 @@ def cycle_slot(ts: datetime, interval: int) -> datetime:
     """Arredonda para baixo no múltiplo do intervalo (ex.: 10:07 -> 10:05)."""
     epoch = int(ts.timestamp())
     return datetime.fromtimestamp(epoch - epoch % interval, tz=timezone.utc)
+
+
+def battleye_type(w: dict) -> str | None:
+    """green = BattlEye desde o lançamento (a TibiaData manda "release"); yellow = adicionado depois (manda a data)."""
+    if not w.get("battleye_protected"):
+        return None
+    return "green" if w.get("battleye_date") == "release" else "yellow"
