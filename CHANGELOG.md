@@ -5,6 +5,30 @@ and versions follow [Semantic Versioning](https://semver.org/). Each version has
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-11-22
+
+Utils, a BattlEye filter and tables that work on phones.
+
+### Added
+
+- **Utils** area (`/utils`, flag `page_utils`) with its first tool, **Selling loot to Yasir** (flag `util_yasir`):
+  every item Yasir buys, what he pays and whether it is safe to sell, only worth selling if you skip the weekly
+  Delivery Task, or worth more kept, with the quest, addon or imbuement it is used for, search, filters and item
+  sprites loaded by the browser from TibiaWiki.
+- **BattlEye filter** on the world list (flag `filter_battleye`): green (since launch) or yellow (added later); the
+  world header shows the type too.
+- **Mobile cards** (flag `ui_mobile_cards`): on phones, wide tables turn into one card per row, with each number
+  labelled by its column and empty rows hidden.
+
+### Changed
+
+- **Hunts ranking**: hunting area and main creatures first, town under the name, compact numeric headers; no sideways
+  scrolling on desktop.
+- **Other wide tables** (raids, guilds, guild members, town houses, house market, event impact, world list): main
+  information first, secondary details under the name.
+- **Texts** use the full width of their box; the new-characters vital no longer shows the per-thousand note.
+- Switching language keeps the current page, filters and anchor instead of going back to the home page.
+
 ## [0.2.0] - 2026-11-21
 
 Numbers that read on their own, and up-to-date dependencies.
@@ -64,6 +88,7 @@ First tagged version: the open beta.
 - **Project**: AGPL-3.0 license, code of conduct, contributing guide, security policy, issue and PR templates,
   Dependabot.
 
-[Unreleased]: https://github.com/bbicudo/seismo/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/bbicudo/seismo/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/bbicudo/seismo/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/bbicudo/seismo/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/bbicudo/seismo/releases/tag/v0.1.0
