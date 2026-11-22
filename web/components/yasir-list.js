@@ -108,7 +108,7 @@ export default function YasirList({ items, locale = "pt" }) {
               <tr key={r.name}>
                 <td className="place">
                   <span className="item-name">
-                    {r.img ? <img src={SPRITES + r.img} alt="" width={32} height={32} loading="lazy" referrerPolicy="no-referrer" /> : <i className="item-noimg" />}
+                    {r.img ? <img src={`${SPRITES}${r.img}&path-prefix=en`} alt="" width={32} height={32} loading="lazy" referrerPolicy="no-referrer" /> : <i className="item-noimg" />}
                     <span>{r.name}<small><a href={wikiUrl(r.name)} target="_blank" rel="noopener noreferrer">{t.wiki} ↗</a></small></span>
                   </span>
                 </td>
