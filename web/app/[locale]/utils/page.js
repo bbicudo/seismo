@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { getFlags, on } from "../../../lib/flags";
+import { ht } from "../../../lib/hunts-i18n";
 import { dict } from "../../../lib/i18n";
 import { seo } from "../../../lib/seo";
 
@@ -17,7 +18,11 @@ export default async function Utils({ params }) {
   const t = dict(locale);
   const f = await getFlags();
   if (!on(f, "page_utils")) notFound();
-  const tools = [on(f, "util_yasir") && { href: `/${locale}/utils/yasir`, title: t.yasir_title, text: t.yasir_card }].filter(Boolean);
+  const h = ht(locale);
+  const tools = [
+    on(f, "util_hunts") && { href: `/${locale}/utils/hunts`, title: h.title, text: h.card },
+    on(f, "util_yasir") && { href: `/${locale}/utils/yasir`, title: t.yasir_title, text: t.yasir_card },
+  ].filter(Boolean);
   return (
     <section className="card">
       <h1>{t.utils_title}</h1>
