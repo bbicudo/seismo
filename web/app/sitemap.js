@@ -33,6 +33,8 @@ export default async function sitemap() {
   add("", { freq: "hourly", priority: 1 });
   if (on("page_events")) add("/events", { priority: 0.6 });
   if (on("page_wrapped")) add("/wrapped", { freq: "weekly", priority: 0.5 });
+  if (on("page_utils")) add("/utils", { freq: "weekly", priority: 0.4 });
+  if (on("page_utils") && on("util_yasir")) add("/utils/yasir", { freq: "weekly", priority: 0.5 });
   add("/about", { freq: "monthly", priority: 0.3 });
   add("/privacy", { freq: "monthly", priority: 0.3 });
   add("/opt-out", { freq: "monthly", priority: 0.3 });
