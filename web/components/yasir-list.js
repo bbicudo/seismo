@@ -46,8 +46,14 @@ export default function YasirList({ items, locale = "pt" }) {
   const [f, setF] = useState("all");
   const nf = new Intl.NumberFormat(locale === "en" ? "en-GB" : "pt-BR");
   const rows = useMemo(() => {
+    // casa com o começo de qualquer palavra do nome ("ape" acha Ape Fur, não Noble Cape)
     const k = norm(q.trim());
-    return items.filter((r) => (f === "all" || r.status === f) && (!k || norm(r.name).includes(k)));
+    const hit = (name) => {
+      const n = norm(name);
+      for (let i = 0; i < n.length; i++) if ((i === 0 || " '(-".includes(n[i - 1])) && n.startsWith(k, i)) return true;
+      return false;
+    };
+    return items.filter((r) => (f === "all" || r.status === f) && (!k || hit(r.name)));
   }, [items, q, f]);
 
   const why = (r) => {

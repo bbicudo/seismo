@@ -239,7 +239,7 @@ td.place small { display: block; color: var(--muted); font-size: 12px; }
   .cards-on table.cards tr { position: relative; border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; margin-bottom: 10px; }
   .cards-on table.cards td { display: grid; grid-template-columns: minmax(0, 46%) minmax(0, 1fr); gap: 10px; align-items: baseline;
     border: 0; padding: 3px 0; white-space: normal; text-align: right; }
-  .cards-on table.cards td > * { justify-self: end; }
+  .cards-on table.cards td:not(.place):not(.wrap-cell) > * { justify-self: end; }
   .cards-on table.cards td::before { content: attr(data-label); color: var(--muted); font-size: 12px; text-align: left; }
   .cards-on table.cards td.place, .cards-on table.cards td.wrap-cell { display: block; text-align: left; min-width: 0; }
   .cards-on table.cards td.place { font-weight: 600; font-size: 15px; padding: 0 28px 4px 0; }
