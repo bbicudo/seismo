@@ -262,3 +262,5 @@ td.place small { display: block; color: var(--muted); font-size: 12px; }
 .util-search { display: grid; gap: 4px; font-size: 13px; color: var(--muted); }
 .util-search input { font: 15px var(--f-body), sans-serif; background: var(--paper); color: var(--ink); border: 1px solid var(--line); border-radius: 4px; padding: 9px 12px; width: 100%; }
 .util-search input:focus { outline: 2px solid var(--red); outline-offset: 1px; }
+.why-line { display: block; }
+.util-hint { margin: 0; font-size: 13px; }
