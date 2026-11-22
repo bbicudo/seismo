@@ -29,6 +29,10 @@ PARAMS: list[dict] = [
     {"key": "seismo_worlds", "group": "Limites da coleta", "applies": "coletor", "type": "str",
      "default": "all", "pattern": r"^(all|[A-Za-z]+(\s*,\s*[A-Za-z]+)*)$", "label": "Mundos coletados",
      "help": "\"all\" para todos, ou nomes separados por vírgula (ex.: Venebra, Antica)."},
+    # sugestões de correção
+    {"key": "feedback_per_hour", "group": "Sugestões de correção", "applies": "site", "type": "int",
+     "default": 5, "min": 1, "max": 50, "label": "Envios por hora de cada visitante",
+     "help": "Limite do formulário \"Encontrou um erro?\" por visitante (contado por um hash do endereço, que não é guardado)."},
     # privacidade
     {"key": "min_cell", "group": "Privacidade", "applies": "site", "type": "int",
      "default": 5, "min": 5, "max": 50, "label": "Tamanho mínimo de grupo anônimo",

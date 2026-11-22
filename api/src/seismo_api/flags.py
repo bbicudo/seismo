@@ -46,6 +46,8 @@ FLAGS: list[dict] = [
      "help": "Lista dos itens que o Yasir compra, dizendo quais dá para vender e quais valem mais em quest, addon, imbuement ou Delivery Task."},
     {"key": "util_hunts", "group": "site", "label": "Utilidades: áreas de caça",
      "help": "Todas as hunts do TibiaWiki com os monstros, o elemento recomendado (pelas fraquezas) e as proteções recomendadas (pelo dano que batem)."},
+    {"key": "feedback_form", "group": "site", "label": "Sugestões de correção",
+     "help": "Link \"Encontrou um erro?\" no rodapé e nas utilidades, com formulário. As sugestões aparecem no /admin."},
     {"key": "page_status", "group": "site", "label": "Página de status",
      "help": "Status público do coletor e das coletas."},
     {"key": "filter_battleye", "group": "site", "label": "Filtro de BattlEye",
