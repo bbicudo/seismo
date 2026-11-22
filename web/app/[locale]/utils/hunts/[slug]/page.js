@@ -19,7 +19,7 @@ export async function generateMetadata({ params }) {
   const t = ht(locale);
   if (!a) return {};
   const adv = advise(a, data.creatures);
-  const best = adv.bestElement ? fmt(t.attack_best, { e: EL[adv.bestElement.e], n: adv.bestElement.avg }) : "";
+  const best = adv.bestElement ? fmt(adv.bestElement.avg > 100 ? t.attack_best : t.attack_flat, { e: EL[adv.bestElement.e], n: adv.bestElement.avg }) : "";
   return seo(locale, `/utils/hunts/${slug}`, {
     title: `${a.name} · ${t.title}`,
     description: [a.city, a.creatures.slice(0, 6).join(", "), best].filter(Boolean).join(" · "),
@@ -81,7 +81,7 @@ export default async function HuntArea({ params }) {
         <section className="card">
           <h2>{t.attack_title}</h2>
           <p className="lead">{t.attack_lead}</p>
-          {adv.bestElement && <p className="advice">{fmt(t.attack_best, { e: EL[adv.bestElement.e], n: adv.bestElement.avg })}</p>}
+          {adv.bestElement && <p className="advice">{fmt(adv.bestElement.avg > 100 ? t.attack_best : t.attack_flat, { e: EL[adv.bestElement.e], n: adv.bestElement.avg })}</p>}
           {adv.physical && <p className="muted">{fmt(t.attack_physical, { n: adv.physical.avg })}</p>}
           <ul className="el-bars">
             {adv.attack.map((x) => (

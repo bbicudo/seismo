@@ -270,7 +270,7 @@ td.place small { display: block; color: var(--muted); font-size: 12px; }
 
 /* ---------- áreas de caça ---------- */
 .el { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
-.el img { width: 16px; height: 16px; image-rendering: pixelated; }
+.el img { width: 16px; height: 16px; }
 .el-ph { display: inline-grid; place-items: center; width: 16px; height: 16px; border-radius: 50%; font: 600 10px var(--f-mono), monospace;
   font-style: normal; color: var(--paper); background: var(--muted); }
 .el-ph.el-lifedrain { background: #b3344b; } .el-ph.el-manadrain { background: #4865c9; } .el-ph.el-drown { background: #2f8f9d; }
