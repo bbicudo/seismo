@@ -40,6 +40,7 @@ export default async function HuntAreas({ params }) {
       <section className="card">
         <HuntAreaList rows={ROWS} cities={CITIES} icons={data.icons} locale={locale} />
       </section>
+      {on(f, "feedback_form") && <p className="muted"><a href={`/${locale}/feedback?f=hunts&from=/${locale}/utils/hunts`}>{d.fb_link}</a></p>}
       <p className="muted">{fmt(t.credit, { d: fmtDate(data.updated, locale) })}</p>
     </>
   );

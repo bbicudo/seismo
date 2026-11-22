@@ -36,6 +36,7 @@ export default async function Yasir({ params }) {
       <section className="card">
         <YasirList items={data.items} locale={locale} />
       </section>
+      {on(f, "feedback_form") && <p className="muted"><a href={`/${locale}/feedback?f=yasir&from=/${locale}/utils/yasir`}>{t.fb_link}</a></p>}
       <p className="muted">{fmt(t.yasir_credit, { d: fmtDate(data.updated, locale) })}</p>
     </>
   );

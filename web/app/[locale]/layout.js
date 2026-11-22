@@ -77,6 +77,7 @@ export default async function LocaleLayout({ children, params }) {
             <a href={`/${locale}/about`}>{t.nav_about}</a>
             <a href={`/${locale}/privacy`}>{t.nav_privacy}</a>
             <a href={`/${locale}/opt-out`}>{t.nav_optout}</a>
+            {on(f, "feedback_form") && <a href={`/${locale}/feedback`}>{t.nav_feedback}</a>}
           </nav>
           {t.footer}
         </footer>
