@@ -1,0 +1,69 @@
+// Textos do utilitário de áreas de caça. Os elementos ficam com o nome do jogo (energy, earth...) nos dois idiomas.
+export const EL = {
+  physical: "Physical", fire: "Fire", ice: "Ice", earth: "Earth", energy: "Energy", holy: "Holy", death: "Death",
+  lifedrain: "Life drain", manadrain: "Mana drain", drown: "Drown",
+};
+
+const PT = {
+  title: "Áreas de caça",
+  card: "Todas as hunts do TibiaWiki com os monstros, o elemento que mais machuca e as proteções que valem a pena.",
+  lead: "Escolha a hunt e veja qual elemento usar e de que dano se proteger, a partir das fraquezas e do dano dos monstros.",
+  search: "Buscar hunt ou monstro", placeholder: "Ex.: Hero Cave ou Dragon",
+  city: "Cidade", all: "todas", element: "Melhor elemento", vocation: "Vocação", level: "Meu level",
+  voc: { k: "Knight", p: "Paladin", m: "Mage" }, any: "qualquer",
+  count: "{n} áreas", count_one: "1 área", none: "Nenhuma área com esses filtros.",
+  area: "Área", monsters: "Monstros", best: "Melhor elemento", protect: "Proteção", lvl: "Level",
+  back: "Áreas de caça",
+  levels: "Level recomendado", exp: "Experiência", loot: "Loot", stars: "{n} de 5",
+  attack_title: "Tipo de dano recomendado",
+  attack_lead: "Quanto os monstros da área apanham de cada elemento, em média (100% = dano normal).",
+  attack_best: "Use {e}: os monstros apanham {n}% em média.",
+  attack_physical: "Dano físico: {n}% em média.",
+  attack_range: "de {min}% a {max}%",
+  protect_title: "Proteções recomendadas",
+  protect_lead: "De onde vem o dano que os monstros batem, pela parte de cada elemento no dano máximo de cada um.",
+  protect_best: "Proteja-se de {list}.",
+  protect_none: "O wiki ainda não tem o dano destes monstros.",
+  protect_hit: "maior golpe: {n}",
+  unknown: "Sem dano conhecido no wiki: {list}.",
+  monsters_title: "Monstros da área",
+  monster: "Monstro", hp: "HP", xp: "Exp", hits: "Bate", weak: "Fraco a", strong: "Resiste a",
+  bosses: "Bosses da área",
+  legend: "Na tabela, verde = apanha mais que o normal (bom para você); vermelho = apanha menos.",
+  wiki: "ver no TibiaWiki",
+  credit: "Fonte: TibiaWiki (tibia.fandom.com), licença CC BY-SA, em {d}. Imagens carregadas direto do TibiaWiki. As recomendações são uma estimativa a partir dos dados do wiki.",
+};
+
+const EN = {
+  title: "Hunting areas",
+  card: "Every TibiaWiki hunt with its monsters, the element that hurts them most and the protections worth wearing.",
+  lead: "Pick a hunt and see which element to use and which damage to protect from, based on the monsters' weaknesses and damage.",
+  search: "Find a hunt or monster", placeholder: "E.g. Hero Cave or Dragon",
+  city: "Town", all: "all", element: "Best element", vocation: "Vocation", level: "My level",
+  voc: { k: "Knight", p: "Paladin", m: "Mage" }, any: "any",
+  count: "{n} areas", count_one: "1 area", none: "No area matches these filters.",
+  area: "Area", monsters: "Monsters", best: "Best element", protect: "Protection", lvl: "Level",
+  back: "Hunting areas",
+  levels: "Recommended level", exp: "Experience", loot: "Loot", stars: "{n} of 5",
+  attack_title: "Recommended damage type",
+  attack_lead: "How much damage the area's monsters take from each element, on average (100% = normal damage).",
+  attack_best: "Use {e}: the monsters take {n}% on average.",
+  attack_physical: "Physical damage: {n}% on average.",
+  attack_range: "from {min}% to {max}%",
+  protect_title: "Recommended protections",
+  protect_lead: "Where the monsters' damage comes from, by each element's share of each monster's maximum damage.",
+  protect_best: "Protect against {list}.",
+  protect_none: "TibiaWiki does not have these monsters' damage yet.",
+  protect_hit: "biggest hit: {n}",
+  unknown: "No known damage on TibiaWiki: {list}.",
+  monsters_title: "Monsters in this area",
+  monster: "Monster", hp: "HP", xp: "Exp", hits: "Hits with", weak: "Weak to", strong: "Resists",
+  bosses: "Bosses in this area",
+  legend: "In the table, green = takes more than normal (good for you); red = takes less.",
+  wiki: "see on TibiaWiki",
+  credit: "Source: TibiaWiki (tibia.fandom.com), CC BY-SA license, as of {d}. Images load straight from TibiaWiki. Recommendations are an estimate from the wiki's data.",
+};
+
+export function ht(locale) {
+  return locale === "en" ? EN : PT;
+}

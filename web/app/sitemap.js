@@ -7,6 +7,7 @@ const API = process.env.API_INTERNAL_URL || "http://api:8000";
 const enc = encodeURIComponent;
 
 import { getParams } from "../lib/flags";
+import huntAreas from "../data/hunt-areas.json";
 
 export default async function sitemap() {
   const base = process.env.PUBLIC_URL || "http://localhost:3000";
@@ -35,6 +36,10 @@ export default async function sitemap() {
   if (on("page_wrapped")) add("/wrapped", { freq: "weekly", priority: 0.5 });
   if (on("page_utils")) add("/utils", { freq: "weekly", priority: 0.4 });
   if (on("page_utils") && on("util_yasir")) add("/utils/yasir", { freq: "weekly", priority: 0.5 });
+  if (on("page_utils") && on("util_hunts")) {
+    add("/utils/hunts", { freq: "weekly", priority: 0.5 });
+    for (const a of huntAreas.areas) add(`/utils/hunts/${a.slug}`, { freq: "monthly", priority: 0.3 });
+  }
   add("/about", { freq: "monthly", priority: 0.3 });
   add("/privacy", { freq: "monthly", priority: 0.3 });
   add("/opt-out", { freq: "monthly", priority: 0.3 });

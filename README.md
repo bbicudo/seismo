@@ -70,6 +70,11 @@ continuously and turns it into live statistics, maps and monthly summaries, in P
   filters, the quest, addon or imbuement each item is used for, and item sprites loaded by the browser from
   TibiaWiki. Data from TibiaWiki (CC BY-SA). Flags `page_utils` (the whole area) and `util_yasir`.
 
+- **Hunting areas**: every hunting place on TibiaWiki with filters (town, best element, vocation and level) and a
+  page per area with its monsters (sprites, HP, exp, weaknesses and the damage they deal), the recommended damage
+  type (average of the monsters' elemental weaknesses) and the recommended protections (each element's share of the
+  monsters' maximum damage). Data built by `tools/build_hunt_areas.py` from TibiaWiki (CC BY-SA). Flag `util_hunts`.
+
 **Privacy and administration**
 - **Opt-out**: a character owner proves ownership with a code in the character comment on tibia.com; the name then
   disappears from the site, the data tied to it is deleted and it is no longer recorded.
