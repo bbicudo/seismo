@@ -7,12 +7,13 @@ export const dynamic = "force-dynamic";
 const API = process.env.API_INTERNAL_URL || "http://api:8000";
 
 async function load() {
-  const [f, s, p] = await Promise.all([
+  const [f, s, p, fb] = await Promise.all([
     fetch(`${API}/v1/admin/flags`, { cache: "no-store" }).then((r) => r.json()),
     fetch(`${API}/v1/admin/status`, { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)),
     fetch(`${API}/v1/admin/params`, { cache: "no-store" }).then((r) => r.json()),
+    fetch(`${API}/v1/admin/feedback`, { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)).catch(() => null),
   ]);
-  return { ...f, status: s, params: p.params };
+  return { ...f, status: s, params: p.params, feedback: fb };
 }
 
 async function setParam(formData) {
@@ -76,6 +77,19 @@ function explainError({ kind, reason }) {
   if (/Timeout|Connect|Transport|Protocol|Read|Network/.test(reason)) return "Sem resposta a tempo ou conexão caiu: o coletor tentou de novo.";
   return "Resposta inesperada; se repetir muito, vale olhar o log do coletor.";
 }
+
+async function feedbackAction(formData) {
+  "use server";
+  const id = Number(formData.get("id"));
+  const action = String(formData.get("action") || "");
+  await fetch(`${API}/v1/admin/feedback/${id}`, {
+    method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action }), cache: "no-store",
+  });
+  revalidatePath("/admin");
+  redirect("/admin#sugestoes");
+}
+
+const FEATURE_LABEL = { hunts: "Áreas de caça", yasir: "Vender ao Yasir", site: "Outra parte do site" };
 
 async function toggle(formData) {
   "use server";
@@ -198,6 +212,34 @@ export default async function Admin({ searchParams }) {
           </p>
         </section>
       </div>
+
+      {d.feedback && (
+        <section className="card" id="sugestoes">
+          <h2>Sugestões de correção {d.feedback.pending > 0 && <span className="pill red">{d.feedback.pending} novas</span>}</h2>
+          <p className="muted">Enviadas pelo link "Encontrou um erro?". Sem nome, e-mail ou IP.</p>
+          {d.feedback.items.length === 0 ? <p className="muted">Nenhuma sugestão ainda.</p> : (
+            <div className="tbl"><table>
+              <thead><tr><th>Quando</th><th>Onde</th><th>Sugestão</th><th></th></tr></thead>
+              <tbody>
+                {d.feedback.items.map((x) => (
+                  <tr key={x.id} style={x.resolved ? { opacity: 0.55 } : undefined}>
+                    <td>{fmtTime(x.created_at, "pt")}</td>
+                    <td>{FEATURE_LABEL[x.feature] || x.feature}{x.page && <><br /><a href={x.page} className="muted">{x.page}</a></>}</td>
+                    <td style={{ whiteSpace: "pre-wrap", minWidth: 280 }}>{x.message}</td>
+                    <td>
+                      <form action={feedbackAction} style={{ display: "flex", gap: 6 }}>
+                        <input type="hidden" name="id" value={x.id} />
+                        <button type="submit" name="action" value={x.resolved ? "reopen" : "resolve"} className="ghost">{x.resolved ? "Reabrir" : "Resolvida"}</button>
+                        <button type="submit" name="action" value="delete" className="ghost">Apagar</button>
+                      </form>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table></div>
+          )}
+        </section>
+      )}
 
       <section className="card" id="parametros">
         <h1 style={{ fontSize: 26 }}>Parâmetros</h1>
