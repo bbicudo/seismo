@@ -11,6 +11,10 @@ and versions follow [Semantic Versioning](https://semver.org/). Each version has
   for each vocation, with minimum level, raw exp and loot per hour, recommended weapon, ammo or playstyle and the test
   video; monsters, weaknesses, damage, element and protections still come from TibiaWiki. Vocation tabs, level filter
   by the hunts' own levels and sorting by level, exp or loot.
+- More hunts have their monsters: creature families ("Coryms" -> Corym Charlatan, Skirmisher, Vanguard), wiki area names
+  written differently, region lists (Targuna, Ingol, Oramond) and hand-checked lists (Asura Mirror, Ferumbras'
+  Ascension); bosses and special creatures are left out. Abbreviations are spelled out and the same place written
+  differently in each vocation's table becomes one hunt (332 of 352 hunts with monsters).
 
 ## [0.4.0] - 2026-11-22
 

@@ -9,6 +9,7 @@ Uso: python tools/build_hunt_places.py  (depois de tools/build_hunt_areas.py, qu
 """
 import html
 import json
+import os
 import re
 import sys
 import time
@@ -40,7 +41,8 @@ NAME_ALIAS = [
     (r"\bMoSL\b|\bMOSL\b", "Mother of Scarabs Lair"), (r"\bRosha\b", "Roshamuul"), (r"\bYala\b", "Yalahar"),
     (r"\bWOTE\b|\bWote\b", "Wrath of the Emperor"), (r"\bINQ\b", "Inquisition"), (r"\bDT\b", "Dark Torturer"),
     (r"\bFeru\b", "Ferumbras' Ascension"), (r"\(SD\)", "(Sudden Death)"), (r"\bseal\b", "Seal"),
-    (r"\bStage(\d)", r"Stage \1"),
+    (r"\bStage(\d)", r"Stage \1"), (r"\bRosh\b", "Roshamuul"), (r"Terrosleep", "Terrorsleep"),
+    (r"\bEdron South Were\b", "Edron South Werecreatures"), (r"\bShockheads\b", "Shock Heads"),
 ]
 
 
@@ -51,8 +53,10 @@ def expand(name: str) -> str:
 
 
 def same_place(name: str) -> str:
-    """chave para juntar o mesmo local escrito de jeitos diferentes nas tabelas de cada vocação."""
-    return " ".join(sorted(re.findall(r"[a-z0-9']+|-\d+", name.lower())))
+    """chave para juntar o mesmo local escrito de jeitos diferentes nas tabelas de cada vocação
+    (ordem das palavras, plural e "'s" não contam: "Falcon's Eagle" = "Falcons Eagle")."""
+    words = re.findall(r"[a-z0-9']+|-\d+", name.lower().replace("'s", ""))
+    return " ".join(sorted(singular(w) for w in words))
 
 
 def money(s: str) -> int | None:
@@ -89,8 +93,20 @@ def tibiapal() -> dict[str, dict]:
     return places
 
 
-def creature_index() -> dict[str, str]:
-    """nome em minúsculas (singular e plural) -> nome da criatura, para todas as criaturas do wiki."""
+def creature_index():
+    """(nome em minúsculas no singular e no plural -> criatura, dados de cada criatura) para todo o wiki.
+    Com SEISMO_WIKI_CACHE apontando para um arquivo, guarda o resultado e reaproveita nas próximas rodadas."""
+    cache = os.environ.get("SEISMO_WIKI_CACHE")
+    if cache and Path(cache).exists():
+        index, data = json.loads(Path(cache).read_text(encoding="utf8"))
+        return index, data
+    index, data = _creature_index()
+    if cache:
+        Path(cache).write_text(json.dumps([index, data], ensure_ascii=False), encoding="utf8")
+    return index, data
+
+
+def _creature_index():
     titles, cont = [], {}
     while True:
         d = wiki.get({"action": "query", "list": "categorymembers", "cmtitle": "Category:Creatures",
@@ -116,7 +132,7 @@ def creature_index() -> dict[str, str]:
 
 
 def find_creatures(place: str, index: dict[str, str]) -> list[str]:
-    text = re.sub(r"\(.*?\)|-\d+|\+\d+", " ", place).lower()
+    text = re.sub(r"[()]|-\d+|\+\d+", " ", place).lower()
     found = []
     for key in sorted(index, key=len, reverse=True):  # o nome mais longo primeiro ("ancient scarabs" antes de "scarabs")
         if len(key) < 4:
@@ -128,20 +144,107 @@ def find_creatures(place: str, index: dict[str, str]) -> list[str]:
     return list(dict.fromkeys(found))
 
 
+# Hunts cujo nome no TibiaPal não bate com o wiki: área do wiki correspondente (conferida à mão).
+PLACE_AREAS = [
+    (r"azzilon walls", ["Azzilon Castle"]), (r"carnivora", ["Carnivora's Rocks"]), (r"^chor\b", ["Chor"]),
+    (r"dessert dungeon", ["Dessert Dungeons"]), (r"^falcons", ["Falcon Bastion"]), (r"feyrist surface", ["Feyrist Meadows"]),
+    (r"\bhive\b", ["Hive Outpost", "Hive Ground Floor"]), (r"krailos (ogres )?surface", ["Krailos Steppe"]),
+    (r"^misguided", ["Misguided Camp"]), (r"^barkless", ["Barkless Cult Trial Zone"]), (r"^bulltaurs", ["Bulltaur Lair"]),
+    (r"oramond west", ["OramondWestern Plains"]), (r"oramond minos", ["Oramond Minotaur Camp"]),
+    (r"^prison -\d", ["Roshamuul Prison"]), (r"radiant ascend", ["Radiant Ascendancy"]),
+    (r"(energy|fire|ice) library", ["Secret Library"]), (r"summer court", ["Court of Summer"]),
+    (r"winter court", ["Court of Winter"]), (r"nimmersatt's (boss|bottom) floor", ["Nimmersatt's Breeding Ground"]),
+    (r"alchemist center", ["Alchemist Quarter"]),
+]
+# Hunts com os monstros informados à mão (quest ou área sem página de hunt no wiki).
+FERUMBRAS = ["Blightwalker", "Dark Torturer", "Demon", "Destroyer", "Fury", "Grimeleech", "Hand of Cursed Fate",
+             "Hellfire Fighter", "Hellflayer", "Hellhound", "Juggernaut", "Nightmare", "Phantasm", "Plaguesmith",
+             "Spectre", "Undead Dragon", "Vexclaw"]
+PLACE_CREATURES = [
+    (r"ferumbras", FERUMBRAS),
+    # listas das páginas de região do wiki (Targuna, Ingol, Oramond)
+    (r"targuna lizards", ["Lizard Executioner", "Lizard Henchman", "Lizard Magician", "Lizard Swordmaster"]),
+    (r"targuna pirates", ["Pirate Cook", "Pirate Gunner", "Pirate Navigator", "Pirate Quartermaster"]),
+    (r"targuna infernoids", ["Infernoid Blob", "Infernoid Hound", "Infernoid Soul", "Infernoid Spiritual"]),
+    (r"^ingol(?![a-z])", ["Harpy", "Carnivostrich", "Liodile", "Rhindeer", "Crape Man", "Boar Man"]),
+    (r"oramond catacombs", ["Metal Gargoyle", "Grim Reaper", "Demon"]),
+    (r"oramond (mountain )?hideout", ["Glooth Bandit", "Glooth Brigand"]),
+    (r"asura mirror|true asuras", ["True Dawnfire Asura", "True Frost Flower Asura", "True Midnight Asura"]),
+    (r"werecreatures", ["Werewolf", "Werebear", "Wereboar", "Werebadger", "Werefox", "Werehyaena", "Werelion"]),
+    (r"roshamuul (terrorsleep )?mines \(terrorsleeps\)|roshamuul terrorsleep mines", ["Terrorsleep"]),
+]
+# criaturas que não são de hunt comum: lembranças, versões de evento ou de quest
+SPECIAL = re.compile(r"^(memory of|animated|neutral|little|dazed|mirror image|illusion|spirit of|echo of)\b", re.I)
+
+
+def huntable(names: list[str], cdata: dict) -> list[str]:
+    return [n for n in names if not cdata[n].get("boss") and not SPECIAL.search(n)]
+
+
+def fits_level(names: list[str], cdata: dict, lvl: int | None) -> list[str]:
+    """família de criaturas é uma pista solta: fica só o que faz sentido para o level da hunt (exp até 60x o level)."""
+    if not lvl:
+        return names
+    cap = lvl * 60 + 300
+    return [n for n in names if (cdata[n].get("exp") or 0) <= cap]
+# palavras que não são nome de bicho (para a busca por família de criaturas)
+NOT_CREATURE = set("""the of and cave caves surface lower upper west east north south mines mine raid active inactive floor boss
+bottom only runes sanguine full lap castle seal seals way tower walls city library portal temple sun sea areas area
+center centre stage inner outskirts dungeon tomb hideout mountain profit advanced entrance basement stealth ring sudden
+death aoe island islands plains steppe central puzzle crypts crypt wildlife golem""".split())
+
+
+def singular(w: str) -> str:
+    if w.endswith("ies") and len(w) > 4:
+        return w[:-3] + "y"
+    if re.search(r"(x|s|sh|ch)es$", w):
+        return w[:-2]
+    if w.endswith("s") and not w.endswith("ss") and len(w) > 4:
+        return w[:-1]
+    return w
+
+
+def family(place: str, names: list[str], skip: set[str]) -> list[str]:
+    """"Coryms" -> Corym Charlatan, Corym Skirmisher...: criaturas com a palavra (no singular) no começo de uma palavra
+    do nome. Tenta pares de palavras antes ("orc cults" -> Orc Cult...), depois palavras soltas."""
+    words = [singular(w.replace("'s", "")) for w in re.findall(r"[a-z']+", place.lower())]
+    keys = [f"{a} {b}" for a, b in zip(words, words[1:]) if a not in NOT_CREATURE and b not in NOT_CREATURE]
+    keys += [w for w in words if len(w) >= 4 and w not in NOT_CREATURE and w not in skip]
+    for k in keys:
+        hits = [n for n in names if re.search(rf"(?<![\w']){re.escape(k)}", n.lower())]
+        if hits:
+            return hits[:15]
+    return []
+
+
 def main() -> None:
     places = tibiapal()
     areas = json.loads(AREAS.read_text(encoding="utf8"))
     index, cdata = creature_index()
+    by_area = {a["name"]: a for a in areas["areas"]}
     area_names = sorted(areas["areas"], key=lambda a: len(a["name"]), reverse=True)
     cities = sorted({a["city"] for a in areas["areas"] if a["city"]}, key=len, reverse=True)
+    city_words = {w for c in cities for w in c.lower().split()} | {"liberty", "bay", "port", "hope", "roshamuul", "issavi",
+                                                                   "krailos", "oramond", "marapur", "targuna", "edron", "yalahar"}
+    creature_names = sorted(cdata, key=len)
     out, used, slugs = [], set(), set()
     for p in places.values():
         name_l = p["name"].lower()
-        area = next((a for a in area_names if len(a["name"]) > 5 and a["name"].lower() in name_l), None)
-        monsters = find_creatures(p["name"], index)
-        if not monsters and area:
-            monsters = [c for c in area["creatures"] if c in cdata]
-        monsters = relevant(monsters, cdata)
+        manual = next((cs for pat, cs in PLACE_CREATURES if re.search(pat, name_l)), None)
+        mapped = next((ns for pat, ns in PLACE_AREAS if re.search(pat, name_l)), None)
+        area = by_area.get(mapped[0]) if mapped else next(
+            (a for a in area_names if len(a["name"]) >= 4 and re.search(rf"(?<!\w){re.escape(a['name'].lower())}s?(?!\w)", name_l)), None)
+        if manual:
+            monsters = [c for c in manual if c in cdata]
+        else:
+            lvl = min((v["lvl"] for v in p["voc"].values() if v.get("lvl")), default=None)
+            monsters = huntable(find_creatures(p["name"], index), cdata)
+            if not monsters and area:
+                pool = [c for n in (mapped or [area["name"]]) for c in by_area.get(n, {}).get("creatures", [])]
+                monsters = huntable([c for c in dict.fromkeys(pool) if c in cdata], cdata)
+            if not monsters:
+                monsters = fits_level(huntable(family(p["name"], creature_names, city_words), cdata), cdata, lvl)
+            monsters = relevant(monsters, cdata)
         words = re.findall(r"[a-z']+", name_l)
         city = ((area or {}).get("city") or next((c for c in cities if c.lower() in name_l), "")
                 or next((CITY_ALIAS[w] for w in words if w in CITY_ALIAS), ""))
