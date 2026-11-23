@@ -48,7 +48,7 @@ const PT = {
   monsters_title: "Monstros",
   monster: "Monstro", hp: "HP", xp: "Exp", hits: "Bate",
   legend: "Na tabela, verde = apanha mais que o normal (bom para você); vermelho = apanha menos.",
-  credit_pal: "Hunts, levels, exp, loot, arma e vídeos: TibiaPal (tibiapal.com), por Kusnier, usados com autorização.",
+  credit_pal: "Hunts, levels, exp, loot, arma e vídeos: TibiaPal (tibiapal.com), por Kusnier.",
   credit: "Monstros, fraquezas e dano: TibiaWiki (tibia.fandom.com), licença CC BY-SA. Dados de {d}; imagens carregadas direto do TibiaWiki. Elemento e proteções são uma estimativa a partir do wiki.",
 };
 
@@ -85,7 +85,7 @@ const EN = {
   monsters_title: "Monsters",
   monster: "Monster", hp: "HP", xp: "Exp", hits: "Hits with",
   legend: "In the table, green = takes more than normal (good for you); red = takes less.",
-  credit_pal: "Hunts, levels, exp, loot, weapons and videos: TibiaPal (tibiapal.com), by Kusnier, used with permission.",
+  credit_pal: "Hunts, levels, exp, loot, weapons and videos: TibiaPal (tibiapal.com), by Kusnier.",
   credit: "Monsters, weaknesses and damage: TibiaWiki (tibia.fandom.com), CC BY-SA license. Data from {d}; images load straight from TibiaWiki. Element and protections are an estimate from the wiki.",
 };
 
