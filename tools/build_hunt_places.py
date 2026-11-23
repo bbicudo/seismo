@@ -34,6 +34,27 @@ def relevant(names: list[str], cdata: dict) -> list[str]:
     return [n for n in names if not top or (cdata[n].get("exp") or 0) >= 0.05 * top]
 
 
+# abreviações do TibiaPal escritas por extenso no nome do local
+NAME_ALIAS = [
+    (r"\bLB\b", "Liberty Bay"), (r"\bPH\b", "Port Hope"), (r"\bPOI\b", "Pits of Inferno"),
+    (r"\bMoSL\b|\bMOSL\b", "Mother of Scarabs Lair"), (r"\bRosha\b", "Roshamuul"), (r"\bYala\b", "Yalahar"),
+    (r"\bWOTE\b|\bWote\b", "Wrath of the Emperor"), (r"\bINQ\b", "Inquisition"), (r"\bDT\b", "Dark Torturer"),
+    (r"\bFeru\b", "Ferumbras' Ascension"), (r"\(SD\)", "(Sudden Death)"), (r"\bseal\b", "Seal"),
+    (r"\bStage(\d)", r"Stage \1"),
+]
+
+
+def expand(name: str) -> str:
+    for pat, rep in NAME_ALIAS:
+        name = re.sub(pat, rep, name)
+    return re.sub(r"\s+", " ", name).strip()
+
+
+def same_place(name: str) -> str:
+    """chave para juntar o mesmo local escrito de jeitos diferentes nas tabelas de cada vocação."""
+    return " ".join(sorted(re.findall(r"[a-z0-9']+|-\d+", name.lower())))
+
+
 def money(s: str) -> int | None:
     """'1.5kk' -> 1500000, '45k' -> 45000, '-100k' -> -100000, '-' -> None."""
     s = s.strip().lower().replace(",", ".")
@@ -56,13 +77,13 @@ def tibiapal() -> dict[str, dict]:
                 continue
             txt = [html.unescape(re.sub(r"<[^>]+>", "", x)).strip() for x in tds]
             video = re.search(r'href="(https://(?:youtu\.be|www\.youtube\.com)/[^"]+)"', tds[1])
-            name = re.sub(r"\s+", " ", txt[1])
+            name = expand(txt[1])
             entry = {"lvl": wiki.num(txt[0]), "exp": money(txt[2]), "loot": money(txt[3])}
             extra = txt[4] if len(txt) > 4 and txt[4] not in ("", "-", "N/A") else None
             if extra:
                 entry["extra"] = extra
-            place = places.setdefault(name, {"name": name, "voc": {}})
-            place["voc"][voc] = entry
+            place = places.setdefault(same_place(name), {"name": name, "voc": {}})
+            place["voc"].setdefault(voc, entry)  # mesmo local duas vezes na mesma vocação: fica a primeira linha
             if video and "video" not in place:
                 place["video"] = video.group(1)
     return places
