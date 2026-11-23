@@ -5,7 +5,6 @@ import ElementIcon from "./element-icon";
 import { ATTACK } from "../lib/hunt-advice";
 import { EL, ht } from "../lib/hunts-i18n";
 
-const LEVEL_RANGE = 20;
 const norm = (s) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 // começo de qualquer palavra ("cave" acha Hero Cave, não "Excavation")
 const hit = (text, k) => {
@@ -21,18 +20,19 @@ export default function HuntAreaList({ rows, cities, icons, locale = "pt" }) {
   const [el, setEl] = useState("");
   const [voc, setVoc] = useState("");
   const [lvl, setLvl] = useState("");
+  // levels que existem nas hunts (da vocação escolhida, ou de todas)
+  const levels = useMemo(() => [...new Set(rows.flatMap((r) => (voc ? [r.lvl[voc]] : Object.values(r.lvl))).filter(Boolean))]
+    .sort((a, b) => a - b), [rows, voc]);
   const shown = useMemo(() => {
     const k = norm(q.trim());
-    const my = Number(lvl) || 0;
-    // level: só áreas recomendadas para até 20 levels acima ou abaixo do digitado (da vocação escolhida, ou de qualquer uma)
-    const near = (r) => {
-      const levels = voc ? [r.lvl[voc]] : Object.values(r.lvl);
-      return levels.some((v) => v != null && Math.abs(v - my) <= LEVEL_RANGE);
-    };
+    // level exato: as hunts do wiki usam levels redondos (100, 150, 200, 300, 600...), escolhidos numa lista;
+    // ao trocar de vocação, um level que não existe nela deixa de filtrar
+    const my = levels.includes(Number(lvl)) ? Number(lvl) : 0;
+    const near = (r) => (voc ? [r.lvl[voc]] : Object.values(r.lvl)).includes(my);
     return rows.filter((r) => (!k || hit(r.name, k) || r.creatures.some((c) => hit(c, k)))
       && (!city || r.city === city) && (!el || r.best === el)
       && (!my || near(r)));
-  }, [rows, q, city, el, voc, lvl]);
+  }, [rows, q, city, el, voc, lvl, levels]);
 
   return (
     <>
@@ -61,7 +61,10 @@ export default function HuntAreaList({ rows, cities, icons, locale = "pt" }) {
             </select>
           </label>
           <label>{t.level}
-            <input type="number" min="1" max="3000" inputMode="numeric" value={lvl} onChange={(e) => setLvl(e.target.value)} />
+            <select value={levels.includes(Number(lvl)) ? lvl : ""} onChange={(e) => setLvl(e.target.value)}>
+              <option value="">{t.any}</option>
+              {levels.map((v) => <option key={v} value={v}>{v}</option>)}
+            </select>
           </label>
         </form>
         <p className="muted util-hint">{shown.length === 1 ? t.count_one : t.count.replace("{n}", shown.length)}</p>
