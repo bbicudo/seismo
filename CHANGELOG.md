@@ -5,6 +5,13 @@ and versions follow [Semantic Versioning](https://semver.org/). Each version has
 
 ## [Unreleased]
 
+### Changed
+
+- **Hunting areas** now list the hunts tested by TibiaPal (tibiapal.com, by Kusnier, used with permission and credit)
+  for each vocation, with minimum level, raw exp and loot per hour, recommended weapon, ammo or playstyle and the test
+  video; monsters, weaknesses, damage, element and protections still come from TibiaWiki. Vocation tabs, level filter
+  by the hunts' own levels and sorting by level, exp or loot.
+
 ## [0.4.0] - 2026-11-22
 
 Hunting areas and a way to report mistakes.

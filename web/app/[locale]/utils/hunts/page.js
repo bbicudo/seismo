@@ -1,9 +1,9 @@
 import { notFound } from "next/navigation";
 import HuntAreaList from "../../../../components/hunt-area-list";
-import data from "../../../../data/hunt-areas.json";
+import data from "../../../../data/hunt-places.json";
 import { fmtDate } from "../../../../lib/api";
 import { getFlags, on } from "../../../../lib/flags";
-import { advise, minLevel } from "../../../../lib/hunt-advice";
+import { advise } from "../../../../lib/hunt-advice";
 import { ht } from "../../../../lib/hunts-i18n";
 import { dict, fmt } from "../../../../lib/i18n";
 import { seo } from "../../../../lib/seo";
@@ -16,13 +16,12 @@ export async function generateMetadata({ params }) {
 
 export const dynamic = "force-dynamic";
 
-// Lista enxuta para o navegador: só o que a tabela e os filtros usam (o detalhe fica na página de cada área).
-const ROWS = data.areas.map((a) => {
-  const adv = advise(a, data.creatures);
-  return { slug: a.slug, name: a.name, city: a.city, lvl: a.lvl, min: minLevel(a), creatures: a.creatures,
-    best: adv.bestElement?.e || null, protect: adv.protectTop.map((x) => x.e) };
-}).sort((a, b) => a.name.localeCompare(b.name));
-const CITIES = [...new Set(data.areas.map((a) => a.city).filter(Boolean))].sort();
+// Lista enxuta para o navegador: só o que a tabela e os filtros usam (o detalhe fica na página de cada hunt).
+const ROWS = data.places.map((p) => ({
+  slug: p.slug, name: p.name, city: p.city, voc: p.voc, creatures: p.creatures,
+  protect: advise(p, data.creatures).protectTop.map((x) => x.e),
+}));
+const CITIES = [...new Set(data.places.map((p) => p.city).filter(Boolean))].sort();
 
 export default async function HuntAreas({ params }) {
   const { locale } = await params;
@@ -41,6 +40,7 @@ export default async function HuntAreas({ params }) {
         <HuntAreaList rows={ROWS} cities={CITIES} icons={data.icons} locale={locale} />
       </section>
       {on(f, "feedback_form") && <p className="muted"><a href={`/${locale}/feedback?f=hunts&from=/${locale}/utils/hunts`}>{d.fb_link}</a></p>}
+      <p className="muted"><a href="https://tibiapal.com/hunting" target="_blank" rel="noopener">{t.credit_pal}</a></p>
       <p className="muted">{fmt(t.credit, { d: fmtDate(data.updated, locale) })}</p>
     </>
   );

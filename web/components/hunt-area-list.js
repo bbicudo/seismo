@@ -2,41 +2,46 @@
 
 import { useMemo, useState } from "react";
 import ElementIcon from "./element-icon";
-import { ATTACK } from "../lib/hunt-advice";
-import { EL, ht } from "../lib/hunts-i18n";
+import { VOCS, gold, ht } from "../lib/hunts-i18n";
 
 const norm = (s) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 // começo de qualquer palavra ("cave" acha Hero Cave, não "Excavation")
 const hit = (text, k) => {
   const n = norm(text);
-  for (let i = 0; i < n.length; i++) if ((i === 0 || " '(-".includes(n[i - 1])) && n.startsWith(k, i)) return true;
+  for (let i = 0; i < n.length; i++) if ((i === 0 || " '(-/".includes(n[i - 1])) && n.startsWith(k, i)) return true;
   return false;
 };
 
+// Lista de hunts do TibiaPal: os números (level, exp, loot, arma) são da vocação escolhida.
 export default function HuntAreaList({ rows, cities, icons, locale = "pt" }) {
   const t = ht(locale);
   const [q, setQ] = useState("");
   const [city, setCity] = useState("");
-  const [el, setEl] = useState("");
-  const [voc, setVoc] = useState("");
+  const [voc, setVoc] = useState("knight");
   const [lvl, setLvl] = useState("");
-  // levels que existem nas hunts (da vocação escolhida, ou de todas)
-  const levels = useMemo(() => [...new Set(rows.flatMap((r) => (voc ? [r.lvl[voc]] : Object.values(r.lvl))).filter(Boolean))]
-    .sort((a, b) => a - b), [rows, voc]);
+  const [sort, setSort] = useState("lvl");
+  const ofVoc = useMemo(() => rows.filter((r) => r.voc[voc]), [rows, voc]);
+  // levels que existem nas hunts da vocação (o TibiaPal usa levels mínimos como 8, 20, 100, 300...)
+  const levels = useMemo(() => [...new Set(ofVoc.map((r) => r.voc[voc].lvl).filter(Boolean))].sort((a, b) => a - b), [ofVoc, voc]);
   const shown = useMemo(() => {
     const k = norm(q.trim());
-    // level exato: as hunts do wiki usam levels redondos (100, 150, 200, 300, 600...), escolhidos numa lista;
-    // ao trocar de vocação, um level que não existe nela deixa de filtrar
     const my = levels.includes(Number(lvl)) ? Number(lvl) : 0;
-    const near = (r) => (voc ? [r.lvl[voc]] : Object.values(r.lvl)).includes(my);
-    return rows.filter((r) => (!k || hit(r.name, k) || r.creatures.some((c) => hit(c, k)))
-      && (!city || r.city === city) && (!el || r.best === el)
-      && (!my || near(r)));
-  }, [rows, q, city, el, voc, lvl, levels]);
+    const key = { lvl: (r) => r.voc[voc].lvl ?? 0, exp: (r) => -(r.voc[voc].exp ?? -1e12), loot: (r) => -(r.voc[voc].loot ?? -1e12) }[sort];
+    return ofVoc.filter((r) => (!k || hit(r.name, k) || r.creatures.some((c) => hit(c, k)))
+      && (!city || r.city === city) && (!my || r.voc[voc].lvl === my))
+      .sort((a, b) => key(a) - key(b) || (a.voc[voc].lvl ?? 0) - (b.voc[voc].lvl ?? 0) || a.name.localeCompare(b.name));
+  }, [ofVoc, q, city, voc, lvl, sort, levels]);
+  const extraHead = t.extra[voc];
 
   return (
     <>
       <div className="util-tools">
+        <p className="seg" role="group" aria-label={t.vocation}>
+          {VOCS.map((v) => (
+            <a key={v} href="#" role="button" aria-current={voc === v ? "true" : undefined}
+               onClick={(e) => { e.preventDefault(); setVoc(v); }}>{t.vocs[v]}</a>
+          ))}
+        </p>
         <label className="util-search">
           <span>{t.search}</span>
           <input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder={t.placeholder} autoComplete="off" />
@@ -48,22 +53,15 @@ export default function HuntAreaList({ rows, cities, icons, locale = "pt" }) {
               {cities.map((c) => <option key={c} value={c}>{c}</option>)}
             </select>
           </label>
-          <label>{t.element}
-            <select value={el} onChange={(e) => setEl(e.target.value)}>
-              <option value="">{t.any}</option>
-              {ATTACK.filter((e) => e !== "physical").map((e) => <option key={e} value={e}>{EL[e]}</option>)}
-            </select>
-          </label>
-          <label>{t.vocation}
-            <select value={voc} onChange={(e) => setVoc(e.target.value)}>
-              <option value="">{t.any}</option>
-              {Object.entries(t.voc).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-            </select>
-          </label>
           <label>{t.level}
             <select value={levels.includes(Number(lvl)) ? lvl : ""} onChange={(e) => setLvl(e.target.value)}>
               <option value="">{t.any}</option>
-              {levels.map((v) => <option key={v} value={v}>{v}</option>)}
+              {levels.map((v) => <option key={v} value={v}>{v}+</option>)}
+            </select>
+          </label>
+          <label>{t.sort}
+            <select value={sort} onChange={(e) => setSort(e.target.value)}>
+              {Object.entries(t.sorts).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
             </select>
           </label>
         </form>
@@ -71,19 +69,29 @@ export default function HuntAreaList({ rows, cities, icons, locale = "pt" }) {
       </div>
       {shown.length === 0 ? <p className="muted">{t.none}</p> : (
         <div className="tbl"><table className="compact cards">
-          <thead><tr><th>{t.area}</th><th>{t.monsters}</th><th>{t.best}</th><th>{t.protect}</th><th className="n">{t.lvl}</th></tr></thead>
+          <thead><tr>
+            <th>{t.place}</th><th>{t.monsters}</th><th className="n">{t.lvl}</th><th className="n">{t.exp}</th><th className="n">{t.loot}</th>
+            {extraHead && <th>{extraHead}</th>}<th>{t.protect}</th>
+          </tr></thead>
           <tbody>
-            {shown.map((r) => (
-              <tr key={r.slug}>
-                <td className="place"><a href={`/${locale}/utils/hunts/${r.slug}`}>{r.name}</a>{r.city && <small>{r.city}</small>}</td>
-                <td className="wrap-cell" data-label={t.monsters}>{r.creatures.slice(0, 5).join(", ")}{r.creatures.length > 5 ? ` +${r.creatures.length - 5}` : ""}</td>
-                <td data-label={t.best} className={r.best ? "" : "empty"}>{r.best ? <ElementIcon e={r.best} icons={icons} /> : "–"}</td>
-                <td data-label={t.protect} className={r.protect.length ? "" : "empty"}>
-                  {r.protect.length ? <span className="el-list">{r.protect.map((e) => <ElementIcon key={e} e={e} icons={icons} />)}</span> : "–"}
-                </td>
-                <td className={`n${r.min ? "" : " empty"}`} data-label={t.lvl}>{r.min ?? "–"}</td>
-              </tr>
-            ))}
+            {shown.map((r) => {
+              const v = r.voc[voc];
+              return (
+                <tr key={r.slug}>
+                  <td className="place"><a href={`/${locale}/utils/hunts/${r.slug}`}>{r.name}</a>{r.city && <small>{r.city}</small>}</td>
+                  <td className={`wrap-cell${r.creatures.length ? "" : " empty"}`} data-label={t.monsters}>
+                    {r.creatures.length ? `${r.creatures.slice(0, 4).join(", ")}${r.creatures.length > 4 ? ` +${r.creatures.length - 4}` : ""}` : "–"}
+                  </td>
+                  <td className="n" data-label={t.lvl}>{v.lvl ? `${v.lvl}+` : "–"}</td>
+                  <td className={`n${v.exp == null ? " empty" : ""}`} data-label={t.exp}>{gold(v.exp, locale)}</td>
+                  <td className={`n${v.loot == null ? " empty" : v.loot < 0 ? " down" : ""}`} data-label={t.loot}>{gold(v.loot, locale)}</td>
+                  {extraHead && <td className={v.extra ? "" : "empty"} data-label={extraHead}>{v.extra || "–"}</td>}
+                  <td className={r.protect.length ? "" : "empty"} data-label={t.protect}>
+                    {r.protect.length ? <span className="el-list">{r.protect.map((e) => <ElementIcon key={e} e={e} icons={icons} />)}</span> : "–"}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table></div>
       )}
