@@ -5,6 +5,7 @@ import ElementIcon from "./element-icon";
 import { ATTACK } from "../lib/hunt-advice";
 import { EL, ht } from "../lib/hunts-i18n";
 
+const LEVEL_RANGE = 20;
 const norm = (s) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 // começo de qualquer palavra ("cave" acha Hero Cave, não "Excavation")
 const hit = (text, k) => {
@@ -23,9 +24,14 @@ export default function HuntAreaList({ rows, cities, icons, locale = "pt" }) {
   const shown = useMemo(() => {
     const k = norm(q.trim());
     const my = Number(lvl) || 0;
+    // level: só áreas recomendadas para até 20 levels acima ou abaixo do digitado (da vocação escolhida, ou de qualquer uma)
+    const near = (r) => {
+      const levels = voc ? [r.lvl[voc]] : Object.values(r.lvl);
+      return levels.some((v) => v != null && Math.abs(v - my) <= LEVEL_RANGE);
+    };
     return rows.filter((r) => (!k || hit(r.name, k) || r.creatures.some((c) => hit(c, k)))
       && (!city || r.city === city) && (!el || r.best === el)
-      && (!my || (voc ? (r.lvl[voc] ?? r.min ?? 0) : (r.min ?? 0)) <= my));
+      && (!my || near(r)));
   }, [rows, q, city, el, voc, lvl]);
 
   return (
