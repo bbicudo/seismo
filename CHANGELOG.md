@@ -17,7 +17,7 @@ and versions follow [Semantic Versioning](https://semver.org/). Each version has
   differently in each vocation's table becomes one hunt.
 - Monsters for the last hunts from TibiaWiki pages (Warzones 7-9, Krailos Spider Lair, Roshamuul Mines, Oramond Factory
   Raids, Kilmaresh Catacombs) and TibiaRoute (West Roshamuul, Issavi Puzzle Chambers, Temple of the Sun and Sea,
-  Gnomprona West, Spike -3); rune variants ("(Runes)", "(Sudden Death)") are left out. 346 of 347 hunts have monsters.
+  Gnomprona West, Spike -3) and Forgotten Tomb for Edron Tomb; rune variants ("(Runes)", "(Sudden Death)") are left out. All 347 hunts have monsters.
 
 ## [0.4.0] - 2026-11-22
 
