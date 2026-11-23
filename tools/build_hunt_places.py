@@ -156,7 +156,7 @@ PLACE_AREAS = [
     (r"^prison -\d", ["Roshamuul Prison"]), (r"radiant ascend", ["Radiant Ascendancy"]),
     (r"(energy|fire|ice) library", ["Secret Library"]), (r"summer court", ["Court of Summer"]),
     (r"winter court", ["Court of Winter"]), (r"nimmersatt's (boss|bottom) floor", ["Nimmersatt's Breeding Ground"]),
-    (r"alchemist center", ["Alchemist Quarter"]),
+    (r"alchemist center", ["Alchemist Quarter"]), (r"edron tomb", ["Forgotten Tomb"]),
 ]
 # Hunts com os monstros informados à mão (quest ou área sem página de hunt no wiki).
 FERUMBRAS = ["Blightwalker", "Dark Torturer", "Demon", "Destroyer", "Fury", "Grimeleech", "Hand of Cursed Fate",
