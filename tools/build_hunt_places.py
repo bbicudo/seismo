@@ -82,6 +82,8 @@ def tibiapal() -> dict[str, dict]:
             txt = [html.unescape(re.sub(r"<[^>]+>", "", x)).strip() for x in tds]
             video = re.search(r'href="(https://(?:youtu\.be|www\.youtube\.com)/[^"]+)"', tds[1])
             name = expand(txt[1])
+            if re.search(r"\((runes|sudden death)\)", name, re.I):
+                continue
             entry = {"lvl": wiki.num(txt[0]), "exp": money(txt[2]), "loot": money(txt[3])}
             extra = txt[4] if len(txt) > 4 and txt[4] not in ("", "-", "N/A") else None
             if extra:
@@ -169,6 +171,26 @@ PLACE_CREATURES = [
     (r"^ingol(?![a-z])", ["Harpy", "Carnivostrich", "Liodile", "Rhindeer", "Crape Man", "Boar Man"]),
     (r"oramond catacombs", ["Metal Gargoyle", "Grim Reaper", "Demon"]),
     (r"oramond (mountain )?hideout", ["Glooth Bandit", "Glooth Brigand"]),
+    # Warzones 7 a 9 (Antrum of the Fallen, Grotto of the Lost, Dwelling of the Forgotten, no TibiaWiki)
+    (r"warzone 7", ["Blemished Spawn", "Eyeless Devourer", "Afflicted Strider"]),
+    (r"warzone 8", ["Lavafungus", "Lavaworm", "Streaked Devourer"]),
+    (r"warzone 9", ["Cave Chimera", "Varnished Diremaw", "Tremendous Tyrant"]),
+    # Krailos Bug Cave = Krailos Spider Lair; Roshamuul Mines (TibiaWiki)
+    (r"krailos bug cave", ["Wailing Widow", "Brimstone Bug", "Giant Spider"]),
+    (r"roshamuul mines", ["Terrorsleep", "Feversleep"]),
+    # raids da fábrica de Oramond (TibiaWiki "Oramond Factory Raids"; o Wild Life confere com o TibiaRoute)
+    (r"golem raid", ["Worker Golem", "Glooth Golem", "Rustheap Golem", "Metal Gargoyle", "War Golem",
+                     "High Voltage Elemental", "Walker"]),
+    (r"wildlife raid \(inactive\)", None),
+    (r"wildlife raid", ["Behemoth", "Devourer", "Drillworm", "Elder Wyrm", "Glooth Anemone", "Wyrm"]),
+    # TibiaRoute: West Roshamuul, Issavi Puzzle Chambers, Temple of the Sun and Sea, Gnomprona West, Spike -3
+    (r"roshamuul west", ["Frazzlemaw", "Guzzlemaw", "Silencer"]),
+    (r"issavi crypts", ["Sphinx", "Crypt Warden"]),
+    (r"issavi puzzle|temple of the sun and sea", ["Burning Gladiator", "Black Sphinx Acolyte", "Priestess of the Wild Sun"]),
+    (r"^gnomprona", ["Emerald Tortoise", "Gore Horn", "Gorerilla", "Hulking Prehemoth", "Sabretooth"]),
+    (r"upper spike", ["Corym Charlatan", "Corym Skirmisher"]),
+    # Issavi Surface: Kilmaresh Catacombs (TibiaWiki), indicada pelo dono do projeto
+    (r"issavi surface", ["Crypt Warden", "Sphinx", "Priestess of the Wild Sun", "Black Sphinx Acolyte", "Burning Gladiator"]),
     (r"asura mirror|true asuras", ["True Dawnfire Asura", "True Frost Flower Asura", "True Midnight Asura"]),
     (r"werecreatures", ["Werewolf", "Werebear", "Wereboar", "Werebadger", "Werefox", "Werehyaena", "Werelion"]),
     (r"roshamuul (terrorsleep )?mines \(terrorsleeps\)|roshamuul terrorsleep mines", ["Terrorsleep"]),
@@ -231,7 +253,10 @@ def main() -> None:
     for p in places.values():
         name_l = p["name"].lower()
         manual = next((cs for pat, cs in PLACE_CREATURES if re.search(pat, name_l)), None)
-        mapped = next((ns for pat, ns in PLACE_AREAS if re.search(pat, name_l)), None)
+        if manual is None and re.search(r"wildlife raid \(inactive\)", name_l):
+            mapped = ["OramondWestern Plains"]
+        mapped = mapped if manual is None and re.search(r"wildlife raid \(inactive\)", name_l) else next(
+            (ns for pat, ns in PLACE_AREAS if re.search(pat, name_l)), None)
         area = by_area.get(mapped[0]) if mapped else next(
             (a for a in area_names if len(a["name"]) >= 4 and re.search(rf"(?<!\w){re.escape(a['name'].lower())}s?(?!\w)", name_l)), None)
         if manual:
