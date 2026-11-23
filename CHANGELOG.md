@@ -14,7 +14,10 @@ and versions follow [Semantic Versioning](https://semver.org/). Each version has
 - More hunts have their monsters: creature families ("Coryms" -> Corym Charlatan, Skirmisher, Vanguard), wiki area names
   written differently, region lists (Targuna, Ingol, Oramond) and hand-checked lists (Asura Mirror, Ferumbras'
   Ascension); bosses and special creatures are left out. Abbreviations are spelled out and the same place written
-  differently in each vocation's table becomes one hunt (332 of 352 hunts with monsters).
+  differently in each vocation's table becomes one hunt.
+- Monsters for the last hunts from TibiaWiki pages (Warzones 7-9, Krailos Spider Lair, Roshamuul Mines, Oramond Factory
+  Raids, Kilmaresh Catacombs) and TibiaRoute (West Roshamuul, Issavi Puzzle Chambers, Temple of the Sun and Sea,
+  Gnomprona West, Spike -3); rune variants ("(Runes)", "(Sudden Death)") are left out. 346 of 347 hunts have monsters.
 
 ## [0.4.0] - 2026-11-22
 
