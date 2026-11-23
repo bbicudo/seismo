@@ -70,7 +70,7 @@ continuously and turns it into live statistics, maps and monthly summaries, in P
   filters, the quest, addon or imbuement each item is used for, and item sprites loaded by the browser from
   TibiaWiki. Data from TibiaWiki (CC BY-SA). Flags `page_utils` (the whole area) and `util_yasir`.
 
-- **Hunting areas**: hunts tested by [TibiaPal](https://tibiapal.com/hunting) (by Kusnier, used with permission)
+- **Hunting areas**: hunts tested by [TibiaPal](https://tibiapal.com/hunting) (by Kusnier)
   for each vocation, with minimum level, raw exp and loot per hour, recommended weapon, ammo or playstyle and the test
   video, filtered by vocation, town and level and sorted by level, exp or loot. Each hunt's page adds its monsters
   from TibiaWiki (sprites, HP, exp, weaknesses and the damage they deal), the recommended damage type (average of the
