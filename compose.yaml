@@ -17,7 +17,7 @@ x-app-defaults: &app
 services:
   postgres:
     <<: *app
-    image: postgres:16.15-bookworm
+    image: postgres:16.16-bookworm
     environment:
       POSTGRES_DB: seismo
       POSTGRES_USER: seismo
