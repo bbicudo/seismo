@@ -1,6 +1,6 @@
 # versões fixas; todas publicam wheels manylinux para aarch64 e x86_64
 httpx==0.28.1
-redis==8.1.0
+redis==8.2.0
 psycopg[binary,pool]==3.3.9
 pydantic==2.14.3
 pydantic-settings==2.16.3
